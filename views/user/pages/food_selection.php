@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Chọn đồ ăn</title>
-    <link rel="stylesheet" href="../../../assets/css/style.css">
-    <link rel="stylesheet" href="../../../assets/css/seat-selection.css">
-    <link rel="stylesheet" href="../../../assets/css/food-selection.css">
+    <link rel="stylesheet" href="../../../public/assets/css/style.css">
+    <link rel="stylesheet" href="../../../public/assets/css/seat-selection.css">
+    <link rel="stylesheet" href="../../../public/assets/css/food-selection.css">
 </head>
 
 <body>
@@ -148,7 +148,7 @@
             window.location.href = "../../user/pages/payment.php";
         });
     </script>
-    <script src="../../../assets/js/food-selection.js"></script>
+    <script src="../../../public/assets/js/food-selection.js"></script>
 </body>
 
 </html>

@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Chọn ghế</title>
-    <link rel="stylesheet" href="../../../assets/css/style.css">
-    <link rel="stylesheet" href="../../../assets/css/seat-selection.css">
+    <link rel="stylesheet" href="../../../public/assets/css/style.css">
+    <link rel="stylesheet" href="../../../public/assets/css/seat-selection.css">
 
     <style>
         .seat.type-1 {
@@ -191,7 +191,7 @@
         </div>
     </main>
 
-    <script src="../../../assets/js/seat-selection.js"></script>
+    <script src="../../../public/assets/js/seat-selection.js"></script>
 
     <script>
         // document.addEventListener('DOMContentLoaded', () => {

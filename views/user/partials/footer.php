@@ -74,4 +74,4 @@
     </div>
 </div>
 
-<script src="../../assets/js/all_effects.js"></script>
+<script src="../../public/assets/js/all_effects.js"></script>

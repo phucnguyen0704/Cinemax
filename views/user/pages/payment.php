@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Thanh toán</title>
-    <link rel="stylesheet" href="../../../assets/css/style.css">
-    <link rel="stylesheet" href="../../../assets/css/seat-selection.css">
-    <link rel="stylesheet" href="../../../assets/css/food-selection.css">
-    <link rel="stylesheet" href="../../../assets/css/payment.css">
+    <link rel="stylesheet" href="../../../public/assets/css/style.css">
+    <link rel="stylesheet" href="../../../public/assets/css/seat-selection.css">
+    <link rel="stylesheet" href="../../../public/assets/css/food-selection.css">
+    <link rel="stylesheet" href="../../../public/assets/css/payment.css">
 </head>
 
 <body>
@@ -87,7 +87,7 @@
                             <div class="info-row"><span>Rạp:</span> <strong></strong></div>
                             <div class="info-row"><span>Suất:</span> <strong></strong></div>
                             <div class="info-row"><span>Phòng:</span> <strong>
-                                    </strong>
+                                </strong>
                             </div>
                             <div class="info-row"><span>Ghế:</span> <strong style="color: var(--primary-color);"></strong></div>
                         </div>
