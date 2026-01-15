@@ -1,0 +1,136 @@
+/* CSS RIÊNG CHO GIAO DIỆN THANH TOÁN DARK MODE */
+.payment-section h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #fff;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 15px;
+}
+
+/* Card chứa các phương thức thanh toán */
+.method-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.method-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  /* Nền xám đậm */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  position: relative;
+}
+
+/* Hiệu ứng khi hover hoặc active */
+.method-item:hover {
+  border-color: #aaa;
+}
+
+.method-item.active {
+  border-color: var(--primary-color);
+  background: rgba(229, 9, 20, 0.1);
+  /* Nền đỏ nhạt trong suốt */
+}
+
+/* Icon phương thức */
+.method-icon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  background: #fff;
+  padding: 5px;
+  border-radius: 6px;
+  /* Nền trắng nhỏ cho icon đỡ bị chìm */
+}
+
+/* Radio button tùy chỉnh */
+.radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #aaa;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  /* Đẩy sang phải cùng */
+}
+
+.radio-custom::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: none;
+}
+
+.method-item.active .radio-custom {
+  border-color: var(--primary-color);
+}
+
+.method-item.active .radio-custom::after {
+  display: block;
+}
+
+/* Input radio thật bị ẩn đi */
+.method-item input[type="radio"] {
+  display: none;
+}
+
+/* Văn bản */
+.method-info h4 {
+  font-size: 16px;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.method-info p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Ghi chú màu vàng */
+.note-box {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px dashed #ffc107;
+  color: #ffc107;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 25px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Phần Sidebar tổng tiền */
+.summary-block {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.info-row strong {
+  color: #fff;
+}
+
+.final-total {
+  font-size: 24px;
+  color: var(--primary-color);
+  font-weight: bold;
+  text-align: right;
+}
