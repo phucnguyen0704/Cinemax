@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="../../public/assets/css/theater.css">
 <link rel="stylesheet" href="../../public/assets/css/booking_success.css">
 <link rel="stylesheet" href="../../public/assets/css/button.css">
-
+<link rel="stylesheet" href="../../public/assets/fontawesome/css/all.min.css">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

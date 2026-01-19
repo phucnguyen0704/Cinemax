@@ -1,0 +1,81 @@
+/* --- CSS CHO BỘ LỌC ĐẸP (DARK THEME) --- */
+.filter-container {
+  background: var(--bg-secondary);
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.filter-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto; /* 3 cột nhập liệu + 1 cột nút */
+  gap: 20px;
+  align-items: end; /* Căn đáy để nút bằng với input */
+}
+
+.form-group-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group-filter label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Style Input/Select */
+.dark-input {
+  width: 100%;
+  padding: 10px 15px;
+  background-color: #222; /* Nền rất tối */
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  height: 42px; /* Chiều cao cố định */
+  transition: all 0.2s;
+}
+
+.dark-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.15);
+}
+
+/* Nút Lọc */
+.btn-filter-submit {
+  height: 42px;
+  padding: 0 25px;
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.btn-filter-submit:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+  .filter-form {
+    grid-template-columns: 1fr; /* 1 cột dọc */
+  }
+  .btn-filter-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}

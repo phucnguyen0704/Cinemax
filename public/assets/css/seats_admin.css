@@ -1,0 +1,132 @@
+.editor-area {
+  background: #222;
+  padding: 40px 20px;
+  border-radius: 12px;
+  text-align: center;
+  overflow-x: auto;
+  min-height: 400px;
+}
+
+.editor-area::-webkit-scrollbar {
+  height: 8px;
+}
+
+.editor-area::-webkit-scrollbar-track {
+  background: #222;
+}
+
+.editor-area::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+.screen-line {
+  height: 8px;
+  background: #444;
+  width: 50%;
+  margin: 0 auto 40px;
+  box-shadow: 0 10px 20px rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+.seat-grid {
+  display: inline-block;
+  text-align: left;
+}
+.seat-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+  align-items: center;
+}
+.row-label {
+  width: 25px;
+  font-weight: bold;
+  color: #666;
+  text-align: center;
+  font-size: 12px;
+}
+
+.seat-item {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s;
+  text-decoration: none;
+  position: relative;
+}
+.seat-item:hover {
+  transform: scale(1.15);
+  z-index: 10;
+  border-color: #fff;
+}
+
+.btn-x {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 14px;
+  height: 14px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 9px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 11;
+}
+.seat-item:hover .btn-x {
+  display: flex;
+}
+
+/* MÀU GHẾ (Cần khớp ID trong DB của bạn) */
+/* Nếu DB của bạn: 2=Thường, 3=VIP, sửa số ở đây */
+.type-1,
+.type-2 {
+  background: #555;
+} /* Thường */
+.type-2,
+.type-3 {
+  background: #e50914;
+  border-color: #b20710;
+} /* VIP */
+
+.legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 20px;
+  background: var(--bg-tertiary);
+  padding: 15px;
+  border-radius: 8px;
+}
+.legend-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: #ccc;
+}
+.dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.stats-box {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(70, 211, 105, 0.1);
+  border: 1px solid rgba(70, 211, 105, 0.3);
+  border-radius: 8px;
+  color: #fff;
+}

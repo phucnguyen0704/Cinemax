@@ -1,0 +1,65 @@
+/* CSS PHÂN TRANG & FILTER */
+.pagination {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.page-link {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  text-decoration: none;
+  color: var(--text-primary);
+  border-radius: 4px;
+}
+
+.page-link.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.filter-bar {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* CSS CHO THỂ LOẠI (CHECKBOX) */
+.genre-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  background: var(--bg-tertiary);
+  padding: 15px;
+  border-radius: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.checkbox-item input {
+  width: auto;
+}
+
+/* CSS CHO DIỄN VIÊN (SELECT) */
+.actor-select {
+  width: 100%;
+  padding: 10px;
+  background: var(--bg-tertiary);
+  color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  height: 120px;
+}
