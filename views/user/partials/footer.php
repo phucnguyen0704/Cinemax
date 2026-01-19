@@ -1,5 +1,5 @@
 <div class="container">
-    <div class="footer-content">
+    <div class="footer-content" style="padding-top: 30px; height: fit-content;">
 
         <div class="footer-col">
             <a href="index.php" class="footer-logo">
