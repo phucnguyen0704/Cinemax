@@ -10,5 +10,5 @@
 <link rel="stylesheet" href="../../public/assets/css/bookings_admin.css">
 <link rel="stylesheet" href="../../public/assets/fontawesome/css/all.min.css">
 
-<link rel="stylesheet" href="../../public/assets/js/all_effects.js">
+<script src="../../public/assets/js/all_effects.js"></script>
 <script src="../../public/assets/js/shows_admin.js" defer></script>

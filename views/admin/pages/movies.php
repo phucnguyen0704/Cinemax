@@ -2,7 +2,7 @@
 
     <header class="admin-header">
         <h1>Quản lý phim</h1>
-        <button class="btn-add">
+        <button class="btn-add " onclick="openModal('addMovieModal')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="3" stroke-linecap="round"
                 stroke-linejoin="round">
