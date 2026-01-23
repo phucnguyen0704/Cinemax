@@ -1,3 +1,7 @@
+<?php
+$users = $adminController->getAllUsers();
+$error = $_SESSION['error'] ?? null;
+?>
 <section class="users">
     <header class="admin-header">
         <h1>Quản lý người dùng</h1>
@@ -19,6 +23,20 @@
     </header>
 
     <div class="dashboard-content">
+        <?php if (isset($_GET['error']) || isset($_GET['add'])): ?>
+            <div class="alert alert-success" id="autoAlert">
+                <?php
+                if (isset($error)) {
+                    if ($_GET['error'] == 1) {
+                        echo $error;
+                    }
+                }
+                if ($_GET['add'] == 1) {
+                    echo "Người dùng đã được thêm thành công!";
+                }
+                ?>
+            </div>
+        <?php endif; ?>
         <!-- TABLE USERS -->
         <div class="dashboard-card">
             <div class="table-responsive">
@@ -34,33 +52,31 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>#1</strong></td>
-                            <td>Nguyễn Văn A</td>
-                            <td>a@gmail.com</td>
-                            <td>0123456789</td>
-                            <td>
-                                <span class="badge badge-warning">Admin</span>
-                            </td>
-                            <td>
-                                <a href="#" class="btn-action">Sửa</a>
-                                <button class="btn-action danger">Xóa</button>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><strong>#2</strong></td>
-                            <td>Trần Thị B</td>
-                            <td>b@gmail.com</td>
-                            <td>-</td>
-                            <td>
-                                <span class="badge badge-success">User</span>
-                            </td>
-                            <td>
-                                <a href="#" class="btn-action">Sửa</a>
-                                <button class="btn-action danger">Xóa</button>
-                            </td>
-                        </tr>
+                        <?php if (!empty($users)): ?>
+                            <?php foreach ($users as $user): ?>
+                                <tr>
+                                    <td><strong>#<?= htmlspecialchars($user['UserID']) ?></strong></td>
+                                    <td><?= htmlspecialchars($user['FullName']) ?></td>
+                                    <td><?= htmlspecialchars($user['Email']) ?></td>
+                                    <td><?= htmlspecialchars($user['Phone'] ?? '-') ?></td>
+                                    <td>
+                                        <span class="badge <?= ($user['Role'] ?? 'User') === 'Admin' ? 'badge-warning' : 'badge-success' ?>">
+                                            <?= htmlspecialchars($user['Role'] ?? 'User') ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn-action">Sửa</a>
+                                        <button class="btn-action danger">Xóa</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:20px;">
+                                    Chưa có người dùng nào trong hệ thống.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -74,23 +90,23 @@
                 <button class="btn-close" onclick="closeModal('addUserModal')">&times;</button>
             </div>
 
-            <form>
+            <form id="addUserForm" action="../admin/index.php?page=users&action=create" method="POST">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Họ tên</label>
-                        <input type="text">
+                        <input type="text" name="fullName" required>
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email">
+                        <input type="email" name="email" required>
                     </div>
                     <div class="form-group">
                         <label>Số điện thoại</label>
-                        <input type="tel">
+                        <input type="tel" name="phone" required>
                     </div>
                     <div class="form-group">
                         <label>Mật khẩu</label>
-                        <input type="password">
+                        <input type="password" name="password" required>
                     </div>
                     <div class="form-group">
                         <label>Vai trò</label>

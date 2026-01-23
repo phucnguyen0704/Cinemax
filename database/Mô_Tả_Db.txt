@@ -10,7 +10,7 @@
     Lưu các vai trò trong hệ thống
     Ví dụ: ADMIN, MANAGER, STAFF, CUSTOMER
     Quan hệ:
-    roles —< user_role
+    roles —< users
     roles —< role_permission
 
 2.3. Bảng permissions
@@ -18,10 +18,6 @@
     Ví dụ: MOVIE_CREATE, SHOW_MANAGE, TICKET_SELL
     Quan hệ:
     permissions —< role_permission
-
-2.4. Bảng user_role
-    Bảng trung gian nhiều–nhiều giữa users và roles
-    Cho phép một người dùng có nhiều vai trò
 
 2.5. Bảng role_permission
     Bảng trung gian nhiều–nhiều giữa roles và permissions
