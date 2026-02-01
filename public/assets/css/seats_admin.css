@@ -88,17 +88,44 @@
   display: flex;
 }
 
-/* MÀU GHẾ (Cần khớp ID trong DB của bạn) */
-/* Nếu DB của bạn: 2=Thường, 3=VIP, sửa số ở đây */
-.type-1,
-.type-2 {
+/* MÀU GHẾ - Dynamic colors based on seat type ID */
+/* Màu mặc định cho tất cả loại ghế */
+[class*="type-"] {
   background: #555;
-} /* Thường */
-.type-2,
-.type-3 {
-  background: #e50914;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Màu cụ thể cho từng loại ghế (có thể mở rộng) */
+.seat-item.type-1 {
+  background: #555; /* Ghế thường */
+}
+.seat-item.type-2 {
+  background: #e50914; /* Ghế VIP - đỏ */
   border-color: #b20710;
-} /* VIP */
+}
+.seat-item.type-3 {
+  background: #4169E1; /* Ghế đôi - xanh dương */
+  border-color: #1e3a8a;
+}
+.seat-item.type-4 {
+  background: #FFD700; /* Ghế cao cấp - vàng */
+  border-color: #ffb300;
+  color: #000;
+}
+
+/* Màu cho dot trong legend */
+.dot.type-1 {
+  background: #555;
+}
+.dot.type-2 {
+  background: #e50914;
+}
+.dot.type-3 {
+  background: #4169E1;
+}
+.dot.type-4 {
+  background: #FFD700;
+}
 
 .legend {
   display: flex;

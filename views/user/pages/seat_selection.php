@@ -120,41 +120,16 @@
                             <div class="screen"><span>MÀN HÌNH</span></div>
 
                             <div class="seats-container" id="seatsContainer">
-                                <!-- <?php foreach ($seat_map as $row => $row_seats): ?>
-                                    <div class="seat-row">
-                                        <span class="row-label"><?php echo $row; ?></span>
-                                        <?php foreach ($row_seats as $seat):
-                                                $type_class = "type-" . $seat['SeatTypeID'];
-                                                $status_class = ($seat['Status'] == 'available') ? '' : $seat['Status'];
-                                                $final_price = $base_price + ($seat['PriceSurcharge'] ?? 0);
-                                        ?>
-                                            <div class="seat <?php echo $type_class . ' ' . $status_class; ?>"
-                                                data-seat-id="<?php echo $seat['SeatID']; ?>"
-                                                data-seat-name="<?php echo $seat['RowName'] . $seat['SeatNumber']; ?>"
-                                                data-price="<?php echo $final_price; ?>"
-                                                onclick="toggleSeat(this)">
-                                                <?php echo $seat['SeatNumber']; ?>
-                                            </div>
-                                        <?php endforeach; ?>
+                                <div class="seat-grid" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+                                    <div style="text-align: center; padding: 40px; color: #888;">
+                                        <div class="loading">Đang tải sơ đồ ghế...</div>
                                     </div>
-                                <?php endforeach; ?> -->
+                                </div>
                             </div>
 
-                            <div class="seat-legend">
-                                <div class="legend-item">
-                                    <div class="seat-demo type-1"></div><span>Thường</span>
-                                </div>
-                                <div class="legend-item">
-                                    <div class="seat-demo type-2"></div><span>VIP</span>
-                                </div>
-                                <div class="legend-item">
-                                    <div class="seat-demo sold"></div><span>Đã bán</span>
-                                </div>
-                                <div class="legend-item">
-                                    <div class="seat-demo held"></div><span>Đang giữ</span>
-                                </div>
-                                <div class="legend-item">
-                                    <div class="seat-demo selected"></div><span>Đang chọn</span>
+                            <div class="seat-legend legend" id="seatLegend">
+                                <div style="text-align: center; padding: 10px; color: #888;">
+                                    <div class="loading">Đang tải...</div>
                                 </div>
                             </div>
                         </div>
@@ -191,16 +166,10 @@
         </div>
     </main>
 
-    <script src="../../../public/assets/js/seat-selection.js"></script>
+    <script src="../../../public/assets/js/api.js"></script>
+    <script src="../../../public/assets/js/user-seat-selection.js"></script>
 
     <script>
-        // document.addEventListener('DOMContentLoaded', () => {
-        //     // Chỉ chạy nếu không phải Admin
-        //     if (!isAdmin) {
-        //         startCountdown(600); // 10 phút = 600 giây
-        //     }
-        // });
-
         function startCountdown(duration) {
             const display = document.getElementById('countdown');
             if (!display) return;
@@ -221,10 +190,15 @@
                     clearInterval(interval);
                     display.textContent = "00:00";
                     alert("Đã hết thời gian giữ ghế! Trang sẽ tải lại để cập nhật trạng thái.");
-                    window.location.reload(); // Tải lại trang -> Server sẽ tự nhả ghế quá hạn
+                    window.location.reload();
                 }
             }, 1000);
         }
+
+        // Start countdown when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            startCountdown(600); // 10 phút = 600 giây
+        });
     </script>
 </body>
 
