@@ -10,7 +10,7 @@
 
         public function getAllUsers()
         {
-            $sql = "SELECT * FROM users WHERE Status = 1";
+            $sql = "SELECT * FROM users WHERE status = 1";
             $result = $this->conn->query($sql);
 
             $users = [];
@@ -23,7 +23,7 @@
 
         public function getUserByEmail($email)
         {
-            $sql = "SELECT * FROM users WHERE Email LIKE ? AND Status = 1";
+            $sql = "SELECT * FROM users WHERE email LIKE ? AND status = 1";
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("s", $email);
             $stmt->execute();
@@ -34,7 +34,7 @@
 
         public function getUserByName($fullName)
         {
-            $sql = "SELECT * FROM users WHERE FullName LIKE ? AND Status = 1";
+            $sql = "SELECT * FROM users WHERE full_name LIKE ? AND status = 1";
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("s", $fullName);
             $stmt->execute();
@@ -45,7 +45,7 @@
 
         public function getUserById($UserID)
         {
-            $sql = "SELECT * FROM users WHERE UserID = ? AND Status = 1";
+            $sql = "SELECT * FROM users WHERE user_id = ? AND status = 1";
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("i", $UserID);
             $stmt->execute();
@@ -54,28 +54,28 @@
             return $result->fetch_assoc(MYSQLI_ASSOC);
         }
 
-        public function createUser($fullName, $email, $password, $phone)
+        public function createUser($fullName, $email, $password, $phone, $role_id)
         {
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-            $sql = "INSERT INTO users (FullName, Email, PasswordHash, Phone)VALUES (?, ?, ?, ?)";
+            $sql = "INSERT INTO users (full_name, email, password_hash, phone, role_id)VALUES (?, ?, ?, ?, ?)";
             $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("ssss", $fullName, $email, $hashedPassword, $phone);
+            $stmt->bind_param("ssssi", $fullName, $email, $hashedPassword, $phone, $role_id);
 
             return $stmt->execute();
         }
 
-        public function updateUser($UserID, $fullName, $email, $phone)
+        public function updateUser($UserID, $fullName, $email, $phone, $role_id)
         {
-            $sql = "UPDATE users SET FullName = ?, Email = ?, Phone = ? WHERE UserID = ?";
+            $sql = "UPDATE users SET full_name = ?, email = ?, phone = ?, role_id = ? WHERE user_id = ?";
             $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("sssi", $fullName, $email, $phone, $UserID);
+            $stmt->bind_param("sssii", $fullName, $email, $phone, $role_id, $UserID);
             return $stmt->execute();
         }
 
         public function deleteUser($UserID)
         {
-            $sql = "UPDATE users SET Status = 0 WHERE UserID = ?";
+            $sql = "UPDATE users SET status = 0 WHERE user_id = ?";
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("i", $UserID);
             return $stmt->execute();

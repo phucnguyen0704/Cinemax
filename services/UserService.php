@@ -29,9 +29,9 @@ class UserService
         return $this->userModel->getUserById($UserID);
     }
 
-    public function createUser($fullName, $email, $password, $phone)
+    public function createUser($fullName, $email, $password, $phone, $role_id)
     {
-        if (empty($fullName) || empty($email) || empty($password) || empty($phone)) {
+        if (empty($fullName) || empty($email) || empty($password) || empty($phone) || empty($role_id)) {
             throw new InvalidArgumentException("All fields are required to create a user.");
         }
 
@@ -48,12 +48,12 @@ class UserService
             throw new InvalidArgumentException("Email already exists.");
         }
 
-        return $this->userModel->createUser($fullName, $email, $password, $phone);
+        return $this->userModel->createUser($fullName, $email, $password, $phone, $role_id);
     }
 
-    public function updateUser($UserID, $fullName, $email, $phone)
+    public function updateUser($UserID, $fullName, $email, $phone, $role_id)
     {
-        if (empty($fullName) || empty($email) || empty($phone)) {
+        if (empty($fullName) || empty($email) || empty($phone) || empty($role_id)) {
             throw new InvalidArgumentException("All fields are required to create a user.");
         }
 
@@ -62,7 +62,7 @@ class UserService
         }
 
         $existingEmail = $this->userModel->getUserByEmail($email);
-        if ($existingEmail && $existingEmail['UserID'] != $UserID) {
+        if ($existingEmail && $existingEmail['user_id'] != $UserID) {
             throw new InvalidArgumentException("Email already exists.");
         }
 
@@ -70,7 +70,7 @@ class UserService
             throw new InvalidArgumentException("Invalid phone number.");
         }
 
-        return $this->userModel->updateUser($UserID, $fullName, $email, $phone);
+        return $this->userModel->updateUser($UserID, $fullName, $email, $phone, $role_id);
     }
 
     public function deleteUser($UserID)

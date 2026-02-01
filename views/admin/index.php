@@ -4,17 +4,25 @@
 
 require_once __DIR__ . '/../../config/dbConfig.php';
 require_once __DIR__ . '/../../models/User.php';
+require_once __DIR__ . '/../../models/Role.php';
+require_once __DIR__ . '/../../models/Permission.php';
 require_once __DIR__ . '/../../services/UserService.php';
 require_once __DIR__ . '/../../controllers/AdminController.php';
-
+session_start();
 $conn = getDBConnection();
 $userModel = new User($conn);
+$roleModel = new Role($conn);
+$permissionModel = new Permission($conn);
 $userService = new UserService($userModel);
-$adminController = new AdminController($userService);
-session_start();
+$roleService = new RoleService($roleModel);
+$permissionService = new PermissionService($permissionModel);
+$adminController = new AdminController($userService, $roleService, $permissionService);
+
 // Danh sách page hợp lệ (tránh hack ?content=../../)
 $allowedPages = [
     'users',
+    'roles',
+    'permissions',
     'dashboard',
     'movies',
     'genres',
@@ -43,11 +51,43 @@ if ($page === 'users' && $action) {
             exit;
 
         case 'update':
-            $adminController->updateUser($_GET['id'] ?? 0);
+            $adminController->updateUser($_POST['user_id'] ?? 0);
             exit;
 
         case 'delete':
             $adminController->deleteUser($_GET['id'] ?? 0);
+            exit;
+    }
+}
+
+if ($page === 'roles' && $action) {
+    switch ($action) {
+        case 'create':
+            $adminController->createRole();
+            exit;
+
+        case 'update':
+            $adminController->updateRole($_POST['role_id'] ?? 0);
+            exit;
+
+        case 'delete':
+            $adminController->deleteRole($_GET['id'] ?? 0);
+            exit;
+    }
+}
+
+if ($page === 'permissions' && $action) {
+    switch ($action) {
+        case 'create':
+            $adminController->createPermission();
+            exit;
+
+        case 'update':
+            $adminController->updatePermission($_POST['permission_id'] ?? 0);
+            exit;
+
+        case 'delete':
+            $adminController->deletePermission($_GET['id'] ?? 0);
             exit;
     }
 }

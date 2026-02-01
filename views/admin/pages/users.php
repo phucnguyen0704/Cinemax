@@ -1,6 +1,8 @@
 <?php
 $users = $adminController->getAllUsers();
+$roles = $adminController->getAllRoles();
 $error = $_SESSION['error'] ?? null;
+unset($_SESSION['error']);
 ?>
 <section class="users">
     <header class="admin-header">
@@ -23,16 +25,23 @@ $error = $_SESSION['error'] ?? null;
     </header>
 
     <div class="dashboard-content">
-        <?php if (isset($_GET['error']) || isset($_GET['add'])): ?>
-            <div class="alert alert-success" id="autoAlert">
+        <?php if ($error || isset($_GET['add']) || isset($_GET['update']) || isset($_GET['delete'])) : ?>
+            <div class="alert <?= $error ? 'alert-danger' : 'alert-success' ?>" id="autoAlert">
                 <?php
-                if (isset($error)) {
-                    if ($_GET['error'] == 1) {
-                        echo $error;
-                    }
+                if ($error) {
+                    echo htmlspecialchars($error);
                 }
-                if ($_GET['add'] == 1) {
+
+                if (isset($_GET['add']) && $_GET['add'] == 1) {
                     echo "Người dùng đã được thêm thành công!";
+                }
+
+                if (isset($_GET['update']) && $_GET['update'] == 1) {
+                    echo "Người dùng đã được cập nhật thành công!";
+                }
+
+                if (isset($_GET['delete']) && $_GET['delete'] == 1) {
+                    echo "Người dùng đã được xóa thành công!";
                 }
                 ?>
             </div>
@@ -55,18 +64,31 @@ $error = $_SESSION['error'] ?? null;
                         <?php if (!empty($users)): ?>
                             <?php foreach ($users as $user): ?>
                                 <tr>
-                                    <td><strong>#<?= htmlspecialchars($user['UserID']) ?></strong></td>
-                                    <td><?= htmlspecialchars($user['FullName']) ?></td>
-                                    <td><?= htmlspecialchars($user['Email']) ?></td>
-                                    <td><?= htmlspecialchars($user['Phone'] ?? '-') ?></td>
+                                    <td><strong>#<?= htmlspecialchars($user['user_id']) ?></strong></td>
+                                    <td><?= htmlspecialchars($user['full_name']) ?></td>
+                                    <td><?= htmlspecialchars($user['email']) ?></td>
+                                    <td><?= htmlspecialchars($user['phone'] ?? '-') ?></td>
                                     <td>
-                                        <span class="badge <?= ($user['Role'] ?? 'User') === 'Admin' ? 'badge-warning' : 'badge-success' ?>">
-                                            <?= htmlspecialchars($user['Role'] ?? 'User') ?>
-                                        </span>
+                                        <?php
+                                        foreach ($roles as $role) {
+                                            if ($user['role_id'] == $role['role_id']) {
+                                                echo htmlspecialchars($role['role_name']);
+                                                break;
+                                            }
+                                        }
+                                        ?>
                                     </td>
                                     <td>
-                                        <a href="#" class="btn-action">Sửa</a>
-                                        <button class="btn-action danger">Xóa</button>
+                                        <button class="btn-action" onclick="openUpdateUserModal(this)"
+                                            data-user-id="<?= htmlspecialchars($user['user_id']) ?>"
+                                            data-full-name="<?= htmlspecialchars($user['full_name']) ?>"
+                                            data-email="<?= htmlspecialchars($user['email']) ?>"
+                                            data-phone="<?= htmlspecialchars($user['phone']) ?>"
+                                            data-role-id="<?= htmlspecialchars($user['role_id']) ?>">
+                                            Cập nhật
+                                        </button>
+                                        <button class="btn-action danger" onclick="confirmDeleteUser(this)"
+                                            data-user-id="<?= htmlspecialchars($user['user_id']) ?>">Xóa</button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -94,7 +116,7 @@ $error = $_SESSION['error'] ?? null;
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Họ tên</label>
-                        <input type="text" name="fullName" required>
+                        <input type="text" name="full_name" required>
                     </div>
                     <div class="form-group">
                         <label>Email</label>
@@ -110,9 +132,16 @@ $error = $_SESSION['error'] ?? null;
                     </div>
                     <div class="form-group">
                         <label>Vai trò</label>
-                        <select>
-                            <option>User</option>
-                            <option>Admin</option>
+                        <?php
+                        $roles = $adminController->getAllRoles();
+                        ?>
+                        <select name="role_id" required>
+                            <option value="">Chọn vai trò</option>
+                            <?php foreach ($roles as $role): ?>
+                                <option value="<?= htmlspecialchars($role['role_id']) ?>">
+                                    <?= htmlspecialchars($role['role_name']) ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -120,6 +149,52 @@ $error = $_SESSION['error'] ?? null;
                 <div class="modal-footer">
                     <button type="button" class="btn-action" onclick="closeModal('addUserModal')">Hủy</button>
                     <button type="submit" class="btn-primary">Thêm người dùng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="updateUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Cập nhật người dùng</h2>
+                <button class="btn-close" onclick="closeModal('updateUserModal')">&times;</button>
+            </div>
+
+            <form id="updateUserForm" action="../admin/index.php?page=users&action=update" method="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="hidden" name="user_id" id="update_user_id" value="">
+                        <label>Họ tên</label>
+                        <input type="text" name="full_name" id="update_full_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" id="update_email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <input type="tel" name="phone" id="update_phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Vai trò</label>
+                        <?php
+                        $roles = $adminController->getAllRoles();
+                        ?>
+                        <select name="role_id" required>
+                            <option value="">Chọn vai trò</option>
+                            <?php foreach ($roles as $role): ?>
+                                <option value="<?= htmlspecialchars($role['role_id']) ?>">
+                                    <?= htmlspecialchars($role['role_name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-action" onclick="closeModal('updateUserModal')">Hủy</button>
+                    <button type="submit" class="btn-primary">Cập nhật người dùng</button>
                 </div>
             </form>
         </div>

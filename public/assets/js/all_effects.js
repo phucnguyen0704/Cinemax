@@ -147,3 +147,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 3000);
   }
 });
+
+// Permission
+document.querySelectorAll(".toggle").forEach((toggle) => {
+  toggle.addEventListener("click", () => {
+    const groupRow = toggle.closest("tr");
+    let next = groupRow.nextElementSibling;
+
+    const isOpen = toggle.textContent === "▼";
+    toggle.textContent = isOpen ? "▶" : "▼";
+
+    while (next && next.classList.contains("perm-child")) {
+      next.style.display = isOpen ? "none" : "table-row";
+      next = next.nextElementSibling;
+    }
+  });
+});
+
+

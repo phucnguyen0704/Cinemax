@@ -122,6 +122,27 @@ function isActivePage($contentPath, $pageName)
 
         <div style="color: #666; font-size: 11px; font-weight: bold; padding: 15px 20px 5px; text-transform: uppercase; letter-spacing: 1px;">Hệ thống</div>
 
+        <a href="index.php?page=roles" class="nav-item <?php isActivePage($contentPath, 'roles'); ?>">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="12" r="3"></circle>
+                <path d="M12 12h8"></path>
+                <path d="M18 12v-2"></path>
+                <path d="M20 12v-1.5"></path>
+            </svg>
+            <span>Vai trò</span>
+        </a>
+
+        <a href="index.php?page=permissions" class="nav-item <?php isActivePage($contentPath, 'permissions'); ?>">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2l7 4v6c0 5-3.5 9.5-7 10-3.5-.5-7-5-7-10V6l7-4z"></path>
+                <path d="M9 12l2 2 4-4"></path>
+            </svg>
+            <span>Quyền</span>
+        </a>
+
         <a href="index.php?page=users" class="nav-item <?php isActivePage($contentPath, 'users'); ?>">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
