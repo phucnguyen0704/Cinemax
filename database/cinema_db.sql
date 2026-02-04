@@ -115,7 +115,8 @@ CREATE TABLE halls (
 CREATE TABLE seat_types (
     seat_type_id    INT AUTO_INCREMENT PRIMARY KEY,
     type_name       VARCHAR(50) NOT NULL UNIQUE,     -- Standard, VIP, Couple, Disabled...
-    price_multiplier DECIMAL(4,2) NOT NULL DEFAULT 1.00
+    price_multiplier DECIMAL(4,2) NOT NULL DEFAULT 1.00,
+    status       TINYINT(1) NOT NULL DEFAULT 1       -- 1 = active, 0 = deleted
 );
 
 CREATE TABLE seats (
