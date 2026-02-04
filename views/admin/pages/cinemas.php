@@ -37,33 +37,11 @@
                     </tr>
                     </thead>
                     <tbody id="theatersTableBody">
-
-                    <tr>
-                        <td><strong>#1</strong></td>
-                        <td>CGV Vincom</td>
-                        <td>72 Lê Thánh Tôn</td>
-                        <td>TP.HCM</td>
-                        <td>8</td>
-                        <td>
-                            <a href="#" class="btn-action">Sửa</a>
-                            <button class="btn-action danger">Xóa</button>
-                            <a href="#" class="btn-action">Quản lý phòng</a>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td><strong>#2</strong></td>
-                        <td>Lotte Cinema</td>
-                        <td>20 Cộng Hòa</td>
-                        <td>TP.HCM</td>
-                        <td>6</td>
-                        <td>
-                            <a href="#" class="btn-action">Sửa</a>
-                            <button class="btn-action danger">Xóa</button>
-                            <a href="#" class="btn-action">Quản lý phòng</a>
-                        </td>
-                    </tr>
-
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 20px;">
+                                <div class="loading">Đang tải dữ liệu...</div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -79,27 +57,27 @@
                 <button class="btn-close" onclick="closeModal('addTheaterModal')">&times;</button>
             </div>
 
-            <form>
+            <form id="addCinemaForm" onsubmit="handleCreateCinema(event); return false;">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Tên rạp</label>
-                        <input type="text">
+                        <input type="text" name="name" required>
                     </div>
                     <div class="form-group">
                         <label>Địa chỉ</label>
-                        <input type="text">
+                        <input type="text" name="address" required>
                     </div>
                     <div class="form-group">
                         <label>Thành phố</label>
-                        <input type="text">
+                        <select name="location_id" id="addLocationId" required>
+                            <option value="">-- Chọn thành phố --</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Số điện thoại</label>
-                        <input type="tel">
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email">
+                        <label>Trạng thái</label>
+                        <select name="status_id" id="addStatusId" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                        </select>
                     </div>
                 </div>
 
@@ -116,3 +94,6 @@
     </div>
 
 </section>
+
+<script src="../../public/assets/js/api.js"></script>
+<script src="../../public/assets/js/cinemas-admin.js"></script>

@@ -17,13 +17,11 @@
         <!-- <div class="alert alert-error">Có lỗi xảy ra</div> -->
 
         <div class="dashboard-card">
-            <form method="GET" action="screens.php" class="filter-bar">
-                <select name="theater_id" class="filter-select" onchange="this.form.submit()">
+            <form method="GET" class="filter-bar" id="filterForm">
+                <select name="theater_id" class="filter-select" id="cinemaFilter">
                     <option value="">-- Tất cả các rạp --</option>
-                    <option value="1">Rạp CGV Vincom</option>
-                    <option value="2">Rạp Galaxy Nguyễn Du</option>
                 </select>
-                <a href="screens.php" class="btn-action">Xóa lọc</a>
+                <button type="button" class="btn-action" onclick="filterHallsByCinema(null)">Xóa lọc</button>
             </form>
 
             <div class="table-responsive">
@@ -33,45 +31,15 @@
                             <th>ID</th>
                             <th>Tên Rạp</th>
                             <th>Tên Phòng</th>
+                            <th>Trạng thái</th>
                             <th>Sức chứa</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>#1</td>
-                            <td>Rạp CGV Vincom</td>
-                            <td><strong>Phòng 1</strong></td>
-                            <td>120 ghế</td>
-                            <td>
-                                <a href="index.php?page=seats" class="btn-action" style="color: #46d369; border-color: #46d369;">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <path d="M3 9h18"></path>
-                                        <path d="M9 21V9"></path>
-                                    </svg>
-                                    Cấu hình ghế
-                                </a>
-
-                                <a href="screens.php?action=edit&id=1" class="btn-action">Sửa</a>
-
-                                <form action="../../Handle/screens_process.php" method="POST" style="display:inline;"
-                                    onsubmit="return confirm('CẢNH BÁO: Xóa phòng sẽ xóa luôn sơ đồ ghế của phòng này?');">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="screen_id" value="1">
-                                    <button class="btn-action danger">Xóa</button>
-                                </form>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>#2</td>
-                            <td>Rạp Galaxy Nguyễn Du</td>
-                            <td><strong>IMAX</strong></td>
-                            <td>200 ghế</td>
-                            <td>
-                                <a href="#" class="btn-action">Sửa</a>
-                                <button class="btn-action danger">Xóa</button>
+                            <td colspan="5" style="text-align: center; padding: 20px;">
+                                <div class="loading">Đang tải dữ liệu...</div>
                             </td>
                         </tr>
                     </tbody>
@@ -86,15 +54,12 @@
                 <h2>Thêm phòng chiếu</h2>
                 <button class="btn-close" onclick="closeModal('addScreenModal')">&times;</button>
             </div>
-            <form action="../../Handle/screens_process.php" method="POST">
-                <input type="hidden" name="action" value="add">
+            <form id="addHallForm">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Chọn Rạp</label>
-                        <select name="theater_id" required>
+                        <select name="cinema_id" id="addCinemaId" required>
                             <option value="">-- Chọn rạp --</option>
-                            <option value="1">Rạp CGV Vincom</option>
-                            <option value="2">Rạp Galaxy Nguyễn Du</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -102,8 +67,10 @@
                         <input type="text" name="name" placeholder="VD: Phòng 1, Phòng IMAX" required>
                     </div>
                     <div class="form-group">
-                        <label>Sức chứa</label>
-                        <input type="number" name="capacity" value="100" required>
+                        <label>Trạng thái</label>
+                        <select name="status_id" id="addStatusId" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -114,3 +81,6 @@
         </div>
     </div>
 </section>
+
+<script src="../../public/assets/js/api.js"></script>
+<script src="../../public/assets/js/halls-admin.js"></script>

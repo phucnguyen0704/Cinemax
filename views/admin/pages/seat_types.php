@@ -29,26 +29,8 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>#1</td>
-                            <td><strong>Ghế thường</strong></td>
-                            <td style="color: var(--success-color); font-weight: bold;">
-                                +0 ₫
-                            </td>
-                            <td>
-                                <a href="seat_types.php?action=edit&id=1" class="btn-action">Sửa</a>
-                                <button class="btn-action danger">Xóa</button>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>#2</td>
-                            <td><strong>Ghế VIP</strong></td>
-                            <td style="color: var(--success-color); font-weight: bold;">
-                                +50.000 ₫
-                            </td>
-                            <td>
-                                <a href="#" class="btn-action">Sửa</a>
-                                <button class="btn-action danger">Xóa</button>
+                            <td colspan="4" style="text-align: center; padding: 20px;">
+                                <div class="loading">Đang tải dữ liệu...</div>
                             </td>
                         </tr>
                     </tbody>
@@ -63,12 +45,11 @@
                 <h2>Thêm loại ghế</h2>
                 <button class="btn-close" onclick="closeModal('addSeatTypeModal')">&times;</button>
             </div>
-            <form action="../../Handle/seattypes_process.php" method="POST">
-                <input type="hidden" name="action" value="add">
+            <form id="addSeatTypeForm" onsubmit="handleCreateSeatType(event); return false;">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Tên loại ghế</label>
-                        <input type="text" name="name" placeholder="VD: Ghế đôi" required>
+                        <input type="text" name="type_name" placeholder="VD: VIP, Couple" required>
                     </div>
                     <div class="form-group">
                         <label>Phụ thu (VNĐ)</label>
@@ -83,3 +64,6 @@
         </div>
     </div>
 </section>
+
+<script src="../../public/assets/js/api.js"></script>
+<script src="../../public/assets/js/seat-types-admin.js"></script>

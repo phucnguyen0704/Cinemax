@@ -5,18 +5,12 @@
         </div>
 
         <div class="theater-list">
-
-            <!-- Theater card -->
-            <div class="theater-card">
-                <h3>Tên rạp</h3>
-                <p><strong>Địa chỉ:</strong> Địa chỉ rạp, Thành phố</p>
-                <p><strong>Số phòng:</strong> 5</p>
-                <a href="showtimes.php?theater_id=1" class="btn-primary">
-                    Xem lịch chiếu
-                </a>
+            <div style="text-align: center; padding: 40px; color: #888;">
+                <div class="loading">Đang tải danh sách rạp chiếu...</div>
             </div>
-            <!-- End theater card -->
-
         </div>
     </div>
 </main>
+
+<script src="../../public/assets/js/api.js"></script>
+<script src="../../public/assets/js/user-cinemas.js"></script>

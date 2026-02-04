@@ -2,17 +2,30 @@
 
     <header class="admin-header">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <a href="screens.php" class="btn-action">← Quay lại</a>
-            <h1>Sơ đồ ghế: Phòng Chiếu 1</h1>
+            <a href="index.php?page=halls" class="btn-action">← Quay lại</a>
+            <h1>Sơ đồ ghế: Đang tải...</h1>
         </div>
-        <div style="color: #888;">Rạp Cinestar Quận 1</div>
+        <div style="color: #888;" id="hallInfo">Đang tải thông tin...</div>
 
-        <form action="../../Handle/seats_process.php" method="POST"
-            onsubmit="return confirm('CẢNH BÁO: Hành động này sẽ xóa sạch sơ đồ hiện tại để làm lại!');">
-            <input type="hidden" name="action" value="reset">
-            <input type="hidden" name="screen_id" value="1">
-            <button class="btn-action danger">Xóa sơ đồ & Làm lại</button>
-        </form>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-action" onclick="openCreateSeatModal()" style="background: #46d369; color: white;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Thêm ghế
+            </button>
+            <button class="btn-action" onclick="openAutoCreateModal()" style="background: #2196F3; color: white;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                </svg>
+                Tạo sơ đồ tự động
+            </button>
+            <button class="btn-action danger" onclick="resetSeatLayout()">
+                Xóa sơ đồ & Làm lại
+            </button>
+        </div>
     </header>
 
     <div class="dashboard-content">
@@ -21,15 +34,7 @@
         <!-- <div class="alert alert-success">Thành công!</div> -->
         <!-- <div class="alert alert-error">Có lỗi xảy ra</div> -->
 
-        <div class="legend">
-            <div class="legend-item">
-                <div class="dot type-1"></div>
-                Ghế Thường
-            </div>
-            <div class="legend-item">
-                <div class="dot type-2"></div>
-                Ghế VIP
-            </div>
+        <div class="legend" id="seatLegend">
             <div class="legend-item" style="margin-left: 15px; border-left: 1px solid #444; padding-left: 15px;">
                 👉 Click ghế để đổi loại | ❌ Click dấu X để xóa
             </div>
@@ -42,53 +47,14 @@
             </div>
 
             <div class="seat-grid">
-
-                <div class="seat-row">
-                    <div class="row-label">A</div>
-
-                    <div style="position: relative;">
-                        <a href="#" class="seat-item type-1" title="Loại: Ghế Thường">
-                            A1
-                            <form action="../../Handle/seats_process.php" method="POST" style="display:contents;">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="seat_id" value="1">
-                                <input type="hidden" name="screen_id" value="1">
-                                <button type="submit" class="btn-x"
-                                    title="Xóa"
-                                    onclick="event.stopPropagation(); return confirm('Xóa ghế này?');">
-                                    ×
-                                </button>
-                            </form>
-                        </a>
-                    </div>
-
-                    <div style="position: relative;">
-                        <a href="#" class="seat-item type-1" title="Loại: Ghế Thường">A2</a>
-                    </div>
-
-                    <div style="position: relative;">
-                        <a href="#" class="seat-item type-1" title="Loại: Ghế Thường">A3</a>
-                    </div>
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <div class="loading">Đang tải sơ đồ ghế...</div>
                 </div>
-
-                <div class="seat-row">
-                    <div class="row-label">B</div>
-
-                    <div style="position: relative;">
-                        <a href="#" class="seat-item type-2" title="Loại: Ghế VIP">B1</a>
-                    </div>
-
-                    <div style="position: relative;">
-                        <a href="#" class="seat-item type-2" title="Loại: Ghế VIP">B2</a>
-                    </div>
-
-                    <div style="position: relative;">
-                        <a href="#" class="seat-item type-2" title="Loại: Ghế VIP">B3</a>
-                    </div>
-                </div>
-
             </div>
         </div>
 
     </div>
 </section>
+
+<script src="../../public/assets/js/api.js"></script>
+<script src="../../public/assets/js/seats-admin.js"></script>
