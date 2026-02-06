@@ -92,12 +92,6 @@ CREATE TABLE movie_genres (
     FOREIGN KEY (genre_id) REFERENCES genres(genre_id) ON DELETE CASCADE
 );
 
-CREATE TABLE formats (   -- 2D, 3D, IMAX, 4DX, ...
-    format_id   INT AUTO_INCREMENT PRIMARY KEY,
-    name        VARCHAR(50) NOT NULL UNIQUE,
-    status   TINYINT(1) NOT NULL DEFAULT 1       -- 1 = active, 0 = deleted
-);
-
 -- ============================================================================
 -- 4. PHÒNG CHIẾU & GHẾ NGỒI
 -- ============================================================================
@@ -139,7 +133,6 @@ CREATE TABLE shows (
     show_id       INT AUTO_INCREMENT PRIMARY KEY,
     movie_id      INT NOT NULL,
     hall_id       INT NOT NULL,
-    format_id     INT NOT NULL,
     show_date     DATE NOT NULL,
     start_time    TIME NOT NULL,
     end_time      TIME NOT NULL,               -- nên validate: end = start + duration + cleanup time
@@ -148,7 +141,6 @@ CREATE TABLE shows (
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (movie_id)  REFERENCES movies(movie_id)  ON DELETE RESTRICT,
     FOREIGN KEY (hall_id)   REFERENCES halls(hall_id)    ON DELETE RESTRICT,
-    FOREIGN KEY (format_id) REFERENCES formats(format_id) ON DELETE RESTRICT,
     UNIQUE KEY uk_show_unique (hall_id, show_date, start_time)  -- tránh trùng giờ cùng phòng
 );
 
