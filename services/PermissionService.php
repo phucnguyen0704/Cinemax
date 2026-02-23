@@ -3,9 +3,11 @@
 class PermissionService
 {
     private $permissionModel;
-    public function __construct($permissionModel)
+    private $rolePermissionsModel;
+    public function __construct($permissionModel, $rolePermissionsModel)
     {
         $this->permissionModel = $permissionModel;
+        $this->rolePermissionsModel = $rolePermissionsModel;
     }
 
     //Permission methods
@@ -48,6 +50,9 @@ class PermissionService
 
     public function deletePermission($permissionId)
     {
+        if($this->rolePermissionsModel->getPermissionsByRoleId($permissionId)) {
+            throw new InvalidArgumentException("Cannot delete permission that is assigned to a role.");
+        }
         return $this->permissionModel->deletePermission($permissionId);
     }
 }
