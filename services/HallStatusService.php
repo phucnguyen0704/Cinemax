@@ -68,7 +68,8 @@ class HallStatusService
 
         // Kiểm tra xem trạng thái đã tồn tại chưa (trừ chính nó)
         $existingStatus = $this->hallStatusModel->getStatusByName($statusName);
-        if ($existingStatus && $existingStatus['StatusID'] != $statusId) {
+        $existingStatusId = $existingStatus['StatusID'] ?? $existingStatus['status_id'] ?? null;
+        if ($existingStatus && $existingStatusId != $statusId) {
             throw new InvalidArgumentException("Trạng thái này đã tồn tại.");
         }
 

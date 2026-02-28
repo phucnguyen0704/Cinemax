@@ -76,7 +76,8 @@ class SeatTypeService
 
         // Kiểm tra xem loại ghế đã tồn tại chưa (trừ chính nó)
         $existingSeatType = $this->seatTypeModel->getSeatTypeByName($typeName);
-        if ($existingSeatType && $existingSeatType['SeatTypeID'] != $seatTypeId) {
+        $existingSeatTypeId = $existingSeatType['SeatTypeID'] ?? $existingSeatType['seat_type_id'] ?? null;
+        if ($existingSeatType && $existingSeatTypeId != $seatTypeId) {
             throw new InvalidArgumentException("Loại ghế này đã tồn tại.");
         }
 

@@ -1,225 +1,30 @@
 /**
  * JavaScript cho trang quản lý Phòng chiếu
+ * Lưu ý: Phần render bảng & filter đã chuyển sang PHP.
+ * JS chỉ xử lý CRUD (thêm / sửa / xóa) và modal.
  */
 
-let hallsData = [];
+// Dữ liệu hỗ trợ cho edit modal (lấy theo API khi cần)
 let cinemasData = [];
 let statusesData = [];
 
-// Load dữ liệu khi trang được tải
+// Load dữ liệu hỗ trợ (danh sách rạp & trạng thái) cho modal khi trang sẵn sàng
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        await loadAllData();
-        renderHallsTable();
-        populateCinemaFilter();
-        populateCinemaSelect();
-        populateStatusSelect();
-        
-        // Setup modal open handler để populate selects
-        setupModalHandlers();
-    } catch (error) {
-        console.error('Lỗi khi load dữ liệu:', error);
-        showAlert('Có lỗi xảy ra khi tải dữ liệu: ' + error.message, 'error');
-    }
-});
-
-/**
- * Setup handlers cho modal
- */
-function setupModalHandlers() {
-    // Override openModal function để populate selects khi mở modal thêm mới
-    const originalOpenModal = window.openModal;
-    if (originalOpenModal) {
-        window.openModal = function(modalId) {
-            originalOpenModal(modalId);
-            if (modalId === 'addScreenModal') {
-                setTimeout(() => {
-                    populateCinemaSelect();
-                    populateStatusSelect();
-                }, 100);
-            }
-        };
-    }
-}
-
-/**
- * Load tất cả dữ liệu cần thiết
- */
-async function loadAllData() {
-    try {
-        [hallsData, cinemasData, statusesData] = await Promise.all([
-            getAllHalls(),
+        [cinemasData, statusesData] = await Promise.all([
             getAllCinemas(),
             getAllHallStatuses()
         ]);
     } catch (error) {
-        throw new Error('Không thể tải dữ liệu: ' + error.message);
+        console.error('Lỗi khi load dữ liệu hỗ trợ:', error);
     }
-}
 
-/**
- * Render bảng phòng chiếu
- */
-function renderHallsTable() {
-    const tbody = document.querySelector('.halls .data-table tbody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    if (hallsData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Chưa có dữ liệu</td></tr>';
-        return;
+    // Gắn handler cho form thêm mới
+    const addForm = document.querySelector('#addScreenModal form');
+    if (addForm) {
+        addForm.addEventListener('submit', handleCreateHall);
     }
-    
-    hallsData.forEach(hall => {
-        const cinema = cinemasData.find(c => c.CinemaID == hall.CinemaID);
-        const status = statusesData.find(s => s.StatusID == hall.StatusID);
-        
-        // Màu trạng thái
-        let statusColor = '#666';
-        let statusText = status ? status.StatusName : 'N/A';
-        if (status) {
-            if (status.StatusName.includes('Hoạt động') || status.StatusName.includes('hoạt động')) {
-                statusColor = '#46d369';
-            } else if (status.StatusName.includes('Bảo trì') || status.StatusName.includes('bảo trì')) {
-                statusColor = '#ffa500';
-            } else if (status.StatusName.includes('Tạm dừng') || status.StatusName.includes('tạm dừng')) {
-                statusColor = '#e50914';
-            }
-        }
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>#${hall.HallID}</td>
-            <td>${cinema ? cinema.Name : 'N/A'}</td>
-            <td><strong>${hall.Name}</strong></td>
-            <td><span style="color: ${statusColor}; font-weight: bold;">${statusText}</span></td>
-            <td>${hall.SeatCount || 0} ghế</td>
-            <td>
-                <a href="index.php?page=seats&hall_id=${hall.HallID}" class="btn-action" style="color: #46d369; border-color: #46d369;" title="Cấu hình ghế">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <path d="M3 9h18"></path>
-                        <path d="M9 21V9"></path>
-                    </svg>
-                    Cấu hình ghế
-                </a>
-                <a href="#" class="btn-action" onclick="editHall(${hall.HallID}); return false;" title="Sửa">Sửa</a>
-                <button class="btn-action danger" onclick="deleteHallHandler(${hall.HallID})" title="Xóa">Xóa</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-/**
- * Populate filter dropdown
- */
-function populateCinemaFilter() {
-    const select = document.querySelector('.halls .filter-select[name="theater_id"]');
-    if (!select) return;
-    
-    // Giữ option đầu tiên
-    const firstOption = select.querySelector('option[value=""]');
-    select.innerHTML = '';
-    if (firstOption) {
-        select.appendChild(firstOption);
-    }
-    
-    cinemasData.forEach(cinema => {
-        const option = document.createElement('option');
-        option.value = cinema.CinemaID;
-        option.textContent = cinema.Name;
-        select.appendChild(option);
-    });
-}
-
-/**
- * Populate cinema select trong modal
- */
-function populateCinemaSelect() {
-    const selects = document.querySelectorAll('#addScreenModal select[name="cinema_id"], #editHallModal select[name="cinema_id"]');
-    if (selects.length === 0) return;
-    
-    selects.forEach(select => {
-        if (!select) return;
-        
-        const currentValue = select.value; // Giữ giá trị hiện tại nếu có
-        select.innerHTML = '<option value="">-- Chọn rạp --</option>';
-        cinemasData.forEach(cinema => {
-            const option = document.createElement('option');
-            option.value = cinema.CinemaID;
-            option.textContent = cinema.Name;
-            select.appendChild(option);
-        });
-        
-        // Khôi phục giá trị nếu có
-        if (currentValue) {
-            select.value = currentValue;
-        }
-    });
-}
-
-/**
- * Populate status select trong modal
- */
-function populateStatusSelect() {
-    const selects = document.querySelectorAll('#addScreenModal select[name="status_id"], #editHallModal select[name="status_id"]');
-    if (selects.length === 0) return;
-    
-    selects.forEach(select => {
-        if (!select) return;
-        
-        const currentValue = select.value; // Giữ giá trị hiện tại nếu có
-        select.innerHTML = '<option value="">-- Chọn trạng thái --</option>';
-        statusesData.forEach(status => {
-            const option = document.createElement('option');
-            option.value = status.StatusID;
-            option.textContent = status.StatusName;
-            select.appendChild(option);
-        });
-        
-        // Khôi phục giá trị nếu có
-        if (currentValue) {
-            select.value = currentValue;
-        }
-    });
-}
-
-/**
- * Filter halls theo cinema
- */
-async function filterHallsByCinema(cinemaId) {
-    try {
-        // Hiển thị loading
-        const tbody = document.querySelector('.halls .data-table tbody');
-        if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;"><div class="loading">Đang tải dữ liệu...</div></td></tr>';
-        }
-        
-        if (cinemaId) {
-            hallsData = await getAllHalls(cinemaId);
-        } else {
-            hallsData = await getAllHalls();
-        }
-        renderHallsTable();
-        
-        // Cập nhật filter select
-        const filterSelect = document.getElementById('cinemaFilter');
-        if (filterSelect) {
-            filterSelect.value = cinemaId || '';
-        }
-    } catch (error) {
-        showAlert('Lỗi khi lọc dữ liệu: ' + error.message, 'error');
-        // Load lại tất cả nếu có lỗi
-        try {
-            hallsData = await getAllHalls();
-            renderHallsTable();
-        } catch (e) {
-            console.error('Error reloading data:', e);
-        }
-    }
-}
+});
 
 /**
  * Edit hall
@@ -248,11 +53,10 @@ async function deleteHallHandler(hallId) {
     }
     
     try {
-        // Sử dụng deleteHall từ api.js
         await deleteHall(hallId);
         showAlert('Xóa phòng chiếu thành công!', 'success');
-        await loadAllData();
-        renderHallsTable();
+        // Reload lại trang để cập nhật bảng render bằng PHP
+        setTimeout(() => window.location.reload(), 500);
     } catch (error) {
         showAlert('Lỗi khi xóa phòng chiếu: ' + error.message, 'error');
     }
@@ -320,10 +124,28 @@ function openEditModal(hall) {
         `;
         document.body.appendChild(modal);
         
-        // Populate selects ngay sau khi modal được tạo
-        populateCinemaSelect();
-        populateStatusSelect();
-        
+        // Tạo option cho selects từ dữ liệu đã load
+        const editCinemaSelect = modal.querySelector('#editCinemaId');
+        const editStatusSelect = modal.querySelector('#editStatusId');
+        if (editCinemaSelect && cinemasData.length) {
+            editCinemaSelect.innerHTML = '<option value="">-- Chọn rạp --</option>';
+            cinemasData.forEach(cinema => {
+                const opt = document.createElement('option');
+                opt.value = cinema.CinemaID;
+                opt.textContent = cinema.Name;
+                editCinemaSelect.appendChild(opt);
+            });
+        }
+        if (editStatusSelect && statusesData.length) {
+            editStatusSelect.innerHTML = '<option value="">-- Chọn trạng thái --</option>';
+            statusesData.forEach(status => {
+                const opt = document.createElement('option');
+                opt.value = status.StatusID;
+                opt.textContent = status.StatusName;
+                editStatusSelect.appendChild(opt);
+            });
+        }
+
         // Điền dữ liệu sau khi selects đã được populate
         setTimeout(() => {
             const editHallId = document.getElementById('editHallId');
@@ -337,10 +159,7 @@ function openEditModal(hall) {
             if (editStatusId) editStatusId.value = hall.StatusID;
         }, 100);
     } else {
-        // Modal đã tồn tại, chỉ cần populate và điền dữ liệu
-        populateCinemaSelect();
-        populateStatusSelect();
-        
+        // Modal đã tồn tại, chỉ cần đảm bảo selects đã có options
         setTimeout(() => {
             const editHallId = document.getElementById('editHallId');
             const editCinemaId = document.getElementById('editCinemaId');
@@ -398,8 +217,8 @@ async function handleUpdateHall(event) {
         await updateHall(hallId, data);
         showAlert('Cập nhật phòng chiếu thành công!', 'success');
         closeModal('editHallModal');
-        await loadAllData();
-        renderHallsTable();
+        // Reload lại trang để cập nhật bảng render bằng PHP
+        setTimeout(() => window.location.reload(), 500);
     } catch (error) {
         console.error('Update hall error:', error);
         showAlert('Lỗi khi cập nhật: ' + error.message, 'error');
@@ -457,20 +276,13 @@ async function handleCreateHall(event) {
     }
     
     try {
-        const result = await createHall(data);
-        console.log('Create hall result:', result);
-        
+        await createHall(data);
         showAlert('Thêm phòng chiếu thành công!', 'success');
         closeModal('addScreenModal');
         form.reset();
         
-        // Reset selects
-        populateCinemaSelect();
-        populateStatusSelect();
-        
-        // Reload data
-        await loadAllData();
-        renderHallsTable();
+        // Reload lại trang để cập nhật bảng render bằng PHP
+        setTimeout(() => window.location.reload(), 500);
     } catch (error) {
         console.error('Create hall error:', error);
         showAlert('Lỗi khi thêm phòng chiếu: ' + (error.message || 'Có lỗi xảy ra'), 'error');
@@ -482,43 +294,3 @@ async function handleCreateHall(event) {
         }
     }
 }
-
-// Setup form handlers
-document.addEventListener('DOMContentLoaded', function() {
-    // Setup add form - chỉ add listener một lần
-    const addForm = document.querySelector('#addScreenModal form');
-    if (addForm) {
-        // Remove existing listeners nếu có
-        const newForm = addForm.cloneNode(true);
-        addForm.parentNode.replaceChild(newForm, addForm);
-        // Add listener mới
-        document.querySelector('#addScreenModal form').addEventListener('submit', handleCreateHall);
-    }
-    
-    // Setup filter form
-    const filterForm = document.querySelector('.halls .filter-bar');
-    if (filterForm) {
-        const select = filterForm.querySelector('select[name="theater_id"]');
-        if (select) {
-            select.addEventListener('change', function() {
-                filterHallsByCinema(this.value || null);
-            });
-        }
-    }
-    
-    // Populate selects khi mở modal thêm mới
-    const addModal = document.getElementById('addScreenModal');
-    if (addModal) {
-        // Sử dụng MutationObserver hoặc event listener để detect khi modal mở
-        // Hoặc đơn giản hơn: populate khi click nút mở modal
-        const addButton = document.querySelector('.halls .btn-add');
-        if (addButton) {
-            addButton.addEventListener('click', function() {
-                setTimeout(() => {
-                    populateCinemaSelect();
-                    populateStatusSelect();
-                }, 100);
-            });
-        }
-    }
-});

@@ -1,0 +1,80 @@
+<?php
+require_once __DIR__ . '/../models/FoodCombo.php';
+
+class FoodComboService
+{
+    private $comboModel;
+
+    public function __construct($comboModel)
+    {
+        $this->comboModel = $comboModel;
+    }
+
+    public function getAllCombos()
+    {
+        return $this->comboModel->getAllCombos();
+    }
+
+    public function getComboById($comboId)
+    {
+        if (empty($comboId) || !is_numeric($comboId)) {
+            throw new InvalidArgumentException("Combo ID không hợp lệ.");
+        }
+
+        return $this->comboModel->getComboById($comboId);
+    }
+
+    public function createCombo($name, $description, $price)
+    {
+        $name = trim((string)$name);
+        $description = trim((string)$description);
+
+        if ($name === '') {
+            throw new InvalidArgumentException("Tên combo không được để trống.");
+        }
+
+        if (mb_strlen($name) > 100) {
+            throw new InvalidArgumentException("Tên combo không được vượt quá 100 ký tự.");
+        }
+
+        if (!is_numeric($price) || $price < 0) {
+            throw new InvalidArgumentException("Giá combo phải là số không âm.");
+        }
+
+        return $this->comboModel->createCombo($name, $description, (float)$price);
+    }
+
+    public function updateCombo($comboId, $name, $description, $price)
+    {
+        if (empty($comboId) || !is_numeric($comboId)) {
+            throw new InvalidArgumentException("Combo ID không hợp lệ.");
+        }
+
+        $name = trim((string)$name);
+        $description = trim((string)$description);
+
+        if ($name === '') {
+            throw new InvalidArgumentException("Tên combo không được để trống.");
+        }
+
+        if (mb_strlen($name) > 100) {
+            throw new InvalidArgumentException("Tên combo không được vượt quá 100 ký tự.");
+        }
+
+        if (!is_numeric($price) || $price < 0) {
+            throw new InvalidArgumentException("Giá combo phải là số không âm.");
+        }
+
+        return $this->comboModel->updateCombo($comboId, $name, $description, (float)$price);
+    }
+
+    public function deleteCombo($comboId)
+    {
+        if (empty($comboId) || !is_numeric($comboId)) {
+            throw new InvalidArgumentException("Combo ID không hợp lệ.");
+        }
+
+        return $this->comboModel->deleteCombo($comboId);
+    }
+}
+

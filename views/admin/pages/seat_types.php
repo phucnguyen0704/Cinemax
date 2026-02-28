@@ -1,3 +1,23 @@
+<?php
+require_once __DIR__ . '/../../../config/dbConfig.php';
+require_once __DIR__ . '/../../../models/SeatType.php';
+require_once __DIR__ . '/../../../services/SeatTypeService.php';
+
+$conn = getDBConnection();
+$seatTypeModel = new SeatType($conn);
+$seatTypeService = new SeatTypeService($seatTypeModel);
+
+$seatTypes = [];
+try {
+    $seatTypes = $seatTypeService->getAllSeatTypes();
+} catch (Exception $e) {
+    $seatTypes = [];
+}
+
+// Giá gốc để tính phụ thu hiển thị
+$basePrice = 100000;
+?>
+
 <section class="seat_types">
     
     <header class="admin-header">
@@ -12,10 +32,6 @@
     </header>
 
     <div class="dashboard-content">
-        <!-- Alert mẫu -->
-        <!-- <div class="alert alert-success">Thành công!</div> -->
-        <!-- <div class="alert alert-error">Có lỗi xảy ra</div> -->
-
         <div class="dashboard-card">
             <div class="table-responsive">
                 <table class="data-table">
@@ -28,11 +44,40 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td colspan="4" style="text-align: center; padding: 20px;">
-                                <div class="loading">Đang tải dữ liệu...</div>
-                            </td>
-                        </tr>
+                        <?php if (empty($seatTypes)): ?>
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 20px;">
+                                    Chưa có loại ghế nào.
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($seatTypes as $seatType): ?>
+                                <?php
+                                $multiplier = (float)($seatType['PriceMultiplier'] ?? $seatType['price_multiplier'] ?? 1);
+                                $surcharge = (int)round(($multiplier - 1) * $basePrice);
+                                $seatTypeId = $seatType['SeatTypeID'] ?? $seatType['seat_type_id'] ?? 0;
+                                ?>
+                                <tr>
+                                    <td>#<?php echo htmlspecialchars($seatTypeId); ?></td>
+                                    <td><strong><?php echo htmlspecialchars($seatType['TypeName'] ?? $seatType['type_name'] ?? ''); ?></strong></td>
+                                    <td style="color: var(--success-color); font-weight: bold;">
+                                        +<?php echo number_format($surcharge, 0, ',', '.'); ?> ₫
+                                    </td>
+                                    <td>
+                                        <a href="#"
+                                           class="btn-action"
+                                           onclick="editSeatType(<?php echo (int)$seatTypeId; ?>); return false;">
+                                           Sửa
+                                        </a>
+                                        <button class="btn-action danger"
+                                                type="button"
+                                                onclick="deleteSeatType(<?php echo (int)$seatTypeId; ?>)">
+                                            Xóa
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>

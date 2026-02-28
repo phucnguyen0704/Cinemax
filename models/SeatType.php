@@ -10,7 +10,7 @@ class SeatType
 
     public function getAllSeatTypes()
     {
-        $sql = "SELECT * FROM seat_type WHERE Status = 1 ORDER BY SeatTypeID";
+        $sql = "SELECT seat_type_id as SeatTypeID, type_name as TypeName, price_multiplier as PriceMultiplier, status as Status FROM seat_types WHERE status = 1 ORDER BY seat_type_id";
         $result = $this->conn->query($sql);
         if (!$result) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -26,7 +26,7 @@ class SeatType
 
     public function getSeatTypeById($seatTypeId)
     {
-        $sql = "SELECT * FROM seat_type WHERE SeatTypeID = ? AND Status = 1";
+        $sql = "SELECT seat_type_id as SeatTypeID, type_name as TypeName, price_multiplier as PriceMultiplier, status as Status FROM seat_types WHERE seat_type_id = ? AND status = 1";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -44,7 +44,7 @@ class SeatType
 
     public function getSeatTypeByName($typeName)
     {
-        $sql = "SELECT * FROM seat_type WHERE TypeName = ? AND Status = 1";
+        $sql = "SELECT seat_type_id as SeatTypeID, type_name as TypeName, price_multiplier as PriceMultiplier, status as Status FROM seat_types WHERE type_name = ? AND status = 1";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -62,7 +62,7 @@ class SeatType
 
     public function createSeatType($typeName, $priceMultiplier)
     {
-        $sql = "INSERT INTO seat_type (TypeName, PriceMultiplier) VALUES (?, ?)";
+        $sql = "INSERT INTO seat_types (type_name, price_multiplier, status) VALUES (?, ?, 1)";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -74,7 +74,7 @@ class SeatType
 
     public function updateSeatType($seatTypeId, $typeName, $priceMultiplier)
     {
-        $sql = "UPDATE seat_type SET TypeName = ?, PriceMultiplier = ? WHERE SeatTypeID = ?";
+        $sql = "UPDATE seat_types SET type_name = ?, price_multiplier = ? WHERE seat_type_id = ?";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -87,7 +87,7 @@ class SeatType
     public function deleteSeatType($seatTypeId)
     {
         // Kiểm tra xem có ghế nào đang sử dụng loại ghế này không
-        $checkSql = "SELECT COUNT(*) as count FROM seats WHERE SeatTypeID = ? AND Status = 1";
+        $checkSql = "SELECT COUNT(*) as count FROM seats WHERE seat_type_id = ? AND status = 1";
         $checkStmt = $this->conn->prepare($checkSql);
         if (!$checkStmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -106,7 +106,7 @@ class SeatType
             throw new Exception("Không thể xóa loại ghế này vì đang có ghế đang sử dụng.");
         }
 
-        $sql = "UPDATE seat_type SET Status = 0 WHERE SeatTypeID = ?";
+        $sql = "UPDATE seat_types SET status = 0 WHERE seat_type_id = ?";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);

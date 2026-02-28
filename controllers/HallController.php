@@ -23,7 +23,8 @@ class HallController
             
             // Lấy số ghế cho mỗi phòng
             foreach ($halls as &$hall) {
-                $hall['SeatCount'] = $this->hallService->getSeatCount($hall['HallID']);
+                $hallId = $hall['hall_id'] ?? $hall['HallID'] ?? 0;
+                $hall['SeatCount'] = $this->hallService->getSeatCount($hallId);
             }
             
             return $halls;
@@ -124,7 +125,7 @@ class HallController
     public function getAllCinemas()
     {
         $conn = getDBConnection();
-        $sql = "SELECT CinemaID, Name FROM cinemas WHERE Status = 1 ORDER BY Name";
+        $sql = "SELECT cinema_id as CinemaID, name as Name FROM cinemas WHERE status = 1 ORDER BY name";
         $result = $conn->query($sql);
         
         $cinemas = [];

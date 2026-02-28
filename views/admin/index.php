@@ -6,17 +6,25 @@ require_once __DIR__ . '/../../config/dbConfig.php';
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Role.php';
 require_once __DIR__ . '/../../models/Permission.php';
+require_once __DIR__ . '/../../models/FoodCombo.php';
 require_once __DIR__ . '/../../services/UserService.php';
+require_once __DIR__ . '/../../services/FoodComboService.php';
 require_once __DIR__ . '/../../controllers/AdminController.php';
+require_once __DIR__ . '/../../controllers/FoodComboController.php';
 session_start();
 $conn = getDBConnection();
 $userModel = new User($conn);
 $roleModel = new Role($conn);
 $permissionModel = new Permission($conn);
+$foodComboModel = new FoodCombo($conn);
+
 $userService = new UserService($userModel);
 $roleService = new RoleService($roleModel);
 $permissionService = new PermissionService($permissionModel);
+$foodComboService = new FoodComboService($foodComboModel);
+
 $adminController = new AdminController($userService, $roleService, $permissionService);
+$foodComboController = new FoodComboController($foodComboService);
 
 // Danh sách page hợp lệ (tránh hack ?content=../../)
 $allowedPages = [
@@ -88,6 +96,22 @@ if ($page === 'permissions' && $action) {
 
         case 'delete':
             $adminController->deletePermission($_GET['id'] ?? 0);
+            exit;
+    }
+}
+
+if ($page === 'combos' && $action) {
+    switch ($action) {
+        case 'create':
+            $foodComboController->createCombo();
+            exit;
+
+        case 'update':
+            $foodComboController->updateCombo($_POST['combo_id'] ?? 0);
+            exit;
+
+        case 'delete':
+            $foodComboController->deleteCombo($_GET['id'] ?? 0);
             exit;
     }
 }

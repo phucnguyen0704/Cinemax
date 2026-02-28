@@ -11,12 +11,20 @@ class Hall
     public function getAllHalls($cinemaId = null)
     {
         if ($cinemaId) {
-            $sql = "SELECT h.*, c.Name as CinemaName, hs.StatusName as StatusName 
+            $sql = "SELECT 
+                        h.*,
+                        h.hall_id AS HallID,
+                        h.name    AS Name,
+                        c.name    AS CinemaName,
+                    CASE 
+                        WHEN h.status = 1 THEN 'Đang hoạt động'
+                        WHEN h.status = 0 THEN 'Tạm dừng'
+                        ELSE 'Bảo trì'
+                    END as StatusName
                     FROM halls h 
-                    INNER JOIN cinemas c ON h.CinemaID = c.CinemaID 
-                    INNER JOIN hall_status hs ON h.StatusID = hs.StatusID 
-                    WHERE h.Status = 1 AND h.CinemaID = ? 
-                    ORDER BY h.HallID DESC";
+                    INNER JOIN cinemas c ON h.cinema_id = c.cinema_id 
+                    WHERE h.status = 1 AND h.cinema_id = ? 
+                    ORDER BY h.hall_id DESC";
             $stmt = $this->conn->prepare($sql);
             if (!$stmt) {
                 throw new Exception("SQL Error: " . $this->conn->error);
@@ -30,12 +38,20 @@ class Hall
                 throw new Exception("SQL Get Result Error: " . $stmt->error);
             }
         } else {
-            $sql = "SELECT h.*, c.Name as CinemaName, hs.StatusName as StatusName 
+            $sql = "SELECT 
+                        h.*,
+                        h.hall_id AS HallID,
+                        h.name    AS Name,
+                        c.name    AS CinemaName,
+                    CASE 
+                        WHEN h.status = 1 THEN 'Đang hoạt động'
+                        WHEN h.status = 0 THEN 'Tạm dừng'
+                        ELSE 'Bảo trì'
+                    END as StatusName
                     FROM halls h 
-                    INNER JOIN cinemas c ON h.CinemaID = c.CinemaID 
-                    INNER JOIN hall_status hs ON h.StatusID = hs.StatusID 
-                    WHERE h.Status = 1 
-                    ORDER BY h.HallID DESC";
+                    INNER JOIN cinemas c ON h.cinema_id = c.cinema_id 
+                    WHERE h.status = 1 
+                    ORDER BY h.hall_id DESC";
             $result = $this->conn->query($sql);
             if (!$result) {
                 throw new Exception("SQL Error: " . $this->conn->error);
@@ -52,11 +68,19 @@ class Hall
 
     public function getHallById($hallId)
     {
-        $sql = "SELECT h.*, c.Name as CinemaName, hs.StatusName as StatusName 
+        $sql = "SELECT 
+                    h.*,
+                    h.hall_id AS HallID,
+                    h.name    AS Name,
+                    c.name    AS CinemaName,
+                CASE 
+                    WHEN h.status = 1 THEN 'Đang hoạt động'
+                    WHEN h.status = 0 THEN 'Tạm dừng'
+                    ELSE 'Bảo trì'
+                END as StatusName
                 FROM halls h 
-                INNER JOIN cinemas c ON h.CinemaID = c.CinemaID 
-                INNER JOIN hall_status hs ON h.StatusID = hs.StatusID 
-                WHERE h.HallID = ? AND h.Status = 1";
+                INNER JOIN cinemas c ON h.cinema_id = c.cinema_id 
+                WHERE h.hall_id = ? AND h.status = 1";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -74,11 +98,15 @@ class Hall
 
     public function getHallsByCinema($cinemaId)
     {
-        $sql = "SELECT h.*, hs.StatusName as StatusName 
+        $sql = "SELECT h.*,
+                CASE 
+                    WHEN h.status = 1 THEN 'Đang hoạt động'
+                    WHEN h.status = 0 THEN 'Tạm dừng'
+                    ELSE 'Bảo trì'
+                END as StatusName
                 FROM halls h 
-                INNER JOIN hall_status hs ON h.StatusID = hs.StatusID 
-                WHERE h.CinemaID = ? AND h.Status = 1 
-                ORDER BY h.Name";
+                WHERE h.cinema_id = ? AND h.status = 1 
+                ORDER BY h.name";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -99,9 +127,9 @@ class Hall
         return $halls;
     }
 
-    public function createHall($cinemaId, $name, $statusId)
+    public function createHall($cinemaId, $name, $statusId = 1)
     {
-        $sql = "INSERT INTO halls (CinemaID, Name, StatusID) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO halls (cinema_id, name, status) VALUES (?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -111,9 +139,9 @@ class Hall
         return $stmt->execute();
     }
 
-    public function updateHall($hallId, $cinemaId, $name, $statusId)
+    public function updateHall($hallId, $cinemaId, $name, $statusId = 1)
     {
-        $sql = "UPDATE halls SET CinemaID = ?, Name = ?, StatusID = ? WHERE HallID = ?";
+        $sql = "UPDATE halls SET cinema_id = ?, name = ?, status = ? WHERE hall_id = ?";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -125,7 +153,7 @@ class Hall
 
     public function deleteHall($hallId)
     {
-        $sql = "UPDATE halls SET Status = 0 WHERE HallID = ?";
+        $sql = "UPDATE halls SET status = 0 WHERE hall_id = ?";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -137,7 +165,7 @@ class Hall
 
     public function getSeatCount($hallId)
     {
-        $sql = "SELECT COUNT(*) as count FROM seats WHERE HallID = ? AND Status = 1";
+        $sql = "SELECT COUNT(*) as count FROM seats WHERE hall_id = ? AND status = 1";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);

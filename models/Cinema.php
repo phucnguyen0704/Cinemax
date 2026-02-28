@@ -10,13 +10,22 @@ class Cinema
 
     public function getAllCinemas()
     {
-        $sql = "SELECT c.*, l.Name as LocationName, cs.StatusName as CinemaStatusName,
-                (SELECT COUNT(*) FROM halls h WHERE h.CinemaID = c.CinemaID AND h.Status = 1) as HallCount
+        $sql = "SELECT 
+                    c.cinema_id   AS CinemaID,
+                    c.name        AS Name,
+                    c.address     AS Address,
+                    c.location_id AS LocationID,
+                    c.status      AS Status,
+                    c.created_at  AS CreatedAt,
+                    l.name        AS LocationName,
+                    (SELECT COUNT(*) 
+                     FROM halls h 
+                     WHERE h.cinema_id = c.cinema_id 
+                       AND h.status = 1) AS HallCount
                 FROM cinemas c 
-                INNER JOIN locations l ON c.LocationID = l.LocationID 
-                INNER JOIN cinema_status cs ON c.StatusID = cs.StatusID 
-                WHERE c.Status = 1 
-                ORDER BY c.CinemaID DESC";
+                INNER JOIN locations l ON c.location_id = l.location_id 
+                WHERE c.status = 1 
+                ORDER BY c.cinema_id DESC";
         
         $result = $this->conn->query($sql);
         if (!$result) {
@@ -33,12 +42,21 @@ class Cinema
 
     public function getCinemaById($cinemaId)
     {
-        $sql = "SELECT c.*, l.Name as LocationName, cs.StatusName as CinemaStatusName,
-                (SELECT COUNT(*) FROM halls h WHERE h.CinemaID = c.CinemaID AND h.Status = 1) as HallCount
+        $sql = "SELECT 
+                    c.cinema_id   AS CinemaID,
+                    c.name        AS Name,
+                    c.address     AS Address,
+                    c.location_id AS LocationID,
+                    c.status      AS Status,
+                    c.created_at  AS CreatedAt,
+                    l.name        AS LocationName,
+                    (SELECT COUNT(*) 
+                     FROM halls h 
+                     WHERE h.cinema_id = c.cinema_id 
+                       AND h.status = 1) AS HallCount
                 FROM cinemas c 
-                INNER JOIN locations l ON c.LocationID = l.LocationID 
-                INNER JOIN cinema_status cs ON c.StatusID = cs.StatusID 
-                WHERE c.CinemaID = ? AND c.Status = 1";
+                INNER JOIN locations l ON c.location_id = l.location_id 
+                WHERE c.cinema_id = ? AND c.status = 1";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -58,16 +76,16 @@ class Cinema
         return $result->fetch_assoc();
     }
 
-    public function createCinema($name, $address, $locationId, $statusId)
+    public function createCinema($name, $address, $locationId, $statusId = null)
     {
-        $sql = "INSERT INTO cinemas (Name, Address, LocationID, StatusID, Status) VALUES (?, ?, ?, ?, 1)";
+        $sql = "INSERT INTO cinemas (name, address, location_id, status) VALUES (?, ?, ?, 1)";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Prepare Error: " . $this->conn->error);
         }
         
-        $stmt->bind_param("ssii", $name, $address, $locationId, $statusId);
+        $stmt->bind_param("ssi", $name, $address, $locationId);
         if (!$stmt->execute()) {
             throw new Exception("SQL Execute Error: " . $stmt->error);
         }
@@ -75,16 +93,16 @@ class Cinema
         return $this->conn->insert_id;
     }
 
-    public function updateCinema($cinemaId, $name, $address, $locationId, $statusId)
+    public function updateCinema($cinemaId, $name, $address, $locationId, $statusId = null)
     {
-        $sql = "UPDATE cinemas SET Name = ?, Address = ?, LocationID = ?, StatusID = ? WHERE CinemaID = ?";
+        $sql = "UPDATE cinemas SET name = ?, address = ?, location_id = ? WHERE cinema_id = ?";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Prepare Error: " . $this->conn->error);
         }
         
-        $stmt->bind_param("ssiii", $name, $address, $locationId, $statusId, $cinemaId);
+        $stmt->bind_param("ssii", $name, $address, $locationId, $cinemaId);
         if (!$stmt->execute()) {
             throw new Exception("SQL Execute Error: " . $stmt->error);
         }
@@ -94,8 +112,8 @@ class Cinema
 
     public function deleteCinema($cinemaId)
     {
-        // Soft delete: chỉ đổi Status = 0
-        $sql = "UPDATE cinemas SET Status = 0 WHERE CinemaID = ?";
+        // Soft delete: chỉ đổi status = 0
+        $sql = "UPDATE cinemas SET status = 0 WHERE cinema_id = ?";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -112,7 +130,7 @@ class Cinema
 
     public function getAllLocations()
     {
-        $sql = "SELECT LocationID, Name FROM locations WHERE Status = 1 ORDER BY Name";
+        $sql = "SELECT location_id as LocationID, name as Name FROM locations ORDER BY name";
         $result = $this->conn->query($sql);
         if (!$result) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -126,19 +144,22 @@ class Cinema
         return $locations;
     }
 
+    /**
+     * Danh sách trạng thái rạp chiếu.
+     * Vì schema hiện tại chỉ có cột status (TINYINT) trong bảng cinemas,
+     * nên ta map cố định sang danh sách StatusID / StatusName để dùng cho UI.
+     */
     public function getAllCinemaStatuses()
     {
-        $sql = "SELECT StatusID, StatusName FROM cinema_status WHERE Status = 1 ORDER BY StatusName";
-        $result = $this->conn->query($sql);
-        if (!$result) {
-            throw new Exception("SQL Error: " . $this->conn->error);
-        }
-
-        $statuses = [];
-        while ($row = $result->fetch_assoc()) {
-            $statuses[] = $row;
-        }
-
-        return $statuses;
+        return [
+            [
+                'StatusID'   => 1,
+                'StatusName' => 'Đang hoạt động',
+            ],
+            [
+                'StatusID'   => 0,
+                'StatusName' => 'Ngừng hoạt động',
+            ],
+        ];
     }
 }

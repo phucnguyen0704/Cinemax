@@ -1,66 +1,16 @@
 /**
  * JavaScript cho trang quản lý Loại ghế
+ * Phần render bảng đã chuyển sang PHP.
+ * JS chỉ dùng cho CRUD (thêm / sửa / xóa) và modal.
  */
 
-let seatTypesData = [];
-
-// Load dữ liệu khi trang được tải
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        await loadSeatTypes();
-        renderSeatTypesTable();
-    } catch (error) {
-        console.error('Lỗi khi load dữ liệu:', error);
-        showAlert('Có lỗi xảy ra khi tải dữ liệu: ' + error.message, 'error');
+// Gắn handler cho form thêm mới sau khi DOM sẵn sàng
+document.addEventListener('DOMContentLoaded', function() {
+    const addForm = document.querySelector('#addSeatTypeModal form');
+    if (addForm) {
+        addForm.addEventListener('submit', handleCreateSeatType);
     }
 });
-
-/**
- * Load dữ liệu loại ghế
- */
-async function loadSeatTypes() {
-    try {
-        seatTypesData = await getAllSeatTypes();
-    } catch (error) {
-        throw new Error('Không thể tải dữ liệu: ' + error.message);
-    }
-}
-
-/**
- * Render bảng loại ghế
- */
-function renderSeatTypesTable() {
-    const tbody = document.querySelector('.seat_types .data-table tbody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    if (seatTypesData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">Chưa có dữ liệu</td></tr>';
-        return;
-    }
-    
-    seatTypesData.forEach(seatType => {
-        // Tính phụ thu từ PriceMultiplier
-        // Giả sử giá gốc là 100,000 VNĐ
-        const basePrice = 100000;
-        const priceSurcharge = Math.round((seatType.PriceMultiplier - 1) * basePrice);
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>#${seatType.SeatTypeID}</td>
-            <td><strong>${seatType.TypeName}</strong></td>
-            <td style="color: var(--success-color); font-weight: bold;">
-                +${priceSurcharge.toLocaleString('vi-VN')} ₫
-            </td>
-            <td>
-                <a href="#" class="btn-action" onclick="editSeatType(${seatType.SeatTypeID}); return false;">Sửa</a>
-                <button class="btn-action danger" onclick="deleteSeatType(${seatType.SeatTypeID})">Xóa</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-}
 
 /**
  * Edit seat type
@@ -94,8 +44,8 @@ async function deleteSeatType(id) {
     try {
         await deleteSeatType(id);
         showAlert('Xóa loại ghế thành công!', 'success');
-        await loadSeatTypes();
-        renderSeatTypesTable();
+        // Reload lại trang để cập nhật bảng render bằng PHP
+        setTimeout(() => window.location.reload(), 500);
     } catch (error) {
         showAlert('Lỗi khi xóa loại ghế: ' + error.message, 'error');
     }
@@ -167,8 +117,8 @@ async function handleUpdateSeatType(event) {
         await updateSeatType(seatTypeId, data);
         showAlert('Cập nhật loại ghế thành công!', 'success');
         closeModal('editSeatTypeModal');
-        await loadSeatTypes();
-        renderSeatTypesTable();
+        // Reload lại trang để cập nhật bảng render bằng PHP
+        setTimeout(() => window.location.reload(), 500);
     } catch (error) {
         showAlert('Lỗi khi cập nhật: ' + error.message, 'error');
     }
@@ -193,8 +143,8 @@ async function handleCreateSeatType(event) {
         showAlert('Thêm loại ghế thành công!', 'success');
         closeModal('addSeatTypeModal');
         form.reset();
-        await loadSeatTypes();
-        renderSeatTypesTable();
+        // Reload lại trang để cập nhật bảng render bằng PHP
+        setTimeout(() => window.location.reload(), 500);
     } catch (error) {
         showAlert('Lỗi khi thêm loại ghế: ' + error.message, 'error');
     }
@@ -217,11 +167,3 @@ function showAlert(message, type = 'success') {
         }, 3000);
     }
 }
-
-// Override form submit cho modal thêm mới
-document.addEventListener('DOMContentLoaded', function() {
-    const addForm = document.querySelector('#addSeatTypeModal form');
-    if (addForm) {
-        addForm.addEventListener('submit', handleCreateSeatType);
-    }
-});

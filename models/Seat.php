@@ -10,11 +10,19 @@ class Seat
 
     public function getSeatsByHall($hallId)
     {
-        $sql = "SELECT s.*, st.TypeName, st.PriceMultiplier 
+        $sql = "SELECT 
+                    s.seat_id      AS SeatID,
+                    s.hall_id      AS HallID,
+                    s.seat_type_id AS SeatTypeID,
+                    s.row_name     AS RowName,
+                    s.seat_number  AS SeatNumber,
+                    s.status       AS Status,
+                    st.type_name   AS TypeName,
+                    st.price_multiplier AS PriceMultiplier
                 FROM seats s 
-                INNER JOIN seat_type st ON s.SeatTypeID = st.SeatTypeID 
-                WHERE s.HallID = ? AND s.Status = 1 
-                ORDER BY s.RowName, s.SeatNumber";
+                INNER JOIN seat_types st ON s.seat_type_id = st.seat_type_id 
+                WHERE s.hall_id = ? AND s.status = 1 
+                ORDER BY s.row_name, s.seat_number";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -41,10 +49,18 @@ class Seat
 
     public function getSeatById($seatId)
     {
-        $sql = "SELECT s.*, st.TypeName, st.PriceMultiplier 
+        $sql = "SELECT 
+                    s.seat_id      AS SeatID,
+                    s.hall_id      AS HallID,
+                    s.seat_type_id AS SeatTypeID,
+                    s.row_name     AS RowName,
+                    s.seat_number  AS SeatNumber,
+                    s.status       AS Status,
+                    st.type_name   AS TypeName,
+                    st.price_multiplier AS PriceMultiplier
                 FROM seats s 
-                INNER JOIN seat_type st ON s.SeatTypeID = st.SeatTypeID 
-                WHERE s.SeatID = ? AND s.Status = 1";
+                INNER JOIN seat_types st ON s.seat_type_id = st.seat_type_id 
+                WHERE s.seat_id = ? AND s.status = 1";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -66,7 +82,7 @@ class Seat
 
     public function createSeat($hallId, $seatTypeId, $rowName, $seatNumber)
     {
-        $sql = "INSERT INTO seats (HallID, SeatTypeID, RowName, SeatNumber, Status) VALUES (?, ?, ?, ?, 1)";
+        $sql = "INSERT INTO seats (hall_id, seat_type_id, row_name, seat_number, status) VALUES (?, ?, ?, ?, 1)";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -87,7 +103,7 @@ class Seat
 
     public function updateSeat($seatId, $seatTypeId)
     {
-        $sql = "UPDATE seats SET SeatTypeID = ? WHERE SeatID = ?";
+        $sql = "UPDATE seats SET seat_type_id = ? WHERE seat_id = ?";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -105,7 +121,7 @@ class Seat
     public function deleteSeat($seatId)
     {
         // Soft delete
-        $sql = "UPDATE seats SET Status = 0 WHERE SeatID = ?";
+        $sql = "UPDATE seats SET status = 0 WHERE seat_id = ?";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -123,7 +139,7 @@ class Seat
     public function deleteAllSeatsByHall($hallId)
     {
         // Soft delete tất cả ghế trong phòng
-        $sql = "UPDATE seats SET Status = 0 WHERE HallID = ?";
+        $sql = "UPDATE seats SET status = 0 WHERE hall_id = ?";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -141,7 +157,7 @@ class Seat
     public function createBulkSeats($hallId, $seats)
     {
         // Tạo nhiều ghế cùng lúc
-        $sql = "INSERT INTO seats (HallID, SeatTypeID, RowName, SeatNumber, Status) VALUES (?, ?, ?, ?, 1)";
+        $sql = "INSERT INTO seats (hall_id, seat_type_id, row_name, seat_number, status) VALUES (?, ?, ?, ?, 1)";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Prepare Error: " . $this->conn->error);
