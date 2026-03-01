@@ -2,8 +2,7 @@
 $roles = $adminController->getAllRoles();
 
 $roleId = $_GET['role_id'] ?? null;
-$error = $_SESSION['error'] ?? null;
-unset($_SESSION['error']);
+$error = $_GET['error'] ?? null;
 ?>
 <section class="roles">
     <header class="admin-header">

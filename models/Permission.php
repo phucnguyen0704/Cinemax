@@ -66,4 +66,27 @@ class Permission
         $stmt->bind_param("i", $permissionId);
         return $stmt->execute();
     }
+
+    public function getPaginated($page = 1, $limit = 10)
+    {
+        $offset = ($page - 1) * $limit;
+        $sql = "SELECT * FROM permissions WHERE status = 1 ORDER BY permission_id DESC LIMIT ? OFFSET ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $limit, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $items = [];
+        while ($row = $result->fetch_assoc()) {
+            $items[] = $row;
+        }
+        return $items;
+    }
+
+    public function getTotalCount()
+    {
+        $sql = "SELECT COUNT(*) as total FROM permissions WHERE status = 1";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return (int)$row['total'];
+    }
 }

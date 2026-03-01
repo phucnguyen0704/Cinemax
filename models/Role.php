@@ -66,4 +66,27 @@ class Role
         $stmt->bind_param("i", $roleId);
         return $stmt->execute();
     }
+
+    public function getPaginated($page = 1, $limit = 10)
+    {
+        $offset = ($page - 1) * $limit;
+        $sql = "SELECT * FROM roles WHERE status = 1 ORDER BY role_id DESC LIMIT ? OFFSET ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $limit, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $roles = [];
+        while ($row = $result->fetch_assoc()) {
+            $roles[] = $row;
+        }
+        return $roles;
+    }
+
+    public function getTotalCount()
+    {
+        $sql = "SELECT COUNT(*) as total FROM roles WHERE status = 1";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return (int)$row['total'];
+    }
 }

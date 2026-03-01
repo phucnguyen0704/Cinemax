@@ -26,8 +26,7 @@ class AdminController
             $users = $this->userService->getAllUsers();
             return $users;
         } catch (Exception $e) {
-            $errorMessage = $$_SESSION['error'] = $e->getMessage();
-            header('Location: /index.php?page=users&error=1');
+            header('Location: /index.php?page=users&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -38,8 +37,7 @@ class AdminController
 
             header('Location: ../../views/admin/index.php?page=users&add=1');
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: ../../views/admin/index.php?page=users&error=1');
+            header('Location: ../../views/admin/index.php?page=users&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -50,8 +48,7 @@ class AdminController
 
             header('Location: ../../views/admin/index.php?page=users&update=1');
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: ../../views/admin/index.php?page=users&error=1');
+            header('Location: ../../views/admin/index.php?page=users&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -62,8 +59,7 @@ class AdminController
 
             header('Location: ../../views/admin/index.php?page=users&delete=1');
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: ../../views/admin/index.php?page=users&error=1');
+            header('Location: ../../views/admin/index.php?page=users&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -74,8 +70,7 @@ class AdminController
             $roles = $this->roleService->getAllRoles();
             return $roles;
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: /index.php?page=roles&error=1');
+            header('Location: /index.php?page=roles&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -85,8 +80,7 @@ class AdminController
             $role = $this->roleService->getRoleById($RoleID);
             return $role;
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: /index.php?page=roles&error=1');
+            header('Location: /index.php?page=roles&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -97,8 +91,7 @@ class AdminController
 
             header('Location: ../../views/admin/index.php?page=roles&add=1');
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: ../../views/admin/index.php?page=roles&error=1');
+            header('Location: ../../views/admin/index.php?page=roles&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -109,8 +102,7 @@ class AdminController
 
             header('Location: ../../views/admin/index.php?page=roles&update=1');
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: ../../views/admin/index.php?page=roles&error=1');
+            header('Location: ../../views/admin/index.php?page=roles&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -121,8 +113,7 @@ class AdminController
 
             header('Location: ../../views/admin/index.php?page=roles&delete=1');
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: ../../views/admin/index.php?page=roles&error=1');
+            header('Location: ../../views/admin/index.php?page=roles&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -133,8 +124,7 @@ class AdminController
             $permissions = $this->permissionService->getAllPermissions();
             return $permissions;
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: /index.php?page=permissions&error=1');
+            header('Location: /index.php?page=permissions&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -144,8 +134,7 @@ class AdminController
             $permission = $this->permissionService->getPermissionById($permissionId);
             return $permission;
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: /index.php?page=permissions&error=1');
+            header('Location: /index.php?page=permissions&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -156,8 +145,7 @@ class AdminController
 
             header('Location: ../../views/admin/index.php?page=permissions&add=1');
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: ../../views/admin/index.php?page=permissions&error=1');
+            header('Location: ../../views/admin/index.php?page=permissions&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -166,10 +154,9 @@ class AdminController
         try {
             $result = $this->permissionService->updatePermission($permissionId, $_POST['permission_name'], $_POST['description']);
 
-            header('Location: ../../views/admin/index.php?page=permissions&aupdate=1');
+            header('Location: ../../views/admin/index.php?page=permissions&update=1');
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: ../../views/admin/index.php?page=permissions&error=1');
+            header('Location: ../../views/admin/index.php?page=permissions&error=' . urlencode($e->getMessage()));
         }
     }
 
@@ -180,8 +167,7 @@ class AdminController
 
             header('Location: ../../views/admin/index.php?page=permissions&delete=1');
         } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: ../../views/admin/index.php?page=permissions&error=1');
+            header('Location: ../../views/admin/index.php?page=permissions&error=' . urlencode($e->getMessage()));
         }
     }
 }

@@ -61,6 +61,18 @@ class RoleService
         return $this->roleModel->deleteRole($RoleID);
     }
 
-
-    
+    public function getPaginated($page = 1, $limit = 10)
+    {
+        $total = $this->roleModel->getTotalCount();
+        $totalPages = max(1, ceil($total / $limit));
+        $page = max(1, min($page, $totalPages));
+        $data = $this->roleModel->getPaginated($page, $limit);
+        return [
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'totalPages' => $totalPages
+        ];
+    }
 }

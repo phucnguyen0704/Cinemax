@@ -30,7 +30,7 @@
     <div class="auth-container">
         <div class="auth-box">
             <div class="auth-header">
-                <a href="../views/user/index.php" class="logo" style="text-decoration: none;">
+                <a href="../user/index.php" class="logo" style="text-decoration: none;">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M2.5 16.5l19-9m-19 0l19 9M7 5v14m10-14v14"></path>
                     </svg>
@@ -64,7 +64,7 @@
             }
             ?>
 
-            <form id="registerForm" class="auth-form" action="user/index.php" method="POST">
+            <form id="registerForm" class="auth-form" action="../../public/index.php?action=register" method="POST">
                 <div class="form-group">
                     <label for="name">Họ và tên</label>
                     <input type="text" id="name" name="name" placeholder="Nguyễn Văn A" required>
@@ -113,7 +113,7 @@
         <div class="auth-image"></div>
     </div>
 
-    <script src="../assets/js/all_effects.js"></script>
+    <script src="../../public/assets/js/all_effects.js"></script>
 
 </body>
 

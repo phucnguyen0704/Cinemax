@@ -1,8 +1,7 @@
 <?php
 $users = $adminController->getAllUsers();
 $roles = $adminController->getAllRoles();
-$error = $_SESSION['error'] ?? null;
-unset($_SESSION['error']);
+$error = $_GET['error'] ?? null;
 ?>
 <section class="users">
     <header class="admin-header">

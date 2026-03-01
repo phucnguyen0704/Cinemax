@@ -3,6 +3,7 @@
 <?php
 
 require_once __DIR__ . '/../../config/dbConfig.php';
+require_once __DIR__ . '/../../services/AuthMiddleware.php';
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Role.php';
 require_once __DIR__ . '/../../models/Permission.php';
@@ -12,6 +13,10 @@ require_once __DIR__ . '/../../services/FoodComboService.php';
 require_once __DIR__ . '/../../controllers/AdminController.php';
 require_once __DIR__ . '/../../controllers/FoodComboController.php';
 session_start();
+
+// Kiểm tra đăng nhập và quyền admin bằng JWT
+$authUser = AuthMiddleware::requireAdmin();
+
 $conn = getDBConnection();
 $userModel = new User($conn);
 $roleModel = new Role($conn);

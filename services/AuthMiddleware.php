@@ -1,0 +1,116 @@
+<?php
+
+/**
+ * AuthMiddleware - Kiểm tra JWT từ Cookie
+ * Include file này ở đầu mỗi trang cần bảo vệ
+ */
+
+require_once __DIR__ . '/../config/JwtHelper.php';
+require_once __DIR__ . '/../config/dbConfig.php';
+require_once __DIR__ . '/../models/User.php';
+
+class AuthMiddleware
+{
+    private const COOKIE_NAME = 'cinemax_token';
+
+    /**
+     * Đặt JWT cookie sau khi đăng nhập
+     *
+     * @param array $user Thông tin user từ DB
+     */
+    public static function setAuthCookie(array $user): void
+    {
+        $payload = [
+            'user_id'   => (int)$user['user_id'],
+            'full_name' => $user['full_name'],
+            'email'     => $user['email'],
+            'role_id'   => (int)$user['role_id'],
+        ];
+
+        $token = JwtHelper::encode($payload);
+        $ttl = JwtHelper::getDefaultTTL();
+
+        setcookie(self::COOKIE_NAME, $token, [
+            'expires'  => time() + $ttl,
+            'path'     => '/',
+            'httponly'  => true,    // Không cho JS truy cập → chống XSS
+            'samesite' => 'Lax',   // Chống CSRF cơ bản
+            'secure'   => false,   // Đặt true nếu dùng HTTPS
+        ]);
+    }
+
+    /**
+     * Xóa JWT cookie khi đăng xuất
+     */
+    public static function clearAuthCookie(): void
+    {
+        setcookie(self::COOKIE_NAME, '', [
+            'expires'  => time() - 3600,
+            'path'     => '/',
+            'httponly'  => true,
+            'samesite' => 'Lax',
+            'secure'   => false,
+        ]);
+    }
+
+    /**
+     * Đọc và xác thực JWT từ cookie
+     *
+     * @return array|null Payload user nếu hợp lệ, null nếu không
+     */
+    public static function getAuthUser(): ?array
+    {
+        $token = $_COOKIE[self::COOKIE_NAME] ?? null;
+
+        if (!$token) {
+            return null;
+        }
+
+        return JwtHelper::decode($token);
+    }
+
+    /**
+     * Yêu cầu đăng nhập - redirect nếu chưa đăng nhập
+     *
+     * @param string $redirectUrl URL redirect khi chưa đăng nhập
+     * @return array Thông tin user đã xác thực
+     */
+    public static function requireLogin(string $redirectUrl = '/../views/auth/login.php?error=required'): array
+    {
+        $user = self::getAuthUser();
+
+        if (!$user) {
+            self::clearAuthCookie(); // Xóa cookie lỗi/hết hạn nếu có
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
+
+        return $user;
+    }
+
+    /**
+     * Yêu cầu quyền Admin - redirect nếu không phải admin
+     *
+     * @return array Thông tin user admin đã xác thực
+     */
+    public static function requireAdmin(): array
+    {
+        $user = self::requireLogin();
+
+        if ((int)$user['role_id'] !== 1) {
+            header('Location: /../views/auth/login.php?error=unauthorized');
+            exit;
+        }
+
+        return $user;
+    }
+
+    /**
+     * Lấy tên cookie
+     */
+    public static function getCookieName(): string
+    {
+        return self::COOKIE_NAME;
+    }
+}
+

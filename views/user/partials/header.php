@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../../../services/AuthMiddleware.php';
+$authUser = AuthMiddleware::getAuthUser();
+$isLoggedIn = ($authUser !== null);
+?>
 <nav class="navbar">
     <div class="container">
         <div class="nav-content">
@@ -27,8 +32,25 @@
                     <input type="text" placeholder="Tìm phim..." id="searchInput" name="query" required>
                 </form>
 
-                <a href="../login.php" class="btn-login">Đăng nhập</a>
-                <a href="../register.php" class="btn-primary">Đăng ký</a>
+                <?php if ($isLoggedIn): ?>
+                    <div class="user-dropdown">
+                        <button class="btn-user" onclick="toggleUserMenu()">
+                            <span><?php echo htmlspecialchars($authUser['full_name']); ?></span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="user-menu" id="userMenu">
+                            <?php if ($authUser['role_id'] == 1): ?>
+                                <a href="../admin/index.php">Quản trị</a>
+                            <?php endif; ?>
+                            <a href="../../public/index.php?action=logout">Đăng xuất</a>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <a href="../auth/login.php" class="btn-login">Đăng nhập</a>
+                    <a href="../auth/register.php" class="btn-primary">Đăng ký</a>
+                <?php endif; ?>
             </div>
         </div>
     </div>

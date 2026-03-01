@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="../../public/assets/fontawesome/css/all.min.css">
 
 <script src="../../public/assets/js/all_effects.js"></script>
+<script src="../../public/assets/js/pagination.js"></script>
 <script src="../../public/assets/js/shows_admin.js" defer></script>
 <script src="../../public/assets/js/roles_admin.js" defer></script>
 <script src="../../public/assets/js/users_admin.js" defer></script>
