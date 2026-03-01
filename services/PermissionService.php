@@ -50,4 +50,19 @@ class PermissionService
     {
         return $this->permissionModel->deletePermission($permissionId);
     }
+
+    public function getPaginated($page = 1, $limit = 10)
+    {
+        $total = $this->permissionModel->getTotalCount();
+        $totalPages = max(1, ceil($total / $limit));
+        $page = max(1, min($page, $totalPages));
+        $data = $this->permissionModel->getPaginated($page, $limit);
+        return [
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'totalPages' => $totalPages
+        ];
+    }
 }

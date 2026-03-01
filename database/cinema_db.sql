@@ -43,6 +43,11 @@ CREATE TABLE users (
     FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE RESTRICT
 );
 
+-- Dữ liệu mặc định cho bảng roles
+INSERT INTO roles (role_id, role_name, description) VALUES
+    (1, 'Admin', 'Quản trị viên'),
+    (2, 'User', 'Người dùng thường');
+
 -- ============================================================================
 -- 2. ĐỊA ĐIỂM & RẠP CHIẾU
 -- ============================================================================

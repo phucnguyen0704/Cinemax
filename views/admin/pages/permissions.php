@@ -1,7 +1,6 @@
 <?php
 $permisstions = $adminController->getAllPermissions();
-$error = $_SESSION['error'] ?? null;
-unset($_SESSION['error']);
+$error = $_GET['error'] ?? null;
 ?>
 <section class="permissions">
     <header class="admin-header">

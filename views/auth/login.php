@@ -14,7 +14,7 @@
     <div class="auth-container">
         <div class="auth-box">
             <div class="auth-header">
-                <a href="../views/user/index.php" class="logo" style="text-decoration: none;">
+                <a href="../user/index.php" class="logo" style="text-decoration: none;">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M2.5 16.5l19-9m-19 0l19 9M7 5v14m10-14v14"></path>
                     </svg>
@@ -41,7 +41,7 @@
                 </div>
             <?php endif; ?>
 
-            <form id="loginForm" class="auth-form" action="user/index.php" method="POST">
+            <form id="loginForm" class="auth-form" action="../../public/index.php?action=login" method="POST">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" placeholder="name@example.com" required>
@@ -68,7 +68,7 @@
         </div>
     </div>
 
-    <script src="../assets/js/all_effects.js"></script>
+    <script src="../../public/assets/js/all_effects.js"></script>
 </body>
 
 </html>

@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi">
 <?php
+require_once __DIR__ . '/../../services/AuthMiddleware.php';
+
+// Lấy thông tin user từ JWT (null nếu chưa đăng nhập - user trang chủ không bắt buộc login)
+$authUser = AuthMiddleware::getAuthUser();
+
 // Danh sách page hợp lệ (tránh hack ?content=../../)
 $allowedPages = [
     'home',

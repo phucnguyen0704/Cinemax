@@ -148,6 +148,23 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+// --- TOGGLE USER MENU (Header dropdown khi đã đăng nhập) ---
+function toggleUserMenu() {
+  const menu = document.getElementById("userMenu");
+  if (menu) {
+    menu.classList.toggle("show");
+  }
+}
+
+// Đóng user menu khi click ra ngoài
+document.addEventListener("click", function (e) {
+  const menu = document.getElementById("userMenu");
+  const btn = e.target.closest(".btn-user");
+  if (menu && !btn && !menu.contains(e.target)) {
+    menu.classList.remove("show");
+  }
+});
+
 // Permission
 document.querySelectorAll(".toggle").forEach((toggle) => {
   toggle.addEventListener("click", () => {

@@ -73,6 +73,21 @@ class UserService
         return $this->userModel->updateUser($UserID, $fullName, $email, $phone, $role_id);
     }
 
+    public function getPaginated($page = 1, $limit = 10)
+    {
+        $total = $this->userModel->getTotalCount();
+        $totalPages = max(1, ceil($total / $limit));
+        $page = max(1, min($page, $totalPages));
+        $data = $this->userModel->getPaginated($page, $limit);
+        return [
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'totalPages' => $totalPages
+        ];
+    }
+
     public function deleteUser($UserID)
     {
         return $this->userModel->deleteUser($UserID);
