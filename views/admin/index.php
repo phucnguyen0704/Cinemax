@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html lang="vi">
 <?php
-
 require_once __DIR__ . '/../../config/dbConfig.php';
-require_once __DIR__ . '/../../services/AuthMiddleware.php';
+//Các file model
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Role.php';
 require_once __DIR__ . '/../../models/Permission.php';
+require_once __DIR__ . '/../../models/Role_permissions.php';
+require_once __DIR__ . '/../../models/FoodCombo.php';
+
+//Các file service
 require_once __DIR__ . '/../../services/RoleService.php';
 require_once __DIR__ . '/../../services/PermissionService.php';
 require_once __DIR__ . '/../../services/Role_permissionsService.php';
-require_once __DIR__ . '/../../controllers/AdminController.php';
-require_once __DIR__ . '/../../controllers/Role_permissionsController.php';
-require_once __DIR__ . '/../../models/FoodCombo.php';
 require_once __DIR__ . '/../../services/UserService.php';
 require_once __DIR__ . '/../../services/FoodComboService.php';
+require_once __DIR__ . '/../../services/AuthMiddleware.php';
+
+
+//Các file controller
 require_once __DIR__ . '/../../controllers/AdminController.php';
+require_once __DIR__ . '/../../controllers/AdminController.php';
+require_once __DIR__ . '/../../controllers/Role_permissionsController.php';
 require_once __DIR__ . '/../../controllers/FoodComboController.php';
 session_start();
 
