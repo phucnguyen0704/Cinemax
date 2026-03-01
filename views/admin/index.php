@@ -6,8 +6,12 @@ require_once __DIR__ . '/../../config/dbConfig.php';
 require_once __DIR__ . '/../../services/AuthMiddleware.php';
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Role.php';
-require_once __DIR__ . '/../../models/Role_permissions.php';
 require_once __DIR__ . '/../../models/Permission.php';
+require_once __DIR__ . '/../../services/RoleService.php';
+require_once __DIR__ . '/../../services/PermissionService.php';
+require_once __DIR__ . '/../../services/Role_permissionsService.php';
+require_once __DIR__ . '/../../controllers/AdminController.php';
+require_once __DIR__ . '/../../controllers/Role_permissionsController.php';
 require_once __DIR__ . '/../../models/FoodCombo.php';
 require_once __DIR__ . '/../../services/UserService.php';
 require_once __DIR__ . '/../../services/FoodComboService.php';
@@ -18,13 +22,6 @@ session_start();
 // Kiểm tra đăng nhập và quyền admin bằng JWT
 $authUser = AuthMiddleware::requireAdmin();
 
-require_once __DIR__ . '/../../services/RoleService.php';
-require_once __DIR__ . '/../../services/PermissionService.php';
-require_once __DIR__ . '/../../services/Role_permissionsService.php';
-require_once __DIR__ . '/../../controllers/AdminController.php';
-require_once __DIR__ . '/../../controllers/Role_permissionsController.php';
-session_start();
-
 //Ket noi DB
 $conn = getDBConnection();
 
@@ -32,22 +29,22 @@ $conn = getDBConnection();
 $userModel = new User($conn);
 $roleModel = new Role($conn);
 $permissionModel = new Permission($conn);
-$foodComboModel = new FoodCombo($conn);
-$foodComboService = new FoodComboService($foodComboModel);
-
-$adminController = new AdminController($userService, $roleService, $permissionService);
-$foodComboController = new FoodComboController($foodComboService);
 $role_permissionModel = new Role_permissions($conn);
+$foodComboModel = new FoodCombo($conn);
+
 
 //Khởi tạo services
 $userService = new UserService($userModel);
 $roleService = new RoleService($roleModel);
 $permissionService = new PermissionService($permissionModel, $role_permissionModel);
 $role_permissionsService = new Role_permissionsService($role_permissionModel);
+$foodComboService = new FoodComboService($foodComboModel);
+
 
 //Khởi tạo controllers
 $adminController = new AdminController($userService, $roleService, $permissionService);
 $role_permissionsController = new Role_permissionsController($role_permissionsService);
+$foodComboController = new FoodComboController($foodComboService);
 
 // Danh sách page hợp lệ (tránh hack ?content=../../)
 $allowedPages = [
