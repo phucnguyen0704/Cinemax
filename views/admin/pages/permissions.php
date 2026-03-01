@@ -1,6 +1,9 @@
 <?php
-$permisstions = $adminController->getAllPermissions();
-$error = $_GET['error'] ?? null;
+$permissions = $adminController->getAllPermissions();
+$roles = $adminController->getAllRoles();
+$rolePermissions = $role_permissionsController->getAllRolePermissions();
+$error = $_SESSION['error'] ?? null;
+unset($_SESSION['error']);
 ?>
 <section class="permissions">
     <header class="admin-header">
@@ -25,8 +28,8 @@ $error = $_GET['error'] ?? null;
     <div class="dashboard-content">
 
         <!-- ALERT -->
-        <?php if ($error || isset($_GET['add'])): ?>
-            <div class="alert alert-success" id="autoAlert">
+        <?php if ($error || isset($_GET['add']) || isset($_GET['update']) || isset($_GET['delete']) || isset($_GET['save'])): ?>
+            <div class="alert <?= $error ? 'alert-error' : 'alert-success' ?>" id="autoAlert">
                 <?php
                 if ($error) {
                     echo htmlspecialchars($error);
@@ -34,6 +37,12 @@ $error = $_GET['error'] ?? null;
 
                 if (isset($_GET['add']) && $_GET['add'] == 1) {
                     echo "Quyền đã được thêm thành công!";
+                } elseif (isset($_GET['update']) && $_GET['update'] == 1) {
+                    echo "Quyền đã được cập nhật thành công!";
+                } elseif (isset($_GET['delete']) && $_GET['delete'] == 1) {
+                    echo "Quyền đã được xóa thành công!";
+                } elseif (isset($_GET['save']) && $_GET['save'] == 1) {
+                    echo "Phân quyền đã được lưu thành công!";
                 }
                 ?>
             </div>
@@ -41,43 +50,61 @@ $error = $_GET['error'] ?? null;
 
         <div class="dashboard-card">
             <div class="table-responsive">
-                <table class="data-table permission-matrix">
-                    <thead>
-                        <tr>
-                            <th>Chức năng</th>
-                            <th>Admin</th>
-                            <th>Manager</th>
-                            <th>Staff</th>
-                        </tr>
-                    </thead>
+                <form method="POST" action="../admin/index.php?page=permissions&action=saveRolePermissions">
+                    <table class="data-table permission-matrix">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Chức năng</th>
 
-                    <tbody>
-                        <?php if (!empty($permisstions)): ?>
-                            <?php foreach ($permisstions as $permission): ?>
+                                <?php foreach ($roles as $role): ?>
+                                    <th style="text-align: center;"><?= htmlspecialchars($role['role_name']) ?></th>
+                                <?php endforeach; ?>
+
+                                <th style="text-align: center;">Hành động</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <?php foreach ($permissions as $permission): ?>
                                 <tr>
+                                    <td><strong>#<?= htmlspecialchars($permission['permission_id']) ?></strong></td>
                                     <td><?= htmlspecialchars($permission['permission_code']) ?></td>
+
+                                    <?php foreach ($roles as $role): ?>
+                                        <td>
+                                            <input type="checkbox"
+                                                name="role_permissions[<?= $role['role_id'] ?>][]"
+                                                value="<?= $permission['permission_id'] ?>"
+                                                <?= isset($rolePermissions[$role['role_id']]) &&
+                                                    in_array($permission['permission_id'], $rolePermissions[$role['role_id']])
+                                                    ? 'checked' : '' ?>>
+                                        </td>
+                                    <?php endforeach; ?>
+
                                     <td>
-                                        <input type="checkbox" name="permission_admin_<?= htmlspecialchars($permission['permission_id']) ?>">
-                                    </td>
-                                    <td>
-                                        <input type="checkbox" name="permission_manager_<?= htmlspecialchars($permission['permission_id']) ?>">
-                                    </td>
-                                    <td>
-                                        <input type="checkbox" name="permission_staff_<?= htmlspecialchars($permission['permission_id']) ?>">
+                                        <button class="btn-action" type="button"
+                                            onclick="openUpdatePermissionModal(this)"
+                                            data-permission-id="<?= $permission['permission_id'] ?>"
+                                            data-permission-code="<?= htmlspecialchars($permission['permission_code']) ?>"
+                                            data-permission-description="<?= htmlspecialchars($permission['description']) ?>">
+                                            <i class="fas fa-edit" style="color: #007BFF;"></i>
+                                        </button>
+
+                                        <button type="button" class="btn-action" onclick="confirmDelete(<?= htmlspecialchars($permission['permission_id']) ?>)">
+                                            <i class="fas fa-times" style="color: #E50914;"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="4">Không có quyền nào được tìm thấy.</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+                        </tbody>
+                    </table>
 
-            <div style="margin-top:20px; text-align:right;">
-                <button class="btn-primary">Lưu phân quyền</button>
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn-primary" type="submit">Lưu phân quyền</button>
+                    </div>
+                </form>
+
             </div>
         </div>
 
@@ -102,12 +129,45 @@ $error = $_GET['error'] ?? null;
                     <div class="form-group">
                         <label>Mô tả</label>
                         <textarea name="description" placeholder="Mô tả quyền (tùy chọn)"></textarea>
-                </div>
+                    </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn-action"
-                        onclick="closeModal('addPermissionModal')">Hủy</button>
-                    <button type="submit" class="btn-primary">Thêm quyền</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action"
+                            onclick="closeModal('addPermissionModal')">Hủy</button>
+                        <button type="submit" class="btn-primary">Thêm quyền</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- UPDATE PERMISSION MODAL -->
+    <div id="updatePermissionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Cập nhật quyền</h2>
+                <button class="btn-close" onclick="closeModal('updatePermissionModal')">&times;</button>
+            </div>
+
+            <form id="updatePermissionForm" action="../admin/index.php?page=permissions&action=update" method="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="hidden" id="update_permission_id" name="permission_id">
+                        <label>Tên quyền</label>
+                        <input type="text" id="update_permission_code" name="permission_code"
+                            placeholder="VD: Xem người dùng" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mô tả</label>
+                        <textarea id="update_permission_description" name="description" placeholder="Mô tả quyền (tùy chọn)"></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action"
+                            onclick="closeModal('updatePermissionModal')">Hủy</button>
+                        <button type="submit" class="btn-primary">Cập nhật quyền</button>
+                    </div>
                 </div>
             </form>
         </div>
