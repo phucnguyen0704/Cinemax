@@ -8,6 +8,8 @@ require_once __DIR__ . '/../../models/Role.php';
 require_once __DIR__ . '/../../models/Permission.php';
 require_once __DIR__ . '/../../models/Role_permissions.php';
 require_once __DIR__ . '/../../models/FoodCombo.php';
+require_once __DIR__ . '/../../models/Movie.php';
+require_once __DIR__ . '/../../models/Genre.php';
 
 //Các file service
 require_once __DIR__ . '/../../services/RoleService.php';
@@ -16,13 +18,14 @@ require_once __DIR__ . '/../../services/Role_permissionsService.php';
 require_once __DIR__ . '/../../services/UserService.php';
 require_once __DIR__ . '/../../services/FoodComboService.php';
 require_once __DIR__ . '/../../services/AuthMiddleware.php';
-
+require_once __DIR__ . '/../../services/MovieService.php';
 
 //Các file controller
 require_once __DIR__ . '/../../controllers/AdminController.php';
 require_once __DIR__ . '/../../controllers/AdminController.php';
 require_once __DIR__ . '/../../controllers/Role_permissionsController.php';
 require_once __DIR__ . '/../../controllers/FoodComboController.php';
+require_once __DIR__ . '/../../controllers/MovieController.php';
 session_start();
 
 // Kiểm tra đăng nhập và quyền admin bằng JWT
@@ -37,6 +40,8 @@ $roleModel = new Role($conn);
 $permissionModel = new Permission($conn);
 $role_permissionModel = new Role_permissions($conn);
 $foodComboModel = new FoodCombo($conn);
+$movieModel = new Movie($conn);
+$genreModel = new Genre($conn);
 
 
 //Khởi tạo services
@@ -45,12 +50,13 @@ $roleService = new RoleService($roleModel);
 $permissionService = new PermissionService($permissionModel, $role_permissionModel);
 $role_permissionsService = new Role_permissionsService($role_permissionModel);
 $foodComboService = new FoodComboService($foodComboModel);
-
+$movieService = new MovieService($movieModel, $genreModel);
 
 //Khởi tạo controllers
 $adminController = new AdminController($userService, $roleService, $permissionService);
 $role_permissionsController = new Role_permissionsController($role_permissionsService);
 $foodComboController = new FoodComboController($foodComboService);
+$movieController = new MovieController($movieService);
 
 // Danh sách page hợp lệ (tránh hack ?content=../../)
 $allowedPages = [
@@ -142,6 +148,28 @@ if ($page === 'combos' && $action) {
 
         case 'delete':
             $foodComboController->deleteCombo($_GET['id'] ?? 0);
+            exit;
+    }
+}
+if ($page === 'movies' && $action) {
+    switch ($action) {
+        case 'create':
+            $movieController->createMovie();
+            exit;
+        case 'update':
+            $movieController->updateMovie($_POST['movie_id'] ?? 0);
+            exit;
+        case 'delete':
+            $movieController->deleteMovie($_GET['id'] ?? 0);
+            exit;
+    }
+}
+
+if ($page === 'genres' && $action) {
+    switch ($action) {
+        case 'create':
+            // nếu bạn có GenreController thì gọi GenreController
+            // hoặc nếu gộp genre vào MovieController thì gọi ở đó
             exit;
     }
 }
