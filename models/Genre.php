@@ -1,5 +1,4 @@
 <?php
-// models/Genre.php
 
 class Genre
 {
@@ -12,14 +11,11 @@ class Genre
 
     public function getAllGenres()
     {
-        $sql = "SELECT genre_id AS GenreID, name AS Name, status AS Status
+        $sql = "SELECT genre_id, name, status
                 FROM genres
                 WHERE status = 1
-                ORDER BY genre_id";
+                ORDER BY name ASC";
         $result = $this->conn->query($sql);
-        if (!$result) {
-            throw new Exception("SQL Error: " . $this->conn->error);
-        }
 
         $genres = [];
         while ($row = $result->fetch_assoc()) {
@@ -28,112 +24,23 @@ class Genre
         return $genres;
     }
 
-    public function getGenreById($genreId)
+    public function countActiveByIds(array $ids): int
     {
-        $sql = "SELECT genre_id AS GenreID, name AS Name, status AS Status
+        $ids = array_values(array_filter(array_map('intval', $ids), fn($x) => $x > 0));
+        if (count($ids) === 0) return 0;
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $types = str_repeat('i', count($ids));
+
+        $sql = "SELECT COUNT(*) AS cnt
                 FROM genres
-                WHERE genre_id = ? AND status = 1";
+                WHERE status = 1 AND genre_id IN ($placeholders)";
+
         $stmt = $this->conn->prepare($sql);
-        if (!$stmt) {
-            throw new Exception("SQL Error: " . $this->conn->error);
-        }
-        $stmt->bind_param("i", $genreId);
+        $stmt->bind_param($types, ...$ids);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
 
-        if (!$stmt->execute()) {
-            throw new Exception("SQL Execute Error: " . $stmt->error);
-        }
-        $result = $stmt->get_result();
-        if (!$result) {
-            throw new Exception("SQL Get Result Error: " . $stmt->error);
-        }
-        return $result->fetch_assoc();
-    }
-
-    public function getGenreByName($name)
-    {
-        $sql = "SELECT genre_id AS GenreID, name AS Name, status AS Status
-                FROM genres
-                WHERE name = ? AND status = 1";
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) {
-            throw new Exception("SQL Error: " . $this->conn->error);
-        }
-        $stmt->bind_param("s", $name);
-
-        if (!$stmt->execute()) {
-            throw new Exception("SQL Execute Error: " . $stmt->error);
-        }
-        $result = $stmt->get_result();
-        if (!$result) {
-            throw new Exception("SQL Get Result Error: " . $stmt->error);
-        }
-        return $result->fetch_assoc();
-    }
-
-    public function createGenre($name)
-    {
-        $sql = "INSERT INTO genres (name, status) VALUES (?, 1)";
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) {
-            throw new Exception("SQL Error: " . $this->conn->error);
-        }
-        $stmt->bind_param("s", $name);
-
-        if (!$stmt->execute()) {
-            throw new Exception("SQL Execute Error: " . $stmt->error);
-        }
-        return true;
-    }
-
-    public function updateGenre($genreId, $name)
-    {
-        $sql = "UPDATE genres SET name = ? WHERE genre_id = ? AND status = 1";
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) {
-            throw new Exception("SQL Error: " . $this->conn->error);
-        }
-        $stmt->bind_param("si", $name, $genreId);
-
-        if (!$stmt->execute()) {
-            throw new Exception("SQL Execute Error: " . $stmt->error);
-        }
-        return true;
-    }
-
-    public function deleteGenre($genreId)
-    {
-        // Optional check: nếu genre đang được gán cho movie thì không cho xóa
-        $checkSql = "SELECT COUNT(*) AS count
-                     FROM movie_genres
-                     WHERE genre_id = ?";
-        $checkStmt = $this->conn->prepare($checkSql);
-        if (!$checkStmt) {
-            throw new Exception("SQL Error: " . $this->conn->error);
-        }
-        $checkStmt->bind_param("i", $genreId);
-
-        if (!$checkStmt->execute()) {
-            throw new Exception("SQL Execute Error: " . $checkStmt->error);
-        }
-        $checkRes = $checkStmt->get_result();
-        if (!$checkRes) {
-            throw new Exception("SQL Get Result Error: " . $checkStmt->error);
-        }
-        $row = $checkRes->fetch_assoc();
-        if (($row['count'] ?? 0) > 0) {
-            throw new Exception("Không thể xóa thể loại này vì đang được dùng cho phim.");
-        }
-
-        $sql = "UPDATE genres SET status = 0 WHERE genre_id = ?";
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) {
-            throw new Exception("SQL Error: " . $this->conn->error);
-        }
-        $stmt->bind_param("i", $genreId);
-
-        if (!$stmt->execute()) {
-            throw new Exception("SQL Execute Error: " . $stmt->error);
-        }
-        return true;
+        return (int)($row['cnt'] ?? 0);
     }
 }

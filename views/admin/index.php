@@ -22,7 +22,6 @@ require_once __DIR__ . '/../../services/MovieService.php';
 
 //Các file controller
 require_once __DIR__ . '/../../controllers/AdminController.php';
-require_once __DIR__ . '/../../controllers/AdminController.php';
 require_once __DIR__ . '/../../controllers/Role_permissionsController.php';
 require_once __DIR__ . '/../../controllers/FoodComboController.php';
 require_once __DIR__ . '/../../controllers/MovieController.php';
@@ -165,14 +164,6 @@ if ($page === 'movies' && $action) {
     }
 }
 
-if ($page === 'genres' && $action) {
-    switch ($action) {
-        case 'create':
-            // nếu bạn có GenreController thì gọi GenreController
-            // hoặc nếu gộp genre vào MovieController thì gọi ở đó
-            exit;
-    }
-}
 
 $contentPath = __DIR__ . "/pages/$page.php";
 ?>

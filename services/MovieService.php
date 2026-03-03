@@ -1,6 +1,4 @@
 <?php
-require_once __DIR__ . '/../models/Movie.php';
-require_once __DIR__ . '/../models/Genre.php';
 
 class MovieService
 {
@@ -13,163 +11,160 @@ class MovieService
         $this->genreModel = $genreModel;
     }
 
-    // =========================
-    // ADMIN LIST + FILTER
-    // =========================
-    public function listMoviesAdmin($search = '', $genreId = null, $statusText = '')
-    {
-        // validate filter (nhẹ thôi)
-        if ($genreId !== null && (!is_numeric($genreId) || (int)$genreId <= 0)) {
-            throw new InvalidArgumentException("Genre ID không hợp lệ.");
-        }
-
-        if ($statusText !== '' && !in_array($statusText, ['Đang chiếu', 'Sắp chiếu', 'Ngừng chiếu'], true)) {
-            throw new InvalidArgumentException("Trạng thái lọc không hợp lệ.");
-        }
-
-        return $this->movieModel->getMoviesForAdmin($search, $genreId, $statusText);
-    }
-
     public function getAllGenres()
     {
         return $this->genreModel->getAllGenres();
     }
 
-    public function getMovieById($movieId)
+    // list admin filter
+    public function listMoviesAdmin($search = '', $genreId = null, $statusText = '')
     {
-        if (empty($movieId) || !is_numeric($movieId) || (int)$movieId <= 0) {
-            throw new InvalidArgumentException("Movie ID không hợp lệ.");
+        $statusMap = [
+            '' => null,
+            'Đang chiếu' => 1,
+            'Sắp chiếu' => 0,
+            'Ngừng chiếu' => -1,
+        ];
+        if (!array_key_exists($statusText, $statusMap)) {
+            throw new InvalidArgumentException("Trạng thái lọc không hợp lệ.");
         }
+
+        if ($genreId !== null && $genreId !== '') {
+            if (!is_numeric($genreId) || (int)$genreId <= 0) throw new InvalidArgumentException("Genre ID không hợp lệ.");
+            $genreId = (int)$genreId;
+        } else {
+            $genreId = null;
+        }
+
+        return $this->movieModel->getMoviesForAdmin($search, $genreId, $statusMap[$statusText]);
+    }
+
+    public function getMovieDetail($movieId)
+    {
+        if (!is_numeric($movieId) || (int)$movieId <= 0) throw new InvalidArgumentException("Movie ID không hợp lệ.");
         return $this->movieModel->getMovieById((int)$movieId);
     }
 
-    // =========================
-    // CREATE / UPDATE / DELETE
-    // =========================
-
-    public function createMovie($movieData, $genreIds = [])
+    public function createMovie($movieData, $genreIds = [], $imageUrls = [], $posterImageUrl = null)
     {
-        $clean = $this->sanitizeMoviePayload($movieData, $genreIds, false);
+        $clean = $this->sanitizeMoviePayload($movieData, $genreIds, $imageUrls, $posterImageUrl);
 
-        // optional: kiểm tra title trùng (nếu bạn có hàm model)
-        // if ($this->movieModel->existsTitle($clean['data']['title'], null)) ...
-
-        $movieId = $this->movieModel->createMovieWithGenres($clean['data'], $clean['genreIds']);
-        if (!$movieId) {
-            throw new Exception("Không thể thêm phim.");
+        // validate genreIds tồn tại (nếu có truyền)
+        if (count($clean['genreIds']) > 0) {
+            $cnt = $this->genreModel->countActiveByIds($clean['genreIds']);
+            if ($cnt !== count($clean['genreIds'])) {
+                throw new InvalidArgumentException("Có thể loại không tồn tại hoặc đã bị khóa.");
+            }
         }
-        return $movieId;
+
+        return $this->movieModel->createMovieWithGenresAndImages(
+            $clean['data'],
+            $clean['genreIds'],
+            $clean['imageUrls'],
+            $clean['posterImageUrl']
+        );
     }
 
-    public function updateMovie($movieId, $movieData, $genreIds = [])
+    public function updateMovie($movieId, $movieData, $genreIds = [], $imageUrls = [], $posterImageUrl = null)
     {
-        if (empty($movieId) || !is_numeric($movieId) || (int)$movieId <= 0) {
-            throw new InvalidArgumentException("Movie ID không hợp lệ.");
+        if (!is_numeric($movieId) || (int)$movieId <= 0) throw new InvalidArgumentException("Movie ID không hợp lệ.");
+        $movieId = (int)$movieId;
+
+        $clean = $this->sanitizeMoviePayload($movieData, $genreIds, $imageUrls, $posterImageUrl);
+
+        if (count($clean['genreIds']) > 0) {
+            $cnt = $this->genreModel->countActiveByIds($clean['genreIds']);
+            if ($cnt !== count($clean['genreIds'])) {
+                throw new InvalidArgumentException("Có thể loại không tồn tại hoặc đã bị khóa.");
+            }
         }
 
-        $clean = $this->sanitizeMoviePayload($movieData, $genreIds, true);
-
-        $ok = $this->movieModel->updateMovieWithGenres((int)$movieId, $clean['data'], $clean['genreIds']);
-        if (!$ok) {
-            throw new Exception("Không thể cập nhật phim.");
-        }
-        return true;
+        return $this->movieModel->updateMovieWithGenresAndImages(
+            $movieId,
+            $clean['data'],
+            $clean['genreIds'],
+            $clean['imageUrls'],
+            $clean['posterImageUrl']
+        );
     }
 
     public function deleteMovie($movieId)
     {
-        if (empty($movieId) || !is_numeric($movieId) || (int)$movieId <= 0) {
-            throw new InvalidArgumentException("Movie ID không hợp lệ.");
-        }
-
-        $ok = $this->movieModel->deleteMovie((int)$movieId); // soft delete status = -1
-        if (!$ok) {
-            throw new Exception("Không thể xóa phim.");
-        }
+        if (!is_numeric($movieId) || (int)$movieId <= 0) throw new InvalidArgumentException("Movie ID không hợp lệ.");
+        if (!$this->movieModel->deleteMovie((int)$movieId)) throw new Exception("Không thể xóa phim.");
         return true;
     }
 
-    // =========================
-    // HELPERS
-    // =========================
-
-    /**
-     * Chuẩn hóa + validate payload movies theo DB hiện tại:
-     * movies(title, description, duration_min, release_date, poster_url, trailer_url, status)
-     * status: 1 now showing, 0 coming soon, -1 archived
-     */
-    private function sanitizeMoviePayload($movieData, $genreIds, $isUpdate)
+    private function sanitizeMoviePayload($movieData, $genreIds, $imageUrls, $posterImageUrl)
     {
-        $title = trim($movieData['title'] ?? '');
-        $description = $movieData['description'] ?? null;
+        $title       = trim((string)($movieData['title'] ?? ''));
+        $description = (string)($movieData['description'] ?? '');
         $durationMin = $movieData['duration_min'] ?? null;
         $releaseDate = $movieData['release_date'] ?? null;
-        $posterUrl = $movieData['poster_url'] ?? null;
-        $trailerUrl = $movieData['trailer_url'] ?? null;
-        $status = $movieData['status'] ?? null;
+        $posterUrl   = $movieData['poster_url'] ?? null;
+        $trailerUrl  = $movieData['trailer_url'] ?? null;
+        $status      = $movieData['status'] ?? null;
 
-        if ($title === '') {
-            throw new InvalidArgumentException("Tên phim không được để trống.");
-        }
-        if (mb_strlen($title) > 255) {
-            throw new InvalidArgumentException("Tên phim không được vượt quá 255 ký tự.");
-        }
+        if ($title === '') throw new InvalidArgumentException("Tên phim không được để trống.");
+        if (mb_strlen($title) > 255) throw new InvalidArgumentException("Tên phim không được vượt quá 255 ký tự.");
 
         if ($durationMin === null || !is_numeric($durationMin) || (int)$durationMin <= 0) {
-            throw new InvalidArgumentException("Thời lượng không hợp lệ.");
+            throw new InvalidArgumentException("duration_min không hợp lệ.");
         }
         $durationMin = (int)$durationMin;
 
-        if ($status === null || !is_numeric($status)) {
-            throw new InvalidArgumentException("Trạng thái không hợp lệ.");
-        }
+        if ($status === null || !is_numeric($status)) throw new InvalidArgumentException("status không hợp lệ.");
         $status = (int)$status;
-        if (!in_array($status, [1, 0, -1], true)) {
-            throw new InvalidArgumentException("Trạng thái không hợp lệ.");
-        }
+        if (!in_array($status, [1, 0, -1], true)) throw new InvalidArgumentException("status không hợp lệ.");
 
-        // release_date có thể null/'' hoặc YYYY-MM-DD
         $releaseDate = $releaseDate !== null ? trim((string)$releaseDate) : '';
-        if ($releaseDate === '') {
-            $releaseDate = null;
-        } else {
-            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $releaseDate)) {
-                throw new InvalidArgumentException("Ngày chiếu không đúng định dạng (YYYY-MM-DD).");
-            }
+        if ($releaseDate === '') $releaseDate = null;
+        elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $releaseDate)) {
+            throw new InvalidArgumentException("release_date phải dạng YYYY-MM-DD.");
         }
 
-        // URL fields optional
         $posterUrl = $posterUrl !== null ? trim((string)$posterUrl) : null;
         if ($posterUrl === '') $posterUrl = null;
 
         $trailerUrl = $trailerUrl !== null ? trim((string)$trailerUrl) : null;
         if ($trailerUrl === '') $trailerUrl = null;
 
-        // genreIds: normalize int unique
-        $normalizedGenreIds = [];
+        // normalize genre_ids
+        $g = [];
         if (is_array($genreIds)) {
             foreach ($genreIds as $gid) {
                 if (!is_numeric($gid)) continue;
                 $gid = (int)$gid;
-                if ($gid > 0) $normalizedGenreIds[$gid] = true;
+                if ($gid > 0) $g[$gid] = true;
             }
         }
-        $normalizedGenreIds = array_keys($normalizedGenreIds);
+        $genreIds = array_keys($g);
 
-        // Nếu muốn bắt buộc chọn ít nhất 1 thể loại thì mở comment:
-        // if (count($normalizedGenreIds) === 0) throw new InvalidArgumentException("Vui lòng chọn ít nhất 1 thể loại.");
+        // images
+        $imgs = [];
+        if (is_array($imageUrls)) {
+            foreach ($imageUrls as $u) {
+                $u = trim((string)$u);
+                if ($u !== '') $imgs[] = $u;
+            }
+        }
+
+        $posterImageUrl = $posterImageUrl !== null ? trim((string)$posterImageUrl) : null;
+        if ($posterImageUrl === '') $posterImageUrl = null;
 
         return [
-            "data" => [
-                "title" => $title,
-                "description" => $description,
-                "duration_min" => $durationMin,
-                "release_date" => $releaseDate,
-                "poster_url" => $posterUrl,
-                "trailer_url" => $trailerUrl,
-                "status" => $status,
+            'data' => [
+                'title' => $title,
+                'description' => $description,
+                'duration_min' => $durationMin,
+                'release_date' => $releaseDate,
+                'poster_url' => $posterUrl,
+                'trailer_url' => $trailerUrl,
+                'status' => $status,
             ],
-            "genreIds" => $normalizedGenreIds
+            'genreIds' => $genreIds,
+            'imageUrls' => $imgs,
+            'posterImageUrl' => $posterImageUrl
         ];
     }
 }
