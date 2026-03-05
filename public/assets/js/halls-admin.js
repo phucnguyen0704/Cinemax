@@ -15,10 +15,25 @@ document.addEventListener('DOMContentLoaded', async function() {
             getAllCinemas(),
             getAllHallStatuses()
         ]);
+
+        // Nếu API trạng thái trả về rỗng (chưa cấu hình trong DB),
+        // dùng danh sách mặc định giống PHP fallback ở halls.php
+        if (!statusesData || !statusesData.length) {
+            statusesData = [
+                { StatusID: 1, StatusName: 'Đang hoạt động' },
+                { StatusID: 0, StatusName: 'Tạm dừng' },
+                { StatusID: 2, StatusName: 'Bảo trì' }
+            ];
+        }
     } catch (error) {
         console.error('Lỗi khi load dữ liệu hỗ trợ:', error);
+        // Fallback mặc định khi lỗi API
         cinemasData = [];
-        statusesData = [];
+        statusesData = [
+            { StatusID: 1, StatusName: 'Đang hoạt động' },
+            { StatusID: 0, StatusName: 'Tạm dừng' },
+            { StatusID: 2, StatusName: 'Bảo trì' }
+        ];
     }
 
     // Gắn handler cho form thêm mới
@@ -88,31 +103,6 @@ function showAlert(message, type = 'success') {
 /**
  * Open edit modal
  */
-function populateHallModalSelects(modal) {
-    const editCinemaSelect = modal.querySelector('#editCinemaId');
-    const editStatusSelect = modal.querySelector('#editStatusId');
-
-    if (editCinemaSelect) {
-        editCinemaSelect.innerHTML = '<option value="">-- Chọn rạp --</option>';
-        (cinemasData || []).forEach(cinema => {
-            const opt = document.createElement('option');
-            opt.value = cinema.CinemaID;
-            opt.textContent = cinema.Name;
-            editCinemaSelect.appendChild(opt);
-        });
-    }
-
-    if (editStatusSelect) {
-        editStatusSelect.innerHTML = '<option value="">-- Chọn trạng thái --</option>';
-        (statusesData || []).forEach(status => {
-            const opt = document.createElement('option');
-            opt.value = status.StatusID;
-            opt.textContent = status.StatusName;
-            editStatusSelect.appendChild(opt);
-        });
-    }
-}
-
 function openEditModal(hall) {
     // Tạo modal nếu chưa có
     let modal = document.getElementById('editHallModal');
@@ -150,9 +140,28 @@ function openEditModal(hall) {
             </div>
         `;
         document.body.appendChild(modal);
-
-        // Luôn populate lại select từ dữ liệu mới nhất
-        populateHallModalSelects(modal);
+        
+        // Tạo option cho selects từ dữ liệu đã load
+        const editCinemaSelect = modal.querySelector('#editCinemaId');
+        const editStatusSelect = modal.querySelector('#editStatusId');
+        if (editCinemaSelect && cinemasData.length) {
+            editCinemaSelect.innerHTML = '<option value="">-- Chọn rạp --</option>';
+            cinemasData.forEach(cinema => {
+                const opt = document.createElement('option');
+                opt.value = cinema.CinemaID;
+                opt.textContent = cinema.Name;
+                editCinemaSelect.appendChild(opt);
+            });
+        }
+        if (editStatusSelect && statusesData.length) {
+            editStatusSelect.innerHTML = '<option value="">-- Chọn trạng thái --</option>';
+            statusesData.forEach(status => {
+                const opt = document.createElement('option');
+                opt.value = status.StatusID;
+                opt.textContent = status.StatusName;
+                editStatusSelect.appendChild(opt);
+            });
+        }
 
         // Điền dữ liệu sau khi selects đã được populate
         setTimeout(() => {
@@ -167,9 +176,7 @@ function openEditModal(hall) {
             if (editStatusId) editStatusId.value = hall.StatusID;
         }, 100);
     } else {
-        // Modal đã tồn tại, luôn populate lại để chắc chắn có dữ liệu
-        populateHallModalSelects(modal);
-
+        // Modal đã tồn tại, chỉ cần đảm bảo selects đã có options
         setTimeout(() => {
             const editHallId = document.getElementById('editHallId');
             const editCinemaId = document.getElementById('editCinemaId');

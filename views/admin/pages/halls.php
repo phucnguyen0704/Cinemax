@@ -201,9 +201,5 @@ try {
     </div>
 </section>
 
-<?php
-    $apiJsV = @filemtime(__DIR__ . '/../../../public/assets/js/api.js') ?: time();
-    $hallsAdminJsV = @filemtime(__DIR__ . '/../../../public/assets/js/halls-admin.js') ?: time();
-?>
-<script src="../../public/assets/js/api.js?v=<?php echo urlencode((string)$apiJsV); ?>"></script>
-<script src="../../public/assets/js/halls-admin.js?v=<?php echo urlencode((string)$hallsAdminJsV); ?>"></script>
+<script src="../../public/assets/js/api.js"></script>
+<script src="../../public/assets/js/halls-admin.js"></script>

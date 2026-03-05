@@ -13,11 +13,9 @@ class Hall
         if ($cinemaId) {
             $sql = "SELECT 
                         h.*,
-                        h.hall_id   AS HallID,
-                        h.name      AS Name,
-                        h.cinema_id AS CinemaID,
-                        h.status    AS StatusID,
-                        c.name      AS CinemaName,
+                        h.hall_id AS HallID,
+                        h.name    AS Name,
+                        c.name    AS CinemaName,
                     CASE 
                         WHEN h.status = 1 THEN 'Đang hoạt động'
                         WHEN h.status = 0 THEN 'Tạm dừng'
@@ -42,11 +40,9 @@ class Hall
         } else {
             $sql = "SELECT 
                         h.*,
-                        h.hall_id   AS HallID,
-                        h.name      AS Name,
-                        h.cinema_id AS CinemaID,
-                        h.status    AS StatusID,
-                        c.name      AS CinemaName,
+                        h.hall_id AS HallID,
+                        h.name    AS Name,
+                        c.name    AS CinemaName,
                     CASE 
                         WHEN h.status = 1 THEN 'Đang hoạt động'
                         WHEN h.status = 0 THEN 'Tạm dừng'
@@ -74,11 +70,9 @@ class Hall
     {
         $sql = "SELECT 
                     h.*,
-                    h.hall_id   AS HallID,
-                    h.name      AS Name,
-                    h.cinema_id AS CinemaID,
-                    h.status    AS StatusID,
-                    c.name      AS CinemaName,
+                    h.hall_id AS HallID,
+                    h.name    AS Name,
+                    c.name    AS CinemaName,
                 CASE 
                     WHEN h.status = 1 THEN 'Đang hoạt động'
                     WHEN h.status = 0 THEN 'Tạm dừng'

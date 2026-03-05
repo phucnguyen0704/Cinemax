@@ -35,48 +35,48 @@ class HallService
 
     public function createHall($cinemaId, $name, $statusId)
     {
-        if (!is_numeric($cinemaId)) {
+        if (empty($cinemaId) || !is_numeric($cinemaId)) {
             throw new InvalidArgumentException("Cinema ID không hợp lệ.");
         }
 
-        if ($name === null || trim($name) === '') {
+        if (empty($name) || trim($name) === '') {
             throw new InvalidArgumentException("Tên phòng chiếu không được để trống.");
         }
 
-        if (mb_strlen($name) > 50) {
+        if (strlen($name) > 50) {
             throw new InvalidArgumentException("Tên phòng chiếu không được vượt quá 50 ký tự.");
         }
 
-        if ($statusId === null || $statusId === '' || !is_numeric($statusId)) {
+        if (empty($statusId) || !is_numeric($statusId)) {
             throw new InvalidArgumentException("Status ID không hợp lệ.");
         }
 
-        return $this->hallModel->createHall((int)$cinemaId, $name, (int)$statusId);
+        return $this->hallModel->createHall($cinemaId, $name, $statusId);
     }
 
     public function updateHall($hallId, $cinemaId, $name, $statusId)
     {
-        if (!is_numeric($hallId)) {
+        if (empty($hallId) || !is_numeric($hallId)) {
             throw new InvalidArgumentException("Hall ID không hợp lệ.");
         }
 
-        if (!is_numeric($cinemaId)) {
+        if (empty($cinemaId) || !is_numeric($cinemaId)) {
             throw new InvalidArgumentException("Cinema ID không hợp lệ.");
         }
 
-        if ($name === null || trim($name) === '') {
+        if (empty($name) || trim($name) === '') {
             throw new InvalidArgumentException("Tên phòng chiếu không được để trống.");
         }
 
-        if (mb_strlen($name) > 50) {
+        if (strlen($name) > 50) {
             throw new InvalidArgumentException("Tên phòng chiếu không được vượt quá 50 ký tự.");
         }
 
-        if ($statusId === null || $statusId === '' || !is_numeric($statusId)) {
+        if (empty($statusId) || !is_numeric($statusId)) {
             throw new InvalidArgumentException("Status ID không hợp lệ.");
         }
 
-        return $this->hallModel->updateHall((int)$hallId, (int)$cinemaId, $name, (int)$statusId);
+        return $this->hallModel->updateHall($hallId, $cinemaId, $name, $statusId);
     }
 
     public function deleteHall($hallId)

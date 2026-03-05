@@ -57,7 +57,7 @@
                 <button class="btn-close" onclick="closeModal('addTheaterModal')">&times;</button>
             </div>
 
-            <form id="addCinemaForm" onsubmit="handleCreateCinema(event); return false;">
+            <form id="addCinemaForm">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Tên rạp</label>
