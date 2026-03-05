@@ -36,7 +36,7 @@ if ($selectedLocationId !== '' && !empty($cinemas)) {
 <main class="section">
     <div class="container">
         <div class="section-header">
-            <h2>Hệ thống rạp CinemaHub</h2>
+            <h2>Hệ thống rạp Cinemax</h2>
         </div>
 
         <!-- Bộ lọc khu vực / thành phố (render trực tiếp bằng PHP) -->

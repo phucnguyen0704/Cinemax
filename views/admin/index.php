@@ -155,7 +155,7 @@ if ($page === 'combos' && $action) {
 }
 $id = $_GET['id'] ?? null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'movies' && $action) {
+if ($page === 'movies' && $action) {
     switch ($action) {
         case 'create':
             $movieController->create();

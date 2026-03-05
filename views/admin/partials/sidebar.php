@@ -3,6 +3,10 @@ function isActivePage($contentPath, $pageName)
 {
     return basename($contentPath, '.php') === $pageName ? 'active' : '';
 }
+
+require_once __DIR__ . '/../../../services/AuthMiddleware.php';
+$authUser = AuthMiddleware::getAuthUser();
+$isLoggedIn = ($authUser !== null);
 ?>
 
 <aside class="admin-sidebar">
@@ -22,6 +26,13 @@ function isActivePage($contentPath, $pageName)
     </div>
 
     <nav class="sidebar-nav">
+        <?php if ($isLoggedIn): ?>
+            <div class="nav-item" style="font-size: 18px; text-transform: uppercase; border-bottom: 1px solid #404040; padding-bottom: 15px; margin-bottom: 15px;">
+                <i class="far fa-user"></i>
+                <span><?php echo htmlspecialchars($authUser['full_name']); ?></span>
+            </div>
+        <?php endif; ?>
+
         <a href="index.php?page=dashboard" class="nav-item <?php isActivePage($contentPath, 'dashboard'); ?>">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="3" width="7" height="7"></rect>

@@ -12,7 +12,7 @@ function openUpdatePermissionModal(element) {
   }, 0);
 }
 
-function confirmDelete(permissionId) {
+function confirmDeletePermission(permissionId) {
   if (confirm("Bạn có chắc chắn muốn xóa quyền này không?")) {
     window.location.href =
       "../admin/index.php?page=permissions&action=delete&id=" + permissionId;

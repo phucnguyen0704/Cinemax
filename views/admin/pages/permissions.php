@@ -17,11 +17,6 @@ unset($_SESSION['error']);
                 </svg>
                 <span>Thêm quyền</span>
             </button>
-
-            <div class="user-menu">
-                <img src="../../assets/images/default-avatar.png" alt="Admin">
-                <span>Admin</span>
-            </div>
         </div>
     </header>
 

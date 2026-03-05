@@ -6,10 +6,6 @@
             <button class="btn-add" onclick="openModal('addShowtimeModal')">
                 <span>+ Thêm suất chiếu</span>
             </button>
-            <div class="user-menu">
-                <img src="../../assets/images/default-avatar.png" alt="Admin">
-                <span>Admin Cinema</span>
-            </div>
         </div>
     </header>
 

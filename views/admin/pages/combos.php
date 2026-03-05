@@ -37,11 +37,6 @@ if ($editComboId) {
             <button class="btn-add" onclick="openModal('addFoodModal')">
                 <span>+ Thêm món mới</span>
             </button>
-
-            <div class="user-menu">
-                <img src="../../assets/images/default-avatar.png" alt="Admin">
-                <span>Admin</span>
-            </div>
         </div>
     </header>
 

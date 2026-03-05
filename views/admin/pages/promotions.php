@@ -7,11 +7,6 @@
                 <i class="fas fa-plus"></i>
                 <span>Thêm mã mới</span>
             </button>
-
-            <div class="user-menu">
-                <img src="../../assets/images/default-avatar.png" alt="Admin">
-                <span>Admin</span>
-            </div>
         </div>
     </header>
 
