@@ -9,6 +9,10 @@ if (!isset($foodComboService)) {
     $foodComboService = new FoodComboService(new FoodCombo($conn));
 }
 
+$error = $_SESSION['error'] ?? null;
+$success = $_SESSION['success'] ?? null;
+unset($_SESSION['error'], $_SESSION['success']);
+
 $combos = [];
 try {
     $combos = $foodComboService->getAllCombos();
@@ -41,6 +45,25 @@ if ($editComboId) {
     </header>
 
     <div class="dashboard-content">
+        <?php if ($error || $success || isset($_GET['add']) || isset($_GET['update']) || isset($_GET['delete']) || isset($_GET['error'])): ?>
+            <div class="alert <?= $error ? 'alert-error' : 'alert-success' ?>" id="autoAlert">
+                <?php
+                if ($error) {
+                    echo htmlspecialchars($error);
+                } elseif ($success) {
+                    echo htmlspecialchars($success);
+                } elseif (isset($_GET['add']) && $_GET['add'] == 1) {
+                    echo "Thêm combo thành công!";
+                } elseif (isset($_GET['update']) && $_GET['update'] == 1) {
+                    echo "Cập nhật combo thành công!";
+                } elseif (isset($_GET['delete']) && $_GET['delete'] == 1) {
+                    echo "Đóng/Xóa combo thành công!";
+                } elseif (isset($_GET['error']) && $_GET['error'] == 1) {
+                    echo "Có lỗi xảy ra. Vui lòng thử lại.";
+                }
+                ?>
+            </div>
+        <?php endif; ?>
 
         <div class="dashboard-card">
             <div class="table-responsive">
@@ -64,8 +87,15 @@ if ($editComboId) {
                                 <tr>
                                     <td>#<?php echo htmlspecialchars($combo['combo_id']); ?></td>
                                     <td>
-                                        <!-- Hiện chưa lưu ảnh trong DB, tạm hiển thị placeholder -->
-                                        <div style="width: 50px; height: 50px; background: #333; border-radius: 8px;"></div>
+                                        <?php if (!empty($combo['image_url'])): ?>
+                                            <img
+                                                src="../../<?php echo htmlspecialchars($combo['image_url']); ?>"
+                                                alt="<?php echo htmlspecialchars($combo['name']); ?>"
+                                                style="width:50px;height:50px;object-fit:cover;border-radius:8px;"
+                                            >
+                                        <?php else: ?>
+                                            <div style="width: 50px; height: 50px; background: #333; border-radius: 8px;"></div>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <strong><?php echo htmlspecialchars($combo['name']); ?></strong><br>
@@ -125,7 +155,7 @@ if ($editComboId) {
                     <div class="form-group">
                         <label>Hình ảnh</label>
                         <input type="file" name="image_file" accept="image/*" class="custom-input">
-                        <small style="color:#888;">(Hiện tại hệ thống chưa lưu ảnh, chỉ hiển thị placeholder)</small>
+                        <small style="color:#888;">(Ảnh sẽ được lưu tại public/assets/uploads/combos)</small>
                     </div>
                 </div>
 
@@ -171,7 +201,7 @@ if ($editComboId) {
                         <div class="form-group">
                             <label>Hình ảnh</label>
                             <input type="file" name="image_file" accept="image/*" class="custom-input">
-                            <small style="color:#888;">(Hiện tại hệ thống chưa lưu ảnh, chỉ hiển thị placeholder)</small>
+                            <small style="color:#888;">(Chọn ảnh mới nếu muốn thay đổi)</small>
                         </div>
                     </div>
 

@@ -40,7 +40,7 @@ class CinemaController
             $locationId = $_POST['location_id'] ?? null;
             $statusId = $_POST['status_id'] ?? null;
 
-            if (!$name || !$address || !$locationId || !$statusId) {
+            if (!$name || !$address || $locationId === null || $locationId === '' || $statusId === null || $statusId === '') {
                 throw new InvalidArgumentException("Vui lòng điền đầy đủ thông tin.");
             }
 
@@ -66,7 +66,7 @@ class CinemaController
             $locationId = $_POST['location_id'] ?? null;
             $statusId = $_POST['status_id'] ?? null;
 
-            if (!$name || !$address || !$locationId || !$statusId) {
+            if (!$name || !$address || $locationId === null || $locationId === '' || $statusId === null || $statusId === '') {
                 throw new InvalidArgumentException("Vui lòng điền đầy đủ thông tin.");
             }
 
@@ -90,10 +90,10 @@ class CinemaController
             $result = $this->cinemaService->deleteCinema($id);
 
             if ($result) {
-                $_SESSION['success'] = "Xóa rạp chiếu thành công!";
+                $_SESSION['success'] = "Đóng rạp thành công (ngừng hoạt động)!";
                 header('Location: ../../views/admin/index.php?page=cinemas&delete=1');
             } else {
-                throw new Exception("Không thể xóa rạp chiếu.");
+                throw new Exception("Không thể đóng rạp.");
             }
         } catch (Exception $e) {
             $_SESSION['error'] = $e->getMessage();

@@ -24,7 +24,7 @@ class FoodComboService
         return $this->comboModel->getComboById($comboId);
     }
 
-    public function createCombo($name, $description, $price)
+    public function createCombo($name, $description, $price, $imageUrl = null)
     {
         $name = trim((string)$name);
         $description = trim((string)$description);
@@ -41,10 +41,11 @@ class FoodComboService
             throw new InvalidArgumentException("Giá combo phải là số không âm.");
         }
 
-        return $this->comboModel->createCombo($name, $description, (float)$price);
+        $imageUrl = $imageUrl !== null ? trim((string)$imageUrl) : null;
+        return $this->comboModel->createCombo($name, $description, (float)$price, $imageUrl);
     }
 
-    public function updateCombo($comboId, $name, $description, $price)
+    public function updateCombo($comboId, $name, $description, $price, $imageUrl = null)
     {
         if (empty($comboId) || !is_numeric($comboId)) {
             throw new InvalidArgumentException("Combo ID không hợp lệ.");
@@ -65,7 +66,8 @@ class FoodComboService
             throw new InvalidArgumentException("Giá combo phải là số không âm.");
         }
 
-        return $this->comboModel->updateCombo($comboId, $name, $description, (float)$price);
+        $imageUrl = $imageUrl !== null ? trim((string)$imageUrl) : null;
+        return $this->comboModel->updateCombo($comboId, $name, $description, (float)$price, $imageUrl);
     }
 
     public function deleteCombo($comboId)
