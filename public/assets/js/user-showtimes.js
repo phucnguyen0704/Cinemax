@@ -30,10 +30,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 async function loadAllData() {
     try {
         // Load cinemas và halls
-        [cinemasData, hallsData] = await Promise.all([
+        const [allCinemas, halls] = await Promise.all([
             getAllCinemas(),
             currentCinemaId ? getAllHalls(currentCinemaId) : Promise.resolve([])
         ]);
+        // Chỉ giữ rạp đang hoạt động cho user
+        cinemasData = allCinemas.filter(cinema => String(cinema.Status) === '1');
+        hallsData = halls;
         
         // TODO: Load shows từ API (cần tạo API cho shows)
         // showsData = await getShowsByCinemaAndMovie(currentCinemaId, currentMovieId);

@@ -69,8 +69,15 @@ if ($editComboId) {
                                 <tr>
                                     <td>#<?php echo htmlspecialchars($combo['combo_id']); ?></td>
                                     <td>
-                                        <!-- Hiện chưa lưu ảnh trong DB, tạm hiển thị placeholder -->
-                                        <div style="width: 50px; height: 50px; background: #333; border-radius: 8px;"></div>
+                                        <?php if (!empty($combo['image_url'])): ?>
+                                            <img
+                                                src="../../<?php echo htmlspecialchars($combo['image_url']); ?>"
+                                                alt="<?php echo htmlspecialchars($combo['name']); ?>"
+                                                style="width:50px;height:50px;object-fit:cover;border-radius:8px;"
+                                            >
+                                        <?php else: ?>
+                                            <div style="width: 50px; height: 50px; background: #333; border-radius: 8px;"></div>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <strong><?php echo htmlspecialchars($combo['name']); ?></strong><br>
@@ -130,7 +137,7 @@ if ($editComboId) {
                     <div class="form-group">
                         <label>Hình ảnh</label>
                         <input type="file" name="image_file" accept="image/*" class="custom-input">
-                        <small style="color:#888;">(Hiện tại hệ thống chưa lưu ảnh, chỉ hiển thị placeholder)</small>
+                        <small style="color:#888;">(Ảnh sẽ được lưu tại public/assets/uploads/combos)</small>
                     </div>
                 </div>
 
@@ -176,7 +183,7 @@ if ($editComboId) {
                         <div class="form-group">
                             <label>Hình ảnh</label>
                             <input type="file" name="image_file" accept="image/*" class="custom-input">
-                            <small style="color:#888;">(Hiện tại hệ thống chưa lưu ảnh, chỉ hiển thị placeholder)</small>
+                            <small style="color:#888;">(Chọn ảnh mới nếu muốn thay đổi)</small>
                         </div>
                     </div>
 

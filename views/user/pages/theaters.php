@@ -16,12 +16,20 @@ try {
 // Lấy filter khu vực từ query string
 $selectedLocationId = $_GET['location_id'] ?? '';
 
-// Lấy danh sách rạp
+// Lấy danh sách rạp (chỉ hiển thị rạp đang hoạt động cho user)
 $cinemas = [];
 try {
     $cinemas = $cinemaModel->getAllCinemas();
 } catch (Exception $e) {
     $cinemas = [];
+}
+
+// Chỉ giữ rạp có Status = 1
+if (!empty($cinemas)) {
+    $cinemas = array_filter($cinemas, function ($cinema) {
+        $status = $cinema['status'] ?? $cinema['Status'] ?? 1;
+        return (int)$status === 1;
+    });
 }
 
 // Lọc theo khu vực nếu có chọn

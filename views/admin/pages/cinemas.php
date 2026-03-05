@@ -95,5 +95,9 @@
 
 </section>
 
-<script src="../../public/assets/js/api.js"></script>
-<script src="../../public/assets/js/cinemas-admin.js"></script>
+<?php
+    $apiJsV = @filemtime(__DIR__ . '/../../../public/assets/js/api.js') ?: time();
+    $cinemasAdminJsV = @filemtime(__DIR__ . '/../../../public/assets/js/cinemas-admin.js') ?: time();
+?>
+<script src="../../public/assets/js/api.js?v=<?php echo urlencode((string)$apiJsV); ?>"></script>
+<script src="../../public/assets/js/cinemas-admin.js?v=<?php echo urlencode((string)$cinemasAdminJsV); ?>"></script>

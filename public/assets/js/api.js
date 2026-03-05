@@ -179,7 +179,7 @@ async function deleteHall(id) {
 // HALL STATUS API
 // ============================
 
-async function getAllHallStatuses() {
+async function getAllHallStatusTypes() {
     return await fetchAPI('hall_status', 'getAll');
 }
 
@@ -340,6 +340,7 @@ if (typeof module !== 'undefined' && module.exports) {
         updateHall,
         deleteHall,
         getHallStatusById,
+        getAllHallStatusTypes,
         createHallStatus,
         updateHallStatus,
         deleteHallStatus,
