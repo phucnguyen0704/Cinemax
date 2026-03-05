@@ -23,8 +23,7 @@ class MovieController
                 'trailer_url'  => $_POST['trailer_url'] ?? null,
                 'status'       => $_POST['status'] ?? 1,
             ];
-
-            $genreIds = $_POST['genre_ids'] ?? []; // name="genre_ids[]"
+            $genreIds = $_POST['genre_ids'] ?? [];
 
             $this->movieService->createMovie($movieData, $genreIds);
 
@@ -48,7 +47,6 @@ class MovieController
                 'trailer_url'  => $_POST['trailer_url'] ?? null,
                 'status'       => $_POST['status'] ?? 1,
             ];
-
             $genreIds = $_POST['genre_ids'] ?? [];
 
             $this->movieService->updateMovie($movieId, $movieData, $genreIds);

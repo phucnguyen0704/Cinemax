@@ -16,7 +16,6 @@ class MovieService
         return $this->genreModel->getAllGenres();
     }
 
-    // list admin filter
     public function listMoviesAdmin($search = '', $genreId = null, $statusText = '')
     {
         $statusMap = [
@@ -39,17 +38,10 @@ class MovieService
         return $this->movieModel->getMoviesForAdmin($search, $genreId, $statusMap[$statusText]);
     }
 
-    public function getMovieDetail($movieId)
+    public function createMovie($movieData, $genreIds = [])
     {
-        if (!is_numeric($movieId) || (int)$movieId <= 0) throw new InvalidArgumentException("Movie ID không hợp lệ.");
-        return $this->movieModel->getMovieById((int)$movieId);
-    }
+        $clean = $this->sanitizeMoviePayload($movieData, $genreIds);
 
-    public function createMovie($movieData, $genreIds = [], $imageUrls = [], $posterImageUrl = null)
-    {
-        $clean = $this->sanitizeMoviePayload($movieData, $genreIds, $imageUrls, $posterImageUrl);
-
-        // validate genreIds tồn tại (nếu có truyền)
         if (count($clean['genreIds']) > 0) {
             $cnt = $this->genreModel->countActiveByIds($clean['genreIds']);
             if ($cnt !== count($clean['genreIds'])) {
@@ -57,20 +49,17 @@ class MovieService
             }
         }
 
-        return $this->movieModel->createMovieWithGenresAndImages(
-            $clean['data'],
-            $clean['genreIds'],
-            $clean['imageUrls'],
-            $clean['posterImageUrl']
-        );
+        $movieId = $this->movieModel->createMovieWithGenres($clean['data'], $clean['genreIds']);
+        if (!$movieId) throw new Exception("Không thể thêm phim.");
+        return $movieId;
     }
 
-    public function updateMovie($movieId, $movieData, $genreIds = [], $imageUrls = [], $posterImageUrl = null)
+    public function updateMovie($movieId, $movieData, $genreIds = [])
     {
         if (!is_numeric($movieId) || (int)$movieId <= 0) throw new InvalidArgumentException("Movie ID không hợp lệ.");
         $movieId = (int)$movieId;
 
-        $clean = $this->sanitizeMoviePayload($movieData, $genreIds, $imageUrls, $posterImageUrl);
+        $clean = $this->sanitizeMoviePayload($movieData, $genreIds);
 
         if (count($clean['genreIds']) > 0) {
             $cnt = $this->genreModel->countActiveByIds($clean['genreIds']);
@@ -79,13 +68,9 @@ class MovieService
             }
         }
 
-        return $this->movieModel->updateMovieWithGenresAndImages(
-            $movieId,
-            $clean['data'],
-            $clean['genreIds'],
-            $clean['imageUrls'],
-            $clean['posterImageUrl']
-        );
+        $ok = $this->movieModel->updateMovieWithGenres($movieId, $clean['data'], $clean['genreIds']);
+        if (!$ok) throw new Exception("Không thể cập nhật phim.");
+        return true;
     }
 
     public function deleteMovie($movieId)
@@ -95,7 +80,7 @@ class MovieService
         return true;
     }
 
-    private function sanitizeMoviePayload($movieData, $genreIds, $imageUrls, $posterImageUrl)
+    private function sanitizeMoviePayload($movieData, $genreIds)
     {
         $title       = trim((string)($movieData['title'] ?? ''));
         $description = (string)($movieData['description'] ?? '');
@@ -129,7 +114,7 @@ class MovieService
         $trailerUrl = $trailerUrl !== null ? trim((string)$trailerUrl) : null;
         if ($trailerUrl === '') $trailerUrl = null;
 
-        // normalize genre_ids
+        // normalize genre ids
         $g = [];
         if (is_array($genreIds)) {
             foreach ($genreIds as $gid) {
@@ -139,18 +124,6 @@ class MovieService
             }
         }
         $genreIds = array_keys($g);
-
-        // images
-        $imgs = [];
-        if (is_array($imageUrls)) {
-            foreach ($imageUrls as $u) {
-                $u = trim((string)$u);
-                if ($u !== '') $imgs[] = $u;
-            }
-        }
-
-        $posterImageUrl = $posterImageUrl !== null ? trim((string)$posterImageUrl) : null;
-        if ($posterImageUrl === '') $posterImageUrl = null;
 
         return [
             'data' => [
@@ -162,9 +135,7 @@ class MovieService
                 'trailer_url' => $trailerUrl,
                 'status' => $status,
             ],
-            'genreIds' => $genreIds,
-            'imageUrls' => $imgs,
-            'posterImageUrl' => $posterImageUrl
+            'genreIds' => $genreIds
         ];
     }
 }

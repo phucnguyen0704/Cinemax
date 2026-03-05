@@ -75,7 +75,7 @@ class AuthMiddleware
      * @param string $redirectUrl URL redirect khi chưa đăng nhập
      * @return array Thông tin user đã xác thực
      */
-    public static function requireLogin(string $redirectUrl = '/../views/auth/login.php?error=required'): array
+    public static function requireLogin(string $redirectUrl = ' /Cinemax/views/auth/login.php?error=required'): array
     {
         $user = self::getAuthUser();
 
@@ -98,7 +98,7 @@ class AuthMiddleware
         $user = self::requireLogin();
 
         if ((int)$user['role_id'] !== 1) {
-            header('Location: /../views/auth/login.php?error=unauthorized');
+            header('Location: /Cinemax/views/auth/login.php?error=unauthorized');
             exit;
         }
 
