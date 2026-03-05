@@ -75,7 +75,7 @@ class AuthMiddleware
      * @param string $redirectUrl URL redirect khi chưa đăng nhập
      * @return array Thông tin user đã xác thực
      */
-    public static function requireLogin(string $redirectUrl = '/../views/auth/login.php?error=required'): array
+    public static function requireLogin(string $redirectUrl = '../auth/login.php?error=required'): array
     {
         $user = self::getAuthUser();
 
@@ -113,4 +113,3 @@ class AuthMiddleware
         return self::COOKIE_NAME;
     }
 }
-
