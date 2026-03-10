@@ -1,3 +1,11 @@
+<<<<<<< Updated upstream
+=======
+<?php
+$q = $_GET['q'] ?? '';
+$genres = $genreService->listAdmin($q);
+?>
+
+>>>>>>> Stashed changes
 <section class="genres">
 
     <header class="admin-header">
@@ -27,6 +35,24 @@
         <!-- <div class="alert alert-error">Có lỗi xảy ra</div> -->
 
         <div class="dashboard-card">
+<<<<<<< Updated upstream
+=======
+
+            <form method="GET" action="index.php" class="filter-bar">
+                <input type="hidden" name="page" value="genres">
+
+                <input
+                    type="text"
+                    name="q"
+                    value="<?= htmlspecialchars($q) ?>"
+                    placeholder="Tìm thể loại..."
+                    style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+
+                <button type="submit" class="btn-primary">Lọc</button>
+                <a href="index.php?page=genres" class="btn-action">Reset</a>
+            </form>
+
+>>>>>>> Stashed changes
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
@@ -39,6 +65,7 @@
                     <tbody>
 
                         <tr>
+<<<<<<< Updated upstream
                             <td>#1</td>
                             <td><strong>Hành động</strong></td>
                             <td style="text-align: right;">
@@ -52,6 +79,10 @@
                                     <input type="hidden" name="genre_id" value="1">
                                     <button class="btn-action danger">Xóa</button>
                                 </form>
+=======
+                            <td colspan="3" style="text-align:center; padding:16px;">
+                                Chưa có thể loại
+>>>>>>> Stashed changes
                             </td>
                         </tr>
 
@@ -95,9 +126,14 @@
         </div>
     </div>
 
+<<<<<<< Updated upstream
     <!-- Modal thêm thể loại -->
     <div id="addGenreModal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
+=======
+    <div id="addGenreModal" class="modal">
+        <div class="modal-content" style="max-width:420px;">
+>>>>>>> Stashed changes
             <div class="modal-header">
                 <h2>Thêm thể loại mới</h2>
                 <button class="btn-close" onclick="closeModal('addGenreModal')">&times;</button>
@@ -110,11 +146,18 @@
                         <label>Tên thể loại</label>
                         <input type="text"
                                name="name"
+<<<<<<< Updated upstream
                                placeholder="VD: Hành động, Kinh dị..."
                                required
                                class="custom-input">
+=======
+                               required
+                               placeholder="VD: Hành động, Kinh dị..."
+                               style="width:100%;padding:10px;border-radius:8px;border:1px solid #444;background:#222;color:#fff;">
+>>>>>>> Stashed changes
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button"
                             class="btn-action"

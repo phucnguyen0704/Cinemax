@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../services/MovieService.php';
 
 class MovieController
@@ -16,6 +15,8 @@ class MovieController
         try {
             $movieData = [
                 'title'        => $_POST['title'] ?? '',
+                'director'     => $_POST['director'] ?? '',
+                'cast'         => $_POST['cast'] ?? '',
                 'description'  => $_POST['description'] ?? '',
                 'duration_min' => $_POST['duration_min'] ?? null,
                 'release_date' => $_POST['release_date'] ?? null,
@@ -23,15 +24,21 @@ class MovieController
                 'trailer_url'  => $_POST['trailer_url'] ?? null,
                 'status'       => $_POST['status'] ?? 1,
             ];
+<<<<<<< Updated upstream
 
             $genreIds = $_POST['genre_ids'] ?? []; // name="genre_ids[]"
+=======
+>>>>>>> Stashed changes
 
-            $this->movieService->createMovie($movieData, $genreIds);
+            $genreIds   = $_POST['genre_ids'] ?? [];
+            $posterFile = $_FILES['poster_file'] ?? null;
 
-            header('Location: ../../views/admin/index.php?page=movies&add=1');
+            $this->movieService->createMovie($movieData, $genreIds, $posterFile);
+
+            header('Location: index.php?page=movies&success=' . urlencode('Thêm phim thành công.'));
             exit;
-        } catch (Exception $e) {
-            header('Location: ../../views/admin/index.php?page=movies&error=' . urlencode($e->getMessage()));
+        } catch (Throwable $e) {
+            header('Location: index.php?page=movies&error=' . urlencode($e->getMessage()) . '&open_modal=add');
             exit;
         }
     }
@@ -39,8 +46,12 @@ class MovieController
     public function update($movieId): void
     {
         try {
+            $movieId = (int)$movieId;
+
             $movieData = [
                 'title'        => $_POST['title'] ?? '',
+                'director'     => $_POST['director'] ?? '',
+                'cast'         => $_POST['cast'] ?? '',
                 'description'  => $_POST['description'] ?? '',
                 'duration_min' => $_POST['duration_min'] ?? null,
                 'release_date' => $_POST['release_date'] ?? null,
@@ -48,15 +59,21 @@ class MovieController
                 'trailer_url'  => $_POST['trailer_url'] ?? null,
                 'status'       => $_POST['status'] ?? 1,
             ];
+<<<<<<< Updated upstream
 
             $genreIds = $_POST['genre_ids'] ?? [];
+=======
+>>>>>>> Stashed changes
 
-            $this->movieService->updateMovie($movieId, $movieData, $genreIds);
+            $genreIds   = $_POST['genre_ids'] ?? [];
+            $posterFile = $_FILES['poster_file'] ?? null;
 
-            header('Location: ../../views/admin/index.php?page=movies&update=1');
+            $this->movieService->updateMovie($movieId, $movieData, $genreIds, $posterFile);
+
+            header('Location: index.php?page=movies&success=' . urlencode('Cập nhật phim thành công.'));
             exit;
-        } catch (Exception $e) {
-            header('Location: ../../views/admin/index.php?page=movies&error=' . urlencode($e->getMessage()));
+        } catch (Throwable $e) {
+            header('Location: index.php?page=movies&error=' . urlencode($e->getMessage()) . '&open_modal=edit&id=' . (int)$movieId);
             exit;
         }
     }
@@ -64,12 +81,13 @@ class MovieController
     public function delete($movieId): void
     {
         try {
+            $movieId = (int)$movieId;
             $this->movieService->deleteMovie($movieId);
 
-            header('Location: ../../views/admin/index.php?page=movies&delete=1');
+            header('Location: index.php?page=movies&success=' . urlencode('Xóa phim thành công.'));
             exit;
-        } catch (Exception $e) {
-            header('Location: ../../views/admin/index.php?page=movies&error=' . urlencode($e->getMessage()));
+        } catch (Throwable $e) {
+            header('Location: index.php?page=movies&error=' . urlencode($e->getMessage()));
             exit;
         }
     }
