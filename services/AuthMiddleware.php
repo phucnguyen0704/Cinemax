@@ -92,11 +92,7 @@ class AuthMiddleware
      * @param string $redirectUrl URL redirect khi chưa đăng nhập
      * @return array Thông tin user đã xác thực
      */
-<<<<<<< HEAD
-    public static function requireLogin(string $redirectUrl = '../auth/login.php?error=required'): array
-=======
     public static function requireLogin(string $redirectUrl = ' /Cinemax/views/auth/login.php?error=required'): array
->>>>>>> main
     {
         $user = self::getAuthUser();
 
