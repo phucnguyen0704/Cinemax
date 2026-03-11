@@ -38,20 +38,20 @@ class CinemaService
             throw new InvalidArgumentException("Địa chỉ không được để trống.");
         }
 
-        if (empty($locationId) || !is_numeric($locationId)) {
+        if (!is_numeric($locationId)) {
             throw new InvalidArgumentException("Location ID không hợp lệ.");
         }
 
-        if (empty($statusId) || !is_numeric($statusId)) {
+        if ($statusId === '' || !is_numeric($statusId)) {
             throw new InvalidArgumentException("Status ID không hợp lệ.");
         }
 
-        return $this->cinemaModel->createCinema($name, $address, $locationId, $statusId);
+        return $this->cinemaModel->createCinema($name, $address, (int)$locationId, (int)$statusId);
     }
 
     public function updateCinema($cinemaId, $name, $address, $locationId, $statusId)
     {
-        if (empty($cinemaId) || !is_numeric($cinemaId)) {
+        if (!is_numeric($cinemaId)) {
             throw new InvalidArgumentException("Cinema ID không hợp lệ.");
         }
 
@@ -67,15 +67,15 @@ class CinemaService
             throw new InvalidArgumentException("Địa chỉ không được để trống.");
         }
 
-        if (empty($locationId) || !is_numeric($locationId)) {
+        if (!is_numeric($locationId)) {
             throw new InvalidArgumentException("Location ID không hợp lệ.");
         }
 
-        if (empty($statusId) || !is_numeric($statusId)) {
+        if ($statusId === '' || !is_numeric($statusId)) {
             throw new InvalidArgumentException("Status ID không hợp lệ.");
         }
 
-        return $this->cinemaModel->updateCinema($cinemaId, $name, $address, $locationId, $statusId);
+        return $this->cinemaModel->updateCinema((int)$cinemaId, $name, $address, (int)$locationId, (int)$statusId);
     }
 
     public function deleteCinema($cinemaId)

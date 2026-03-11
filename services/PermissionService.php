@@ -50,7 +50,7 @@ class PermissionService
 
     public function deletePermission($permissionId)
     {
-        if($this->rolePermissionsModel->getPermissionsByRoleId($permissionId)) {
+        if($this->rolePermissionsModel->getRoleByPermissionId($permissionId)) {
             throw new InvalidArgumentException("Cannot delete permission that is assigned to a role.");
         }
         return $this->permissionModel->deletePermission($permissionId);

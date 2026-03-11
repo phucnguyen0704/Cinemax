@@ -2,12 +2,6 @@
 
     <header class="admin-header">
         <h1>Quản lý đơn hàng</h1>
-        <div class="header-actions">
-            <div class="user-menu">
-                <img src="../../assets/images/default-avatar.png" alt="Admin">
-                <span>Admin Cinema</span>
-            </div>
-        </div>
     </header>
 
     <div class="dashboard-content">

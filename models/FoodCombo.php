@@ -46,15 +46,15 @@ class FoodCombo
         return $result->fetch_assoc();
     }
 
-    public function createCombo($name, $description, $price)
+    public function createCombo($name, $description, $price, $imageUrl = null)
     {
-        $sql = "INSERT INTO combos (name, description, price, status) VALUES (?, ?, ?, 1)";
+        $sql = "INSERT INTO combos (name, description, image_url, price, status) VALUES (?, ?, ?, ?, 1)";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Prepare Error: " . $this->conn->error);
         }
 
-        $stmt->bind_param("ssd", $name, $description, $price);
+        $stmt->bind_param("sssd", $name, $description, $imageUrl, $price);
         if (!$stmt->execute()) {
             throw new Exception("SQL Execute Error: " . $stmt->error);
         }
@@ -62,15 +62,23 @@ class FoodCombo
         return $this->conn->insert_id;
     }
 
-    public function updateCombo($comboId, $name, $description, $price)
+    public function updateCombo($comboId, $name, $description, $price, $imageUrl = null)
     {
-        $sql = "UPDATE combos SET name = ?, description = ?, price = ? WHERE combo_id = ?";
+        if ($imageUrl !== null) {
+            $sql = "UPDATE combos SET name = ?, description = ?, image_url = ?, price = ? WHERE combo_id = ?";
+        } else {
+            $sql = "UPDATE combos SET name = ?, description = ?, price = ? WHERE combo_id = ?";
+        }
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Prepare Error: " . $this->conn->error);
         }
 
-        $stmt->bind_param("ssdi", $name, $description, $price, $comboId);
+        if ($imageUrl !== null) {
+            $stmt->bind_param("sssdi", $name, $description, $imageUrl, $price, $comboId);
+        } else {
+            $stmt->bind_param("ssdi", $name, $description, $price, $comboId);
+        }
         if (!$stmt->execute()) {
             throw new Exception("SQL Execute Error: " . $stmt->error);
         }

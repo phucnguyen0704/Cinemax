@@ -16,11 +16,6 @@ $error = $_GET['error'] ?? null;
                 </svg>
                 <span>Thêm vai trò</span>
             </button>
-
-            <div class="user-menu">
-                <img src="../../assets/images/default-avatar.png" alt="Admin">
-                <span>Admin</span>
-            </div>
         </div>
     </header>
 
@@ -73,7 +68,7 @@ $error = $_GET['error'] ?? null;
                                         </button>
 
                                         <button class="btn-action danger"
-                                            onclick="confirmDelete(this)"
+                                            onclick="confirmDeleteRole(this)"
                                             data-role-id="<?= htmlspecialchars($role['role_id']) ?>">Xóa</button>
                                     </td>
                                 </tr>

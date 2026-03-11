@@ -12,11 +12,6 @@
                 </svg>
                 <span>Thêm rạp mới</span>
             </button>
-
-            <div class="user-menu">
-                <img src="../../assets/images/default-avatar.png" alt="Admin">
-                <span>Admin</span>
-            </div>
         </div>
     </header>
 
@@ -57,7 +52,7 @@
                 <button class="btn-close" onclick="closeModal('addTheaterModal')">&times;</button>
             </div>
 
-            <form id="addCinemaForm" onsubmit="handleCreateCinema(event); return false;">
+            <form id="addCinemaForm">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Tên rạp</label>
@@ -95,5 +90,9 @@
 
 </section>
 
-<script src="../../public/assets/js/api.js"></script>
-<script src="../../public/assets/js/cinemas-admin.js"></script>
+<?php
+    $apiJsV = @filemtime(__DIR__ . '/../../../public/assets/js/api.js') ?: time();
+    $cinemasAdminJsV = @filemtime(__DIR__ . '/../../../public/assets/js/cinemas-admin.js') ?: time();
+?>
+<script src="../../public/assets/js/api.js?v=<?php echo urlencode((string)$apiJsV); ?>"></script>
+<script src="../../public/assets/js/cinemas-admin.js?v=<?php echo urlencode((string)$cinemasAdminJsV); ?>"></script>

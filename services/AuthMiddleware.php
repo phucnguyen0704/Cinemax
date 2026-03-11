@@ -8,6 +8,7 @@
 require_once __DIR__ . '/../config/JwtHelper.php';
 require_once __DIR__ . '/../config/dbConfig.php';
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/Role_permissions.php';
 
 class AuthMiddleware
 {
@@ -66,7 +67,23 @@ class AuthMiddleware
             return null;
         }
 
-        return JwtHelper::decode($token);
+        $user = JwtHelper::decode($token);
+
+        if (!$user) {
+            return null;
+        }
+
+        // Nếu session chưa có permissions thì load
+        if (!isset($_SESSION['permissions'])) {
+            $rolePermissionModel = new Role_permissions(getDBConnection());
+            $permissions = $rolePermissionModel->getPermissionsByRoleId($user['role_id']);
+            $_SESSION['permissions'] = array_column($permissions, 'code');
+        }
+
+        // lưu user vào session luôn
+        $_SESSION['user'] = $user;
+
+        return $user;
     }
 
     /**
@@ -75,7 +92,11 @@ class AuthMiddleware
      * @param string $redirectUrl URL redirect khi chưa đăng nhập
      * @return array Thông tin user đã xác thực
      */
+<<<<<<< HEAD
     public static function requireLogin(string $redirectUrl = '../auth/login.php?error=required'): array
+=======
+    public static function requireLogin(string $redirectUrl = ' /Cinemax/views/auth/login.php?error=required'): array
+>>>>>>> main
     {
         $user = self::getAuthUser();
 
@@ -98,7 +119,7 @@ class AuthMiddleware
         $user = self::requireLogin();
 
         if ((int)$user['role_id'] !== 1) {
-            header('Location: /../views/auth/login.php?error=unauthorized');
+            header('Location: /Cinemax/views/auth/login.php?error=unauthorized');
             exit;
         }
 

@@ -17,7 +17,7 @@ class Role
         $stmt->execute();
 
         $result = $stmt->get_result();
-        return $result->fetch_assoc(MYSQLI_ASSOC);
+        return $result->fetch_assoc();
     }
     public function getAllRoles()
     {
@@ -88,5 +88,21 @@ class Role
         $result = $this->conn->query($sql);
         $row = $result->fetch_assoc();
         return (int)$row['total'];
+    }
+
+    public function getAllPermissionsByRole($roleId)
+    {
+        $sql = "SELECT p.* FROM permissions p
+                JOIN role_permissions rp ON p.permission_id = rp.permission_id
+                WHERE rp.role_id = ? AND p.status = 1";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $roleId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $permissions = [];
+        while ($row = $result->fetch_assoc()) {
+            $permissions[] = $row;
+        }
+        return $permissions;
     }
 }

@@ -1,52 +1,65 @@
+<?php
+// views/admin/pages/movies.php
+// File này được include từ views/admin/index.php nên đã có: $movieService
+
+$search   = $_GET['q'] ?? '';
+$genreId  = $_GET['genre_id'] ?? null;
+$statusTx = $_GET['status_text'] ?? '';
+
+$movies = $movieService->listMoviesAdmin($search, $genreId, $statusTx);
+$genres = $movieService->getAllGenres();
+?>
+
 <section class="movies">
 
     <header class="admin-header">
         <h1>Quản lý phim</h1>
-        <button class="btn-add " onclick="openModal('addMovieModal')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
+        <button class="btn-add" onclick="openModal('addMovieModal')">
             <span>Thêm phim mới</span>
         </button>
     </header>
 
     <div class="dashboard-content">
-
         <div class="dashboard-card">
 
-            <form method="GET" action="movies.php" class="filter-bar">
+            <!-- FILTER: đi qua index.php để router xử lý -->
+            <form method="GET" action="index.php" class="filter-bar">
+                <input type="hidden" name="page" value="movies">
+
                 <input
                     type="text"
-                    name="search"
+                    name="q"
+                    value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
                     placeholder="Tìm tên phim..."
                     style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
 
                 <select
-                    name="genre"
+                    name="genre_id"
                     style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
                     <option value="">Tất cả thể loại</option>
-                    <option value="1">Hành động</option>
-                    <option value="2">Hài</option>
-                    <option value="3">Tình cảm</option>
+                    <?php foreach ($genres as $g): ?>
+                        <option value="<?= (int)$g['genre_id'] ?>"
+                            <?= ((string)$g['genre_id'] === (string)($_GET['genre_id'] ?? '')) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($g['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
 
+                <?php $st = $_GET['status_text'] ?? ''; ?>
                 <select
-                    name="status"
+                    name="status_text"
                     style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="Đang chiếu">Đang chiếu</option>
-                    <option value="Sắp chiếu">Sắp chiếu</option>
-                    <option value="Ngừng chiếu">Ngừng chiếu</option>
+                    <option value="" <?= $st===''?'selected':'' ?>>Tất cả trạng thái</option>
+                    <option value="Đang chiếu" <?= $st==='Đang chiếu'?'selected':'' ?>>Đang chiếu</option>
+                    <option value="Sắp chiếu" <?= $st==='Sắp chiếu'?'selected':'' ?>>Sắp chiếu</option>
+                    <option value="Ngừng chiếu" <?= $st==='Ngừng chiếu'?'selected':'' ?>>Ngừng chiếu</option>
                 </select>
 
                 <button type="submit" class="btn-primary">Lọc</button>
-                <a href="movies.php" class="btn-action">Reset</a>
+                <a href="index.php?page=movies" class="btn-action">Reset</a>
             </form>
 
-
+            <!-- TABLE -->
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
@@ -62,30 +75,48 @@
                         </tr>
                     </thead>
                     <tbody>
+                    <?php if (empty($movies)): ?>
                         <tr>
-                            <td>#1</td>
-                            <td>
-                                <img src="https://via.placeholder.com/40x60"
-                                    style="width:40px;height:60px;object-fit:cover;border-radius:4px;">
-                            </td>
-                            <td><strong>Tên phim mẫu</strong></td>
-                            <td>Hành động, Phiêu lưu</td>
-                            <td>120p</td>
-                            <td>01/01/2025</td>
-                            <td><span class="badge badge-success">Đang chiếu</span></td>
-                            <td>
-                                <button class="btn-action">Sửa</button>
-                                <button class="btn-action danger">Xóa</button>
+                            <td colspan="8" style="text-align:center; padding:16px;">
+                                Chưa có dữ liệu phim
                             </td>
                         </tr>
+                    <?php else: ?>
+                        <?php foreach ($movies as $m): ?>
+                            <tr>
+                                <td>#<?= (int)$m['movie_id'] ?></td>
+                                <td>
+                                    <img src="<?= htmlspecialchars($m['poster_url'] ?: 'https://via.placeholder.com/40x60') ?>"
+                                         style="width:40px;height:60px;object-fit:cover;border-radius:4px;">
+                                </td>
+                                <td><strong><?= htmlspecialchars($m['title']) ?></strong></td>
+                                <td><?= htmlspecialchars($m['genre_names'] ?? '') ?></td>
+                                <td><?= (int)$m['duration_min'] ?>p</td>
+                                <td><?= $m['release_date'] ? date('d/m/Y', strtotime($m['release_date'])) : '' ?></td>
+                                <td>
+                                    <?php
+                                        $badge = 'badge-success'; $txt = 'Đang chiếu';
+                                        if ((int)$m['status'] === 0) { $badge = 'badge-warning'; $txt = 'Sắp chiếu'; }
+                                        if ((int)$m['status'] === -1) { $badge = 'badge-danger'; $txt = 'Ngừng chiếu'; }
+                                    ?>
+                                    <span class="badge <?= $badge ?>"><?= $txt ?></span>
+                                </td>
+                                <td>
+                                    <!-- DELETE: POST để index route qua controller -->
+                                    <form method="POST"
+                                          action="index.php?page=movies&action=delete&id=<?= (int)$m['movie_id'] ?>"
+                                          style="display:inline;">
+                                        <button type="submit" class="btn-action danger"
+                                                onclick="return confirm('Xóa phim này?')">
+                                            Xóa
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                     </tbody>
                 </table>
-            </div>
-
-            <div class="pagination">
-                <a class="page-link active">1</a>
-                <a class="page-link">2</a>
-                <a class="page-link">3</a>
             </div>
 
         </div>
@@ -96,89 +127,77 @@
         <div class="modal-content" style="max-width:800px;">
             <div class="modal-header">
                 <h2>Thêm phim mới</h2>
-                <button class="btn-close">&times;</button>
+                <button type="button" class="btn-close" onclick="closeModal('addMovieModal')">&times;</button>
             </div>
 
-            <form>
+            <!-- IMPORTANT: POST về index để gọi controller -->
+            <form method="POST" action="index.php?page=movies&action=create">
                 <div class="modal-body">
 
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
                         <div>
                             <div class="form-group">
                                 <label>Tên phim</label>
-                                <input type="text">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Đạo diễn</label>
-                                <input type="text">
+                                <input type="text" name="title" required>
                             </div>
 
                             <div class="form-group">
                                 <label>Thể loại</label>
                                 <div class="genre-grid">
-                                    <label class="checkbox-item">
-                                        <input type="checkbox"> Hành động
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox"> Hài
-                                    </label>
+                                    <?php foreach ($genres as $g): ?>
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" name="genre_ids[]" value="<?= (int)$g['genre_id'] ?>">
+                                            <?= htmlspecialchars($g['name']) ?>
+                                        </label>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
                         </div>
 
                         <div>
                             <div class="form-group">
-                                <label>Diễn viên</label>
-                                <select multiple class="actor-select">
-                                    <option>Diễn viên A</option>
-                                    <option>Diễn viên B</option>
-                                </select>
+                                <label>Poster URL</label>
+                                <input type="text" name="poster_url" placeholder="https://...">
                             </div>
 
                             <div class="form-group">
-                                <label>Poster</label>
-                                <div style="display:flex;gap:10px;align-items:center;">
-                                    <img src="https://via.placeholder.com/50x75">
-                                    <input type="file">
-                                </div>
+                                <label>Link Trailer</label>
+                                <input type="text" name="trailer_url" placeholder="https://...">
                             </div>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Link Trailer</label>
-                        <input type="text">
                     </div>
 
                     <div class="form-group">
                         <label>Mô tả</label>
-                        <textarea rows="2"></textarea>
+                        <textarea name="description" rows="2"></textarea>
                     </div>
 
                     <div style="display:flex;gap:10px;">
                         <div class="form-group" style="flex:1">
-                            <label>Thời lượng</label>
-                            <input type="number">
+                            <label>Thời lượng (phút)</label>
+                            <input type="number" name="duration_min" min="1" required>
                         </div>
+
                         <div class="form-group" style="flex:1">
                             <label>Trạng thái</label>
-                            <select>
-                                <option>Sắp chiếu</option>
-                                <option>Đang chiếu</option>
+                            <select name="status" required>
+                                <option value="0">Sắp chiếu</option>
+                                <option value="1" selected>Đang chiếu</option>
+                                <option value="-1">Ngừng chiếu</option>
                             </select>
                         </div>
+
                         <div class="form-group" style="flex:1">
                             <label>Ngày chiếu</label>
-                            <input type="date">
+                            <input type="date" name="release_date">
                         </div>
                     </div>
 
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn-action">Hủy</button>
-                    <button type="button" class="btn-primary">Lưu</button>
+                    <button type="button" class="btn-action" onclick="closeModal('addMovieModal')">Hủy</button>
+                    <button type="submit" class="btn-primary">Lưu</button>
                 </div>
             </form>
         </div>

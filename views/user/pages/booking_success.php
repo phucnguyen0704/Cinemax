@@ -47,7 +47,7 @@
                         </svg>
                     </div>
                     <h1 style="font-size: 32px;">Đặt vé thành công!</h1>
-                    <p style="color: #aaa;">Cảm ơn bạn đã sử dụng dịch vụ của CinemaHub</p>
+                    <p style="color: #aaa;">Cảm ơn bạn đã sử dụng dịch vụ của Cinemax</p>
                 </div>
 
                 <div class="ticket-card" id="ticketCapture">

@@ -13,7 +13,7 @@ function openUpdateRoleModal(element) {
   }, 0);
 }
 
-function confirmDelete(element) {
+function confirmDeleteRole(element) {
   const roleId = element.dataset.roleId;
   const confirmation = confirm("Bạn có chắc chắn muốn xóa vai trò này không?");
   if (confirmation) {
