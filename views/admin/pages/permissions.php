@@ -142,10 +142,23 @@ unset($_GET['error']);
                         <select name="module" required>
                             <option value="">-- Chọn chức năng --</option>
                             <option value="dashboard">Thống kê</option>
-                            <option value="movies">Phim</option>
-                            <option value="users">Người dùng</option>
+
+                            <option value="movies">Danh sách phim</option>
+                            <option value="movie_genres">Thể loại phim</option>
+
+                            <option value="cinemas">Rạp chiếu</option>
+                            <option value="halls">Phòng chiếu</option>
+                            <option value="seat_types">Loại ghế & Giá</option>
+
+                            <option value="showtimes">Lịch chiếu</option>
+                            <option value="bookings">Đơn đặt vé</option>
+
+                            <option value="foods">Đồ ăn & Combo</option>
+                            <option value="promotions">Khuyến mãi</option>
+
                             <option value="roles">Vai trò</option>
                             <option value="permissions">Quyền</option>
+                            <option value="users">Người dùng</option>
                         </select>
                     </div>
 
@@ -196,10 +209,23 @@ unset($_GET['error']);
                         <label>Module</label>
                         <select id="update_module" name="module" required>
                             <option value="dashboard">Thống kê</option>
-                            <option value="movies">Phim</option>
-                            <option value="users">Người dùng</option>
+
+                            <option value="movies">Danh sách phim</option>
+                            <option value="movie_genres">Thể loại phim</option>
+
+                            <option value="cinemas">Rạp chiếu</option>
+                            <option value="halls">Phòng chiếu</option>
+                            <option value="seat_types">Loại ghế & Giá</option>
+
+                            <option value="showtimes">Lịch chiếu</option>
+                            <option value="bookings">Đơn đặt vé</option>
+
+                            <option value="foods">Đồ ăn & Combo</option>
+                            <option value="promotions">Khuyến mãi</option>
+
                             <option value="roles">Vai trò</option>
                             <option value="permissions">Quyền</option>
+                            <option value="users">Người dùng</option>
                         </select>
                     </div>
 

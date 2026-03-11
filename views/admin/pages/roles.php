@@ -8,14 +8,16 @@ $error = $_GET['error'] ?? null;
     <header class="admin-header">
         <h1>Quản lý vai trò</h1>
         <div class="header-actions">
-            <button class="btn-add" onclick="openModal('addRoleModal')">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>Thêm vai trò</span>
-            </button>
+            <?php if (hasPermission('roles_create')): ?>
+                <button class="btn-add" onclick="openModal('addRoleModal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Thêm vai trò</span>
+                </button>
+            <?php endif; ?>
         </div>
     </header>
 
@@ -59,17 +61,22 @@ $error = $_GET['error'] ?? null;
                                             ? htmlspecialchars($role['description'])
                                             : '-' ?></td>
                                     <td>
-                                        <button class="btn-action"
-                                            onclick="openUpdateRoleModal(this)"
-                                            data-role-id="<?= htmlspecialchars($role['role_id']) ?>"
-                                            data-role-name="<?= htmlspecialchars($role['role_name']) ?>"
-                                            data-role-description="<?= htmlspecialchars($role['description']) ?>">
-                                            Cập nhật
-                                        </button>
+                                        <?php if (hasPermission('roles_update') && $role['role_id'] != 1): ?>
+                                            <button class="btn-action"
+                                                onclick="openUpdateRoleModal(this)"
+                                                data-role-id="<?= htmlspecialchars($role['role_id']) ?>"
+                                                data-role-name="<?= htmlspecialchars($role['role_name']) ?>"
+                                                data-role-description="<?= htmlspecialchars($role['description']) ?>">
+                                                Cập nhật
+                                            </button>
+                                        <?php endif; ?>
 
-                                        <button class="btn-action danger"
-                                            onclick="confirmDeleteRole(this)"
-                                            data-role-id="<?= htmlspecialchars($role['role_id']) ?>">Xóa</button>
+                                        <?php if (hasPermission('roles_delete') && $role['role_id'] != 1): ?>
+                                            <button class="btn-action danger"
+                                                onclick="confirmDeleteRole(this)"
+                                                data-role-id="<?= htmlspecialchars($role['role_id']) ?>">Xóa
+                                            </button>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

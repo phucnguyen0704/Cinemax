@@ -3,9 +3,9 @@
 function hasPermission($permission)
 {
     // Admin bypass
-    if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 1) {
-        return true;
-    }
+    // if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 1) {
+    //     return true;
+    // }
 
     if (!isset($_SESSION['permissions'])) {
         return false;
@@ -27,7 +27,7 @@ function hasModule($module)
 
     foreach ($_SESSION['permissions'] as $permission) {
 
-        if (strpos($permission, $module . ".") === 0) {
+        if (strpos($permission, $module . "_") === 0) {
             return true;
         }
     }

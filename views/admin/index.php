@@ -201,3 +201,10 @@ $contentPath = __DIR__ . "/pages/$page.php";
 </body>
 
 </html>
+
+        <!--
+                    <?php echo "<pre>";
+        print_r($_SESSION);
+        print_r($authUser);
+        echo "</pre>"; ?>
+        -->

@@ -25,23 +25,27 @@ class Role_permissions
 
     public function getPermissionsByRoleId($roleId)
     {
-        $sql = "SELECT permission_id FROM role_permissions WHERE role_id = ?";
+        $sql = "SELECT p.permission_code FROM permissions p
+            JOIN role_permissions rp 
+            ON p.permission_id = rp.permission_id
+            WHERE rp.role_id = ? AND p.status = 1";
+
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $roleId);
         $stmt->execute();
-        $result = $stmt->get_result();
-        $permissionIds = [];
 
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $permissionIds[] = $row['permission_id'];
-            }
+        $result = $stmt->get_result();
+        $permissions = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $permissions[] = $row['permission_code'];
         }
 
-        return $permissionIds;
+        return $permissions;
     }
 
-    public function getRoleByPermissionId($permissionId){
+    public function getRoleByPermissionId($permissionId)
+    {
         $sql = "SELECT role_id FROM role_permissions WHERE permission_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $permissionId);

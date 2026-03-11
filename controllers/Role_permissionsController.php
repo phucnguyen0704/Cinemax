@@ -25,6 +25,10 @@ class Role_permissionsController
     {
         $this->rolePermissionsService->save($_POST['role_permissions'] ?? []);
 
+        // ép middleware reload permissions
+        unset($_SESSION['permissions']);
+        unset($_SESSION['permission_last_reload']);
+
         header('Location: index.php?page=permissions&save=1');
         exit;
     }
