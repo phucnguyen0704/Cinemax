@@ -191,6 +191,7 @@ $isLoggedIn = ($authUser !== null);
     </nav>
 
     <div class="sidebar-footer">
+        <?php if ($authUser['role_id'] != 1): ?>
         <a href="../user/index.php" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -199,6 +200,8 @@ $isLoggedIn = ($authUser !== null);
             </svg>
             <span>Về trang người dùng</span>
         </a>
+        <?php endif; ?>
+        
         <a href="../auth/login.php" class="nav-item" onclick="return confirm('Đăng xuất khỏi hệ thống?');">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

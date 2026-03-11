@@ -7,6 +7,7 @@ $error = $_GET['error'] ?? null;
     <header class="admin-header">
         <h1>Quản lý người dùng</h1>
         <div class="header-actions">
+            <?php if (hasPermission('users_create')): ?>
             <button class="btn-add" onclick="openModal('addUserModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2">
@@ -15,6 +16,7 @@ $error = $_GET['error'] ?? null;
                 </svg>
                 <span>Thêm người dùng</span>
             </button>
+            <?php endif; ?>
         </div>
     </header>
 
@@ -73,6 +75,7 @@ $error = $_GET['error'] ?? null;
                                         ?>
                                     </td>
                                     <td>
+                                        <?php if (hasPermission('users_update') && $user['role_id'] != 1): ?>
                                         <button class="btn-action" onclick="openUpdateUserModal(this)"
                                             data-user-id="<?= htmlspecialchars($user['user_id']) ?>"
                                             data-full-name="<?= htmlspecialchars($user['full_name']) ?>"
@@ -81,8 +84,11 @@ $error = $_GET['error'] ?? null;
                                             data-role-id="<?= htmlspecialchars($user['role_id']) ?>">
                                             Cập nhật
                                         </button>
-                                        <button class="btn-action danger" onclick="confirmDeleteUser(this)"
-                                            data-user-id="<?= htmlspecialchars($user['user_id']) ?>">Xóa</button>
+                                        <?php endif; ?>
+                                        <?php if (hasPermission('users_delete') && $user['role_id'] != 1): ?>
+                                            <button class="btn-action danger" onclick="confirmDeleteUser(this)"
+                                                data-user-id="<?= htmlspecialchars($user['user_id']) ?>">Xóa</button>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

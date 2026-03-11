@@ -3,9 +3,9 @@
 function hasPermission($permission)
 {
     // Admin bypass
-    // if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 1) {
-    //     return true;
-    // }
+    if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 1) {
+        return true;
+    }
 
     if (!isset($_SESSION['permissions'])) {
         return false;

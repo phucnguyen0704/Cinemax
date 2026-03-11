@@ -19,16 +19,18 @@ $basePrice = 100000;
 ?>
 
 <section class="seat_types">
-    
+
     <header class="admin-header">
         <h1>Quản lý Loại ghế & Giá vé</h1>
-        <button class="btn-add" onclick="openModal('addSeatTypeModal')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Thêm loại ghế</span>
-        </button>
+        <?php if (hasPermission('seat_types_create')): ?>
+            <button class="btn-add" onclick="openModal('addSeatTypeModal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Thêm loại ghế</span>
+            </button>
+        <?php endif; ?>
     </header>
 
     <div class="dashboard-content">
@@ -64,16 +66,21 @@ $basePrice = 100000;
                                         +<?php echo number_format($surcharge, 0, ',', '.'); ?> ₫
                                     </td>
                                     <td>
-                                        <a href="#"
-                                           class="btn-action"
-                                           onclick="editSeatType(<?php echo (int)$seatTypeId; ?>); return false;">
-                                           Sửa
-                                        </a>
-                                        <button class="btn-action danger"
+                                        <?php if (hasPermission('seat_types_update')): ?>
+                                            <a href="#"
+                                                class="btn-action"
+                                                onclick="editSeatType(<?php echo (int)$seatTypeId; ?>); return false;">
+                                                Sửa
+                                            </a>
+                                        <?php endif; ?>
+
+                                        <?php if (hasPermission('seat_types_delete')): ?>
+                                            <button class="btn-action danger"
                                                 type="button"
                                                 onclick="deleteSeatType(<?php echo (int)$seatTypeId; ?>)">
-                                            Xóa
-                                        </button>
+                                                Xóa
+                                            </button>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

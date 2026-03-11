@@ -25,14 +25,16 @@ unset($_GET['error']);
     <header class="admin-header">
         <h1>Quản lý quyền</h1>
         <div class="header-actions">
-            <button class="btn-add" onclick="openModal('addPermissionModal')">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>Thêm quyền</span>
-            </button>
+            <?php if (hasPermission('permissions_create')): ?>
+                <button class="btn-add" onclick="openModal('addPermissionModal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Thêm quyền</span>
+                </button>
+            <?php endif; ?>
         </div>
     </header>
 
@@ -98,26 +100,32 @@ unset($_GET['error']);
                                     <?php endforeach; ?>
 
                                     <td>
-                                        <button class="btn-action" type="button"
-                                            onclick="openUpdatePermissionModal(this)"
-                                            data-permission-id="<?= $permission['permission_id'] ?>"
-                                            data-permission-code="<?= htmlspecialchars($permission['permission_code']) ?>"
-                                            data-permission-description="<?= htmlspecialchars($permission['description']) ?>">
-                                            <i class="fas fa-edit" style="color: #007BFF;"></i>
-                                        </button>
+                                        <?php if (hasPermission('permissions_update')): ?>
+                                            <button class="btn-action" type="button"
+                                                onclick="openUpdatePermissionModal(this)"
+                                                data-permission-id="<?= $permission['permission_id'] ?>"
+                                                data-permission-code="<?= htmlspecialchars($permission['permission_code']) ?>"
+                                                data-permission-description="<?= htmlspecialchars($permission['description']) ?>">
+                                                <i class="fas fa-edit" style="color: #007BFF;"></i>
+                                            </button>
+                                        <?php endif; ?>
 
-                                        <button type="button" class="btn-action" onclick="confirmDeletePermission(<?= htmlspecialchars($permission['permission_id']) ?>)">
-                                            <i class="fas fa-times" style="color: #E50914;"></i>
-                                        </button>
+                                        <?php if (hasPermission('permissions_delete')): ?>
+                                            <button type="button" class="btn-action" onclick="confirmDeletePermission(<?= htmlspecialchars($permission['permission_id']) ?>)">
+                                                <i class="fas fa-times" style="color: #E50914;"></i>
+                                            </button>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
 
-                    <div style="margin-top:20px; text-align:right;">
-                        <button class="btn-primary" type="submit">Lưu phân quyền</button>
-                    </div>
+                    <?php if (hasPermission('permissions_update')): ?>
+                        <div style="margin-top:20px; text-align:right;">
+                            <button class="btn-primary" type="submit">Lưu phân quyền</button>
+                        </div>
+                    <?php endif; ?>
                 </form>
 
             </div>

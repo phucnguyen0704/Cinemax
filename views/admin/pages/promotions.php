@@ -3,10 +3,12 @@
     <header class="admin-header">
         <h1>Quản lý Khuyến mãi</h1>
         <div class="header-actions">
-            <button class="btn-add" onclick="openModal('addPromoModal')">
-                <i class="fas fa-plus"></i>
-                <span>Thêm mã mới</span>
-            </button>
+            <?php if (hasPermission('promotions_create')): ?>
+                <button class="btn-add" onclick="openModal('addPromoModal')">
+                    <i class="fas fa-plus"></i>
+                    <span>Thêm mã mới</span>
+                </button>
+            <?php endif; ?>
         </div>
     </header>
 
