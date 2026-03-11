@@ -41,6 +41,23 @@ class Role_permissions
         return $permissionIds;
     }
 
+    public function getRoleByPermissionId($permissionId){
+        $sql = "SELECT role_id FROM role_permissions WHERE permission_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $permissionId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $roleIds = [];
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $roleIds[] = $row['role_id'];
+            }
+        }
+
+        return $roleIds;
+    }
+
     public function truncate()
     {
         $this->conn->query("DELETE FROM role_permissions");

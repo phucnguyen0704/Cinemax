@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../services/AuthService.php';
 require_once __DIR__ . '/../config/dbConfig.php';
+require_once __DIR__ . '/../services/RoleService.php';
+require_once __DIR__ . '/../models/Role.php';
 
 class AuthController
 {
@@ -46,6 +48,18 @@ class AuthController
 
             // AuthService sẽ xác thực + tạo JWT cookie
             $user = $this->authService->login($email, $password);
+
+            //Xử lý phân quyền sau khi đăng nhập thành công
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            $conn = getDBConnection();
+            $roleModel = new Role($conn);
+            $roleService = new RoleService($roleModel);
+            $permissions = $roleService->getAllPermissionsByRole($user['role_id']);
+            $_SESSION['user'] = $user;
+            $_SESSION['permissions'] = array_column($permissions, 'permission_code'); // Lưu mã quyền vào session
 
             // Redirect theo role
             if ($user['role_id'] == 1) {
