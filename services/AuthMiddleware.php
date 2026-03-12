@@ -135,7 +135,7 @@ class AuthMiddleware
     {
         $user = self::requireLogin();
 
-        if ((int)$user['role_id'] !== 1) {
+        if ((int)$user['role_id'] == 2) {
             header('Location: /Cinemax/views/auth/login.php?error=unauthorized');
             exit;
         }

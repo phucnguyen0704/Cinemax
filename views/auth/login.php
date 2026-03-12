@@ -29,7 +29,7 @@
                     <?php
                     if ($_GET['error'] == 'empty') echo 'Vui lòng nhập đủ email và mật khẩu!';
                     elseif ($_GET['error'] == 'invalid') echo 'Email hoặc mật khẩu không chính xác!';
-                    elseif ($_GET['error'] == 'unauthorized') echo 'Bạn phải là Admin để vào trang đó!';
+                    elseif ($_GET['error'] == 'unauthorized') echo 'Bạn không đủ quyền hạn để vào trang đó!';
                     elseif ($_GET['error'] == 'required') echo 'Bạn cần đăng nhập để thực hiện chức năng này!';
                     ?>
                 </div>
