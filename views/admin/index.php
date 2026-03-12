@@ -2,6 +2,7 @@
 <html lang="vi">
 <?php
 require_once __DIR__ . '/../../config/dbConfig.php';
+require_once __DIR__ . '/../../config/permissionConfig.php';
 //Các file model
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Role.php';
@@ -200,3 +201,10 @@ $contentPath = __DIR__ . "/pages/$page.php";
 </body>
 
 </html>
+
+        <!--
+                    <?php echo "<pre>";
+        print_r($_SESSION);
+        print_r($authUser);
+        echo "</pre>"; ?>
+        -->

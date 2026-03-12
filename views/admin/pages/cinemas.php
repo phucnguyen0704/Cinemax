@@ -3,7 +3,7 @@
     <header class="admin-header">
         <h1>Quản lý rạp chiếu</h1>
         <div class="header-actions">
-
+            <?php if (hasPermission('cinemas_create')): ?>
             <button class="btn-add" onclick="openModal('addTheaterModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2">
@@ -12,6 +12,7 @@
                 </svg>
                 <span>Thêm rạp mới</span>
             </button>
+            <?php endif; ?>
         </div>
     </header>
 
@@ -52,7 +53,7 @@
                 <button class="btn-close" onclick="closeModal('addTheaterModal')">&times;</button>
             </div>
 
-            <form id="addCinemaForm" onsubmit="handleCreateCinema(event); return false;">
+            <form id="addCinemaForm">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Tên rạp</label>
@@ -90,5 +91,9 @@
 
 </section>
 
-<script src="../../public/assets/js/api.js"></script>
-<script src="../../public/assets/js/cinemas-admin.js"></script>
+<?php
+    $apiJsV = @filemtime(__DIR__ . '/../../../public/assets/js/api.js') ?: time();
+    $cinemasAdminJsV = @filemtime(__DIR__ . '/../../../public/assets/js/cinemas-admin.js') ?: time();
+?>
+<script src="../../public/assets/js/api.js?v=<?php echo urlencode((string)$apiJsV); ?>"></script>
+<script src="../../public/assets/js/cinemas-admin.js?v=<?php echo urlencode((string)$cinemasAdminJsV); ?>"></script>

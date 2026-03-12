@@ -50,18 +50,33 @@ function renderCinemasTable() {
     
     cinemasData.forEach(cinema => {
         const isActive = String(cinema.Status) === '1';
+<<<<<<< HEAD
         const actionLabel = isActive ? 'Đóng rạp' : 'Mở rạp';
         const actionFn = isActive ? 'closeCinema' : 'openCinema';
+=======
+        const statusLabel = isActive ? 'Đang hoạt động' : 'Ngừng hoạt động';
+        const actionButton = isActive
+            ? `<button class="btn-action danger" onclick="closeCinema(${cinema.CinemaID})">Đóng rạp</button>`
+            : `<button class="btn-action" onclick="openCinema(${cinema.CinemaID})">Mở rạp</button>`;
+
+>>>>>>> main
         const row = document.createElement('tr');
         row.innerHTML = `
             <td><strong>#${cinema.CinemaID}</strong></td>
             <td>${cinema.Name}</td>
             <td>${cinema.Address}</td>
             <td>${cinema.LocationName || 'N/A'}</td>
-            <td>${cinema.HallCount || 0} phòng</td>
+            <td>
+                ${cinema.HallCount || 0} phòng<br>
+                <small style="color:${isActive ? '#4caf50' : '#e53935'};">${statusLabel}</small>
+            </td>
             <td>
                 <a href="#" class="btn-action" onclick="editCinema(${cinema.CinemaID}); return false;">Sửa</a>
+<<<<<<< HEAD
                 <button class="btn-action ${isActive ? 'danger' : ''}" onclick="${actionFn}(${cinema.CinemaID})">${actionLabel}</button>
+=======
+                ${actionButton}
+>>>>>>> main
                 <a href="index.php?page=halls&cinema_id=${cinema.CinemaID}" class="btn-action">Quản lý phòng</a>
             </td>
         `;
@@ -123,14 +138,22 @@ async function editCinema(cinemaId) {
 }
 
 /**
+<<<<<<< HEAD
  * Đóng rạp (soft delete) và đóng luôn các phòng chiếu
  */
 async function closeCinema(cinemaId) {
     if (!confirm('Bạn có chắc chắn muốn ĐÓNG rạp chiếu này? Tất cả phòng chiếu trong rạp cũng sẽ bị đóng.')) {
+=======
+ * Đóng rạp (ngừng hoạt động)
+ */
+async function closeCinema(cinemaId) {
+    if (!confirm('Bạn có chắc chắn muốn đóng rạp này (ngừng hoạt động)?')) {
+>>>>>>> main
         return;
     }
 
     try {
+<<<<<<< HEAD
         await postAPI('cinemas', 'setStatus', {
             cinema_id: cinemaId,
             status_id: 0
@@ -141,10 +164,20 @@ async function closeCinema(cinemaId) {
     } catch (error) {
         console.error('Đóng rạp lỗi:', error);
         showAlert('Lỗi khi đóng rạp chiếu: ' + (error.message || 'Có lỗi xảy ra'), 'error');
+=======
+        // Hàm deleteCinema() được khai báo ở public/assets/js/api.js
+        await window.deleteCinema(cinemaId);
+        showAlert('Đóng rạp thành công (đã chuyển sang ngừng hoạt động)!', 'success');
+        await loadAllData();
+        renderCinemasTable();
+    } catch (error) {
+        showAlert('Lỗi khi đóng rạp: ' + error.message, 'error');
+>>>>>>> main
     }
 }
 
 /**
+<<<<<<< HEAD
  * Mở lại rạp và mở luôn các phòng chiếu thuộc rạp
  */
 async function openCinema(cinemaId) {
@@ -164,6 +197,35 @@ async function openCinema(cinemaId) {
     } catch (error) {
         console.error('Mở rạp lỗi:', error);
         showAlert('Lỗi khi mở rạp chiếu: ' + (error.message || 'Có lỗi xảy ra'), 'error');
+=======
+ * Mở rạp (chuyển về trạng thái đang hoạt động)
+ */
+async function openCinema(cinemaId) {
+    const cinema = cinemasData.find(c => String(c.CinemaID) === String(cinemaId));
+    if (!cinema) {
+        showAlert('Không tìm thấy rạp để mở lại', 'error');
+        return;
+    }
+
+    if (!confirm('Mở lại rạp này (chuyển sang đang hoạt động)?')) {
+        return;
+    }
+
+    const data = {
+        name: cinema.Name,
+        address: cinema.Address,
+        location_id: cinema.LocationID,
+        status_id: 1
+    };
+
+    try {
+        await updateCinema(cinemaId, data);
+        showAlert('Mở rạp thành công!', 'success');
+        await loadAllData();
+        renderCinemasTable();
+    } catch (error) {
+        showAlert('Lỗi khi mở rạp: ' + error.message, 'error');
+>>>>>>> main
     }
 }
 
@@ -353,7 +415,6 @@ function showAlert(message, type = 'success') {
         }, 3000);
     }
 }
-
 // Override form submit cho modal thêm mới
 document.addEventListener('DOMContentLoaded', function() {
     const addForm = document.querySelector('#addTheaterModal form');
@@ -361,3 +422,4 @@ document.addEventListener('DOMContentLoaded', function() {
         addForm.addEventListener('submit', handleCreateCinema);
     }
 });
+

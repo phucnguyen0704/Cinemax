@@ -59,13 +59,15 @@ try {
 
     <header class="admin-header">
         <h1>Quản lý Phòng chiếu</h1>
-        <button class="btn-add" onclick="openModal('addScreenModal')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Thêm phòng mới</span>
-        </button>
+        <?php if (hasPermission('halls_create')): ?>
+            <button class="btn-add" onclick="openModal('addScreenModal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Thêm phòng mới</span>
+            </button>
+        <?php endif; ?>
     </header>
 
     <div class="dashboard-content">
@@ -129,24 +131,28 @@ try {
                                     <td><?php echo (int)($hall['SeatCount'] ?? 0); ?> ghế</td>
                                     <td>
                                         <?php $hallId = $hall['hall_id'] ?? $hall['HallID'] ?? 0; ?>
-                                        <a href="index.php?page=seats&hall_id=<?php echo urlencode($hallId); ?>"
-                                           class="btn-action"
-                                           style="color: #46d369; border-color: #46d369;"
-                                           title="Cấu hình ghế">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                                <path d="M3 9h18"></path>
-                                                <path d="M9 21V9"></path>
-                                            </svg>
-                                            Cấu hình ghế
-                                        </a>
-                                        <a href="#" class="btn-action"
-                                           onclick="editHall(<?php echo (int)$hallId; ?>); return false;"
-                                           title="Sửa">Sửa</a>
-                                        <button class="btn-action danger"
+                                        <?php if (hasPermission('halls_update')): ?>
+                                            <a href="index.php?page=seats&hall_id=<?php echo urlencode($hallId); ?>"
+                                                class="btn-action"
+                                                style="color: #46d369; border-color: #46d369;"
+                                                title="Cấu hình ghế">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                    <path d="M3 9h18"></path>
+                                                    <path d="M9 21V9"></path>
+                                                </svg>
+                                                Cấu hình ghế
+                                            </a>
+                                            <a href="#" class="btn-action"
+                                                onclick="editHall(<?php echo (int)$hallId; ?>); return false;"
+                                                title="Sửa">Sửa</a>
+                                        <?php endif; ?>
+                                        <?php if (hasPermission('halls_delete')): ?>
+                                            <button class="btn-action danger"
                                                 onclick="deleteHallHandler(<?php echo (int)$hallId; ?>)"
                                                 type="button"
                                                 title="Xóa">Xóa</button>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

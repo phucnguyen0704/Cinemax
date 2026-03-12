@@ -196,6 +196,7 @@ CREATE TABLE combos (
     combo_id      INT AUTO_INCREMENT PRIMARY KEY,
     name          VARCHAR(100) NOT NULL,
     description   VARCHAR(255),
+    image_url     VARCHAR(255),
     price         DECIMAL(12,2) NOT NULL,
     status     TINYINT(1) NOT NULL DEFAULT 1         -- 1 = active, 0 = deleted
 );

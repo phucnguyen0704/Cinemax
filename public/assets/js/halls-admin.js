@@ -15,8 +15,25 @@ document.addEventListener('DOMContentLoaded', async function() {
             getAllCinemas(),
             getAllHallStatuses()
         ]);
+
+        // Nếu API trạng thái trả về rỗng (chưa cấu hình trong DB),
+        // dùng danh sách mặc định giống PHP fallback ở halls.php
+        if (!statusesData || !statusesData.length) {
+            statusesData = [
+                { StatusID: 1, StatusName: 'Đang hoạt động' },
+                { StatusID: 0, StatusName: 'Tạm dừng' },
+                { StatusID: 2, StatusName: 'Bảo trì' }
+            ];
+        }
     } catch (error) {
         console.error('Lỗi khi load dữ liệu hỗ trợ:', error);
+        // Fallback mặc định khi lỗi API
+        cinemasData = [];
+        statusesData = [
+            { StatusID: 1, StatusName: 'Đang hoạt động' },
+            { StatusID: 0, StatusName: 'Tạm dừng' },
+            { StatusID: 2, StatusName: 'Bảo trì' }
+        ];
     }
 
     // Gắn handler cho form thêm mới

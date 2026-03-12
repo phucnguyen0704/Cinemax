@@ -22,7 +22,9 @@ document.addEventListener('DOMContentLoaded', async function() {
  */
 async function loadCinemas() {
     try {
-        cinemasData = await getAllCinemas();
+        const allCinemas = await getAllCinemas();
+        // Chỉ hiển thị rạp đang hoạt động cho user
+        cinemasData = allCinemas.filter(cinema => String(cinema.Status) === '1');
     } catch (error) {
         throw new Error('Không thể tải dữ liệu rạp chiếu: ' + error.message);
     }

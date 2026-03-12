@@ -14,9 +14,11 @@ $genres = $movieService->getAllGenres();
 
     <header class="admin-header">
         <h1>Quản lý phim</h1>
+        <?php if (hasPermission('movies_create')): ?>
         <button class="btn-add" onclick="openModal('addMovieModal')">
             <span>Thêm phim mới</span>
         </button>
+        <?php endif; ?>
     </header>
 
     <div class="dashboard-content">
@@ -103,6 +105,7 @@ $genres = $movieService->getAllGenres();
                                 </td>
                                 <td>
                                     <!-- DELETE: POST để index route qua controller -->
+                                    <?php if (hasPermission('movies_delete')): ?>
                                     <form method="POST"
                                           action="index.php?page=movies&action=delete&id=<?= (int)$m['movie_id'] ?>"
                                           style="display:inline;">
@@ -111,6 +114,7 @@ $genres = $movieService->getAllGenres();
                                             Xóa
                                         </button>
                                     </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

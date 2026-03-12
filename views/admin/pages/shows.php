@@ -2,11 +2,13 @@
 
     <header class="admin-header">
         <h1>Quản lý Suất chiếu</h1>
-        <div class="header-actions">
-            <button class="btn-add" onclick="openModal('addShowtimeModal')">
-                <span>+ Thêm suất chiếu</span>
-            </button>
-        </div>
+        <?php if (hasPermission('shows_create')): ?>
+            <div class="header-actions">
+                <button class="btn-add" onclick="openModal('addShowtimeModal')">
+                    <span>+ Thêm suất chiếu</span>
+                </button>
+            </div>
+        <?php endif; ?>
     </header>
 
     <div class="dashboard-content">
