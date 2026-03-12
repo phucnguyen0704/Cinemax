@@ -49,6 +49,9 @@ function renderCinemasTable() {
     }
     
     cinemasData.forEach(cinema => {
+        const isActive = String(cinema.Status) === '1';
+        const actionLabel = isActive ? 'Đóng rạp' : 'Mở rạp';
+        const actionFn = isActive ? 'closeCinema' : 'openCinema';
         const row = document.createElement('tr');
         row.innerHTML = `
             <td><strong>#${cinema.CinemaID}</strong></td>
@@ -58,7 +61,7 @@ function renderCinemasTable() {
             <td>${cinema.HallCount || 0} phòng</td>
             <td>
                 <a href="#" class="btn-action" onclick="editCinema(${cinema.CinemaID}); return false;">Sửa</a>
-                <button class="btn-action danger" onclick="deleteCinema(${cinema.CinemaID})">Xóa</button>
+                <button class="btn-action ${isActive ? 'danger' : ''}" onclick="${actionFn}(${cinema.CinemaID})">${actionLabel}</button>
                 <a href="index.php?page=halls&cinema_id=${cinema.CinemaID}" class="btn-action">Quản lý phòng</a>
             </td>
         `;
@@ -120,20 +123,47 @@ async function editCinema(cinemaId) {
 }
 
 /**
- * Delete cinema
+ * Đóng rạp (soft delete) và đóng luôn các phòng chiếu
  */
-async function deleteCinema(cinemaId) {
-    if (!confirm('Bạn có chắc chắn muốn xóa rạp chiếu này? Tất cả phòng chiếu trong rạp cũng sẽ bị ảnh hưởng.')) {
+async function closeCinema(cinemaId) {
+    if (!confirm('Bạn có chắc chắn muốn ĐÓNG rạp chiếu này? Tất cả phòng chiếu trong rạp cũng sẽ bị đóng.')) {
         return;
     }
-    
+
     try {
-        await deleteCinema(cinemaId);
-        showAlert('Xóa rạp chiếu thành công!', 'success');
+        await postAPI('cinemas', 'setStatus', {
+            cinema_id: cinemaId,
+            status_id: 0
+        });
+        showAlert('Đã đóng rạp chiếu và các phòng chiếu liên quan.', 'success');
         await loadAllData();
         renderCinemasTable();
     } catch (error) {
-        showAlert('Lỗi khi xóa rạp chiếu: ' + error.message, 'error');
+        console.error('Đóng rạp lỗi:', error);
+        showAlert('Lỗi khi đóng rạp chiếu: ' + (error.message || 'Có lỗi xảy ra'), 'error');
+    }
+}
+
+/**
+ * Mở lại rạp và mở luôn các phòng chiếu thuộc rạp
+ */
+async function openCinema(cinemaId) {
+    if (!confirm('Mở lại rạp chiếu này và tất cả phòng chiếu thuộc rạp?')) {
+        return;
+    }
+
+    try {
+        // Gọi API setStatus với status_id = 1.
+        await postAPI('cinemas', 'setStatus', {
+            cinema_id: cinemaId,
+            status_id: 1
+        });
+        showAlert('Đã mở lại rạp chiếu và các phòng chiếu liên quan.', 'success');
+        await loadAllData();
+        renderCinemasTable();
+    } catch (error) {
+        console.error('Mở rạp lỗi:', error);
+        showAlert('Lỗi khi mở rạp chiếu: ' + (error.message || 'Có lỗi xảy ra'), 'error');
     }
 }
 

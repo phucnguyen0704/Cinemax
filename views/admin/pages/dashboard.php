@@ -1,3 +1,133 @@
+<?php
+// Giả sử $conn đã được khởi tạo trong index.php và include sang
+
+$today = date('Y-m-d');
+$currentYear = date('Y');
+
+$todayRevenue    = 0;
+$todayTickets    = 0;
+$todayNewUsers   = 0;
+$nowShowingMovies = 0;
+$latestOrders    = [];
+$topMovies       = [];
+$monthlyRevenue  = array_fill(1, 12, 0.0);
+
+if (isset($conn) && $conn) {
+    try {
+        // Doanh thu hôm nay (bills paid)
+        $sql = "SELECT COALESCE(SUM(final_amount), 0) AS revenue,
+                       COALESCE(SUM(total_tickets), 0) AS tickets
+                FROM bills
+                WHERE DATE(created_at) = ? AND status = 'paid'";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param('s', $today);
+            if ($stmt->execute()) {
+                $res = $stmt->get_result();
+                if ($res) {
+                    $row = $res->fetch_assoc();
+                    $todayRevenue = (float)($row['revenue'] ?? 0);
+                    $todayTickets = (int)($row['tickets'] ?? 0);
+                }
+            }
+        }
+
+        // Người dùng mới hôm nay
+        $sql = "SELECT COUNT(*) AS cnt FROM users WHERE DATE(created_at) = ?";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param('s', $today);
+            if ($stmt->execute()) {
+                $res = $stmt->get_result();
+                if ($res) {
+                    $row = $res->fetch_assoc();
+                    $todayNewUsers = (int)($row['cnt'] ?? 0);
+                }
+            }
+        }
+
+        // Số phim đang chiếu (status = 1)
+        $sql = "SELECT COUNT(*) AS cnt FROM movies WHERE status = 1";
+        $result = $conn->query($sql);
+        if ($result) {
+            $row = $result->fetch_assoc();
+            $nowShowingMovies = (int)($row['cnt'] ?? 0);
+        }
+
+        // Đơn hàng mới nhất (bills)
+        $sql = "SELECT b.bill_id,
+                       u.full_name,
+                       b.final_amount,
+                       b.status,
+                       b.created_at
+                FROM bills b
+                INNER JOIN users u ON b.user_id = u.user_id
+                ORDER BY b.created_at DESC
+                LIMIT 5";
+        $result = $conn->query($sql);
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $latestOrders[] = $row;
+            }
+        }
+
+        // Top phim bán chạy theo doanh thu từ tickets
+        $sql = "SELECT 
+                    m.movie_id   AS MovieID,
+                    m.title      AS Title,
+                    COALESCE(SUM(t.price), 0) AS Revenue,
+                    COUNT(t.ticket_id)        AS TicketsSold
+                FROM tickets t
+                INNER JOIN bills b ON t.bill_id = b.bill_id
+                INNER JOIN shows s ON t.show_id = s.show_id
+                INNER JOIN movies m ON s.movie_id = m.movie_id
+                WHERE b.status = 'paid'
+                GROUP BY m.movie_id, m.title
+                ORDER BY Revenue DESC
+                LIMIT 5";
+        $result = $conn->query($sql);
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $topMovies[] = $row;
+            }
+        }
+
+        // Doanh thu theo tháng trong năm hiện tại
+        $sql = "SELECT 
+                    MONTH(created_at) AS m,
+                    COALESCE(SUM(final_amount), 0) AS revenue
+                FROM bills
+                WHERE YEAR(created_at) = ? AND status = 'paid'
+                GROUP BY MONTH(created_at)
+                ORDER BY MONTH(created_at)";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param('i', $currentYear);
+            if ($stmt->execute()) {
+                $res = $stmt->get_result();
+                if ($res) {
+                    while ($row = $res->fetch_assoc()) {
+                        $m = (int)$row['m'];
+                        if ($m >= 1 && $m <= 12) {
+                            $monthlyRevenue[$m] = (float)$row['revenue'];
+                        }
+                    }
+                }
+            }
+        }
+    } catch (Exception $e) {
+        // Không làm vỡ dashboard, chỉ giữ giá trị mặc định
+    }
+}
+
+$monthlyLabels = [];
+$monthlyData = [];
+for ($i = 1; $i <= 12; $i++) {
+    $monthlyLabels[] = 'T' . $i;
+    $monthlyData[] = $monthlyRevenue[$i];
+}
+?>
+
 <section class="dashboard">
     <header class="admin-header">
         <h1>Dashboard</h1>
@@ -18,7 +148,9 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Doanh thu hôm nay</span>
-                    <span class="stat-value" style="color: #e50914;">0 ₫</span>
+                    <span class="stat-value" style="color: #e50914;">
+                        <?php echo number_format($todayRevenue, 0, ',', '.'); ?> ₫
+                    </span>
                 </div>
             </div>
 
@@ -32,7 +164,9 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Vé đã bán</span>
-                    <span class="stat-value" style="color: #46d369;">0</span>
+                    <span class="stat-value" style="color: #46d369;">
+                        <?php echo (int)$todayTickets; ?>
+                    </span>
                 </div>
             </div>
 
@@ -46,7 +180,9 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Người dùng mới</span>
-                    <span class="stat-value" style="color: #ffa500;">0</span>
+                    <span class="stat-value" style="color: #ffa500;">
+                        <?php echo (int)$todayNewUsers; ?>
+                    </span>
                 </div>
             </div>
 
@@ -60,19 +196,60 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Phim đang chiếu</span>
-                    <span class="stat-value" style="color: #3b82f6;">0</span>
+                    <span class="stat-value" style="color: #3b82f6;">
+                        <?php echo (int)$nowShowingMovies; ?>
+                    </span>
                 </div>
             </div>
 
         </div>
 
-        <!-- TABLE + TOP MOVIES -->
+        <!-- TOP MOVIES + BIỂU ĐỒ & ĐƠN HÀNG MỚI -->
         <div class="dashboard-grid-2" style="margin-top: 30px;">
 
+            <!-- Top phim + biểu đồ doanh thu tháng -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>Top phim bán chạy & Doanh thu theo tháng</h3>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <canvas id="revenueByMonthChart" height="140"></canvas>
+                </div>
+
+                <div class="top-movies-list">
+                    <?php if (empty($topMovies)): ?>
+                        <div style="text-align:center; padding: 16px; color:#888;">
+                            Chưa có dữ liệu bán vé.
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($topMovies as $movie): ?>
+                            <div class="top-movie-item">
+                                <img src="../../assets/images/no-poster.jpg" class="tm-poster" alt="Poster">
+                                <div class="tm-info">
+                                    <h4><?php echo htmlspecialchars($movie['Title'] ?? ''); ?></h4>
+                                    <div class="tm-stats">
+                                        <span class="tm-highlight">
+                                            <?php echo (int)($movie['TicketsSold'] ?? 0); ?>
+                                        </span> vé đã bán
+                                        <br>
+                                        Doanh thu:
+                                        <span style="color: #fff;">
+                                            <?php echo number_format((float)($movie['Revenue'] ?? 0), 0, ',', '.'); ?> ₫
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Đơn hàng mới nhất (đặt ở cột phải, dưới hơn một chút giống layout mẫu) -->
             <div class="dashboard-card">
                 <div class="card-header">
                     <h3>Đơn hàng mới nhất</h3>
-                    <a href="bookings.php" class="card-action">Xem tất cả →</a>
+                    <a href="index.php?page=bookings" class="card-action">Xem tất cả →</a>
                 </div>
 
                 <div class="table-responsive">
@@ -87,38 +264,97 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>#0001</td>
-                                <td>Khách hàng</td>
-                                <td style="color: var(--primary-color); font-weight: bold;">0 ₫</td>
-                                <td>Đã thanh toán</td>
-                                <td style="color: #888; font-size: 13px;">00:00 01/01</td>
-                            </tr>
+                            <?php if (empty($latestOrders)): ?>
+                                <tr>
+                                    <td colspan="5" style="text-align:center; padding:16px; color:#888;">
+                                        Chưa có đơn hàng nào.
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($latestOrders as $order): ?>
+                                    <tr>
+                                        <td>#<?php echo htmlspecialchars((string)$order['bill_id']); ?></td>
+                                        <td><?php echo htmlspecialchars($order['full_name'] ?? ''); ?></td>
+                                        <td style="color: var(--primary-color); font-weight: bold;">
+                                            <?php echo number_format((float)$order['final_amount'], 0, ',', '.'); ?> ₫
+                                        </td>
+                                        <td><?php echo htmlspecialchars($order['status'] ?? ''); ?></td>
+                                        <td style="color: #888; font-size: 13px;">
+                                            <?php
+                                            if (!empty($order['created_at'])) {
+                                                $dt = new DateTime($order['created_at']);
+                                                echo $dt->format('H:i d/m/Y');
+                                            }
+                                            ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h3>Top phim bán chạy</h3>
-                </div>
-
-                <div class="top-movies-list">
-                    <div class="top-movie-item">
-                        <img src="../../assets/images/no-poster.jpg" class="tm-poster">
-                        <div class="tm-info">
-                            <h4>Tên phim</h4>
-                            <div class="tm-stats">
-                                <span class="tm-highlight">0</span> vé đã bán
-                                <br>
-                                Doanh thu: <span style="color: #fff;">0 ₫</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
         </div>
     </div>
 </section>
+
+<!-- Biểu đồ cột doanh thu theo tháng -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    (function () {
+        const ctx = document.getElementById('revenueByMonthChart');
+        if (!ctx) return;
+
+        const labels = <?php echo json_encode($monthlyLabels, JSON_UNESCAPED_UNICODE); ?>;
+        const data = <?php echo json_encode($monthlyData, JSON_NUMERIC_CHECK); ?>;
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh thu (₫) - <?php echo (int)$currentYear; ?>',
+                    data: data,
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return value.toLocaleString('vi-VN') + ' ₫';
+                            },
+                            color: '#9ca3af'
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.15)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#9ca3af'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e5e7eb'
+                        }
+                    }
+                }
+            }
+        });
+    })();
+</script>

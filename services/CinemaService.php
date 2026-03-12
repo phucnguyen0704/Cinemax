@@ -10,9 +10,9 @@ class CinemaService
         $this->cinemaModel = $cinemaModel;
     }
 
-    public function getAllCinemas()
+    public function getAllCinemas(bool $includeInactive = false)
     {
-        return $this->cinemaModel->getAllCinemas();
+        return $this->cinemaModel->getAllCinemas($includeInactive);
     }
 
     public function getCinemaById($cinemaId)
@@ -42,7 +42,7 @@ class CinemaService
             throw new InvalidArgumentException("Location ID không hợp lệ.");
         }
 
-        if (empty($statusId) || !is_numeric($statusId)) {
+        if ($statusId === null || $statusId === '' || !is_numeric($statusId)) {
             throw new InvalidArgumentException("Status ID không hợp lệ.");
         }
 
@@ -71,7 +71,7 @@ class CinemaService
             throw new InvalidArgumentException("Location ID không hợp lệ.");
         }
 
-        if (empty($statusId) || !is_numeric($statusId)) {
+        if ($statusId === null || $statusId === '' || !is_numeric($statusId)) {
             throw new InvalidArgumentException("Status ID không hợp lệ.");
         }
 

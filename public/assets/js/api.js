@@ -2,44 +2,8 @@
  * API Helper - Fetch dữ liệu từ API
  */
 
-// Đường dẫn API - tự động detect dựa trên URL hiện tại
-const API_BASE_URL = (function() {
-    const currentPath = window.location.pathname;
-    
-    // Tách path thành các phần (bỏ phần rỗng)
-    let pathParts = currentPath.split('/').filter(p => p);
-    
-    // Bỏ file cuối cùng nếu là .php (không tính vào số cấp)
-    if (pathParts.length > 0 && pathParts[pathParts.length - 1].endsWith('.php')) {
-        pathParts = pathParts.slice(0, -1);
-    }
-    
-    // Tìm vị trí của 'Cinemax' trong path
-    const cinemaxIndex = pathParts.indexOf('Cinemax');
-    
-    if (cinemaxIndex !== -1) {
-        // Số phần sau 'Cinemax'
-        const partsAfterCinemax = pathParts.length - cinemaxIndex - 1;
-        
-        if (partsAfterCinemax === 0) {
-            // Đang ở root Cinemax
-            return 'test_api.php';
-        } else {
-            // Tạo đường dẫn tương đối: lên số cấp = partsAfterCinemax
-            return '../'.repeat(partsAfterCinemax) + 'test_api.php';
-        }
-    }
-    
-    // Fallback: thử các pattern phổ biến
-    if (currentPath.includes('/views/admin/') || currentPath.includes('/views/user/')) {
-        return '../../test_api.php';
-    } else if (currentPath.includes('/admin') || currentPath.includes('/user')) {
-        return '../test_api.php';
-    }
-    
-    // Mặc định
-    return 'test_api.php';
-})();
+// Đường dẫn API cố định tới public/api.php
+const API_BASE_URL = '/Cinemax/public/api.php';
 
 // Debug: log đường dẫn API (có thể xóa sau)
 console.log('API Base URL:', API_BASE_URL, 'from path:', window.location.pathname);
