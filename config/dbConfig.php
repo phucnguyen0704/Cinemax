@@ -4,7 +4,7 @@ function getDBConnection()
     $servername = "localhost";
     $username   = "root";
     $password   = "";
-    $dbname     = "cinemaxdb";
+    $dbname     = "cinemax";
 
     try {
         $conn = new mysqli($servername, $username, $password, $dbname);
