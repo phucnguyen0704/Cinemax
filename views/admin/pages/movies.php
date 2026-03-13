@@ -34,9 +34,11 @@ function buildPosterSrc($posterUrl, $BASE_URL)
 
     <header class="admin-header">
         <h1>Quản lý phim</h1>
-        <button class="btn-add" type="button" onclick="openAddMovieModal()">
+        <?php if (hasPermission('movies_create')): ?>
+        <button class="btn-add" onclick="openModal('addMovieModal')">
             <span>Thêm phim mới</span>
         </button>
+        <?php endif; ?>
     </header>
 
     <div class="dashboard-content">
@@ -189,6 +191,7 @@ function buildPosterSrc($posterUrl, $BASE_URL)
                                             Xóa
                                         </button>
                                     </form>
+                                    <?php  ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

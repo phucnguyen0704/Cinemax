@@ -75,4 +75,9 @@ class RoleService
             'totalPages' => $totalPages
         ];
     }
+
+    public function getAllPermissionsByRole($roleId)
+    {
+        return $this->roleModel->getAllPermissionsByRole($roleId);
+    }
 }

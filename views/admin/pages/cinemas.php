@@ -3,7 +3,7 @@
     <header class="admin-header">
         <h1>Quản lý rạp chiếu</h1>
         <div class="header-actions">
-
+            <?php if (hasPermission('cinemas_create')): ?>
             <button class="btn-add" onclick="openModal('addTheaterModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2">
@@ -12,6 +12,7 @@
                 </svg>
                 <span>Thêm rạp mới</span>
             </button>
+            <?php endif; ?>
         </div>
     </header>
 

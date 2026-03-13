@@ -8,10 +8,12 @@
 require_once __DIR__ . '/../config/JwtHelper.php';
 require_once __DIR__ . '/../config/dbConfig.php';
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/Role_permissions.php';
 
 class AuthMiddleware
 {
     private const COOKIE_NAME = 'cinemax_token';
+    private const PERMISSION_REFRESH_TIME = 300; // 5 phút
 
     /**
      * Đặt JWT cookie sau khi đăng nhập
@@ -66,7 +68,43 @@ class AuthMiddleware
             return null;
         }
 
-        return JwtHelper::decode($token);
+        $user = JwtHelper::decode($token);
+
+        if (!$user) {
+            return null;
+        }
+
+        // Nếu session chưa có permissions thì load
+        $shouldReload = false;
+
+        if (!isset($_SESSION['permissions'])) {
+            $shouldReload = true;
+        }
+
+        if (!isset($_SESSION['permission_last_reload'])) {
+            $shouldReload = true;
+        }
+
+        if (
+            isset($_SESSION['permission_last_reload']) &&
+            time() - $_SESSION['permission_last_reload'] > self::PERMISSION_REFRESH_TIME
+        ) {
+            $shouldReload = true;
+        }
+
+        if ($shouldReload) {
+
+            $rolePermissionModel = new Role_permissions(getDBConnection());
+            $permissions = $rolePermissionModel->getPermissionsByRoleId($user['role_id']);
+
+            $_SESSION['permissions'] = $permissions;
+            $_SESSION['permission_last_reload'] = time();
+        }
+
+        // lưu user vào session luôn
+        $_SESSION['user'] = $user;
+
+        return $user;
     }
 
     /**
@@ -97,7 +135,7 @@ class AuthMiddleware
     {
         $user = self::requireLogin();
 
-        if ((int)$user['role_id'] !== 1) {
+        if ((int)$user['role_id'] == 2) {
             header('Location: /Cinemax/views/auth/login.php?error=unauthorized');
             exit;
         }
@@ -113,4 +151,3 @@ class AuthMiddleware
         return self::COOKIE_NAME;
     }
 }
-

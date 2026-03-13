@@ -117,6 +117,16 @@ class AdminController
         }
     }
 
+    public function getAllPermissionsByRole($roleId)
+    {
+        try {
+            $permissions = $this->roleService->getAllPermissionsByRole($roleId);
+            return $permissions;
+        } catch (Exception $e) {
+            header('Location: /index.php?page=roles&error=' . urlencode($e->getMessage()));
+        }
+    }
+
     //Permission Management Functions
     public function getAllPermissions()
     {
@@ -141,7 +151,8 @@ class AdminController
     public function createPermission()
     {
         try {
-            $result = $this->permissionService->createPermission($_POST['permission_code'], $_POST['description']);
+            $permissionCode = $_POST['module'] . '_' . $_POST['action'];
+            $result = $this->permissionService->createPermission($permissionCode, $_POST['description']);
 
             header('Location: ../../views/admin/index.php?page=permissions&add=1');
         } catch (Exception $e) {
@@ -152,7 +163,8 @@ class AdminController
     public function updatePermission($permissionId)
     {
         try {
-            $result = $this->permissionService->updatePermission($permissionId, $_POST['permission_name'], $_POST['description']);
+            $permissionCode = $_POST['module'] . '_' . $_POST['action'];
+            $result = $this->permissionService->updatePermission($permissionId, $permissionCode, $_POST['description']);
 
             header('Location: ../../views/admin/index.php?page=permissions&update=1');
         } catch (Exception $e) {

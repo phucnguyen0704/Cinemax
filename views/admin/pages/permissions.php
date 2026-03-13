@@ -2,21 +2,39 @@
 $permissions = $adminController->getAllPermissions();
 $roles = $adminController->getAllRoles();
 $rolePermissions = $role_permissionsController->getAllRolePermissions();
-$error = $_SESSION['error'] ?? null;
-unset($_SESSION['error']);
+$error = $_GET['error'] ?? null;
+
+$moduleNames = [
+    'dashboard' => 'Thống kê',
+    'movies' => 'Phim',
+    'users' => 'Người dùng',
+    'roles' => 'Vai trò',
+    'permissions' => 'Quyền'
+];
+
+$actionNames = [
+    'view' => 'Xem',
+    'create' => 'Thêm',
+    'update' => 'Sửa',
+    'delete' => 'Xóa'
+];
+
+unset($_GET['error']);
 ?>
 <section class="permissions">
     <header class="admin-header">
         <h1>Quản lý quyền</h1>
         <div class="header-actions">
-            <button class="btn-add" onclick="openModal('addPermissionModal')">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>Thêm quyền</span>
-            </button>
+            <?php if (hasPermission('permissions_create')): ?>
+                <button class="btn-add" onclick="openModal('addPermissionModal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Thêm quyền</span>
+                </button>
+            <?php endif; ?>
         </div>
     </header>
 
@@ -64,7 +82,11 @@ unset($_SESSION['error']);
                             <?php foreach ($permissions as $permission): ?>
                                 <tr>
                                     <td><strong>#<?= htmlspecialchars($permission['permission_id']) ?></strong></td>
-                                    <td><?= htmlspecialchars($permission['permission_code']) ?></td>
+                                    <td>
+                                        <?php list($module, $action) = explode('_', $permission['permission_code']); ?>
+                                        <?= $actionNames[$action] ?? $action ?>
+                                        <?= $moduleNames[$module] ?? $module ?>
+                                    </td>
 
                                     <?php foreach ($roles as $role): ?>
                                         <td>
@@ -78,26 +100,32 @@ unset($_SESSION['error']);
                                     <?php endforeach; ?>
 
                                     <td>
-                                        <button class="btn-action" type="button"
-                                            onclick="openUpdatePermissionModal(this)"
-                                            data-permission-id="<?= $permission['permission_id'] ?>"
-                                            data-permission-code="<?= htmlspecialchars($permission['permission_code']) ?>"
-                                            data-permission-description="<?= htmlspecialchars($permission['description']) ?>">
-                                            <i class="fas fa-edit" style="color: #007BFF;"></i>
-                                        </button>
+                                        <?php if (hasPermission('permissions_update')): ?>
+                                            <button class="btn-action" type="button"
+                                                onclick="openUpdatePermissionModal(this)"
+                                                data-permission-id="<?= $permission['permission_id'] ?>"
+                                                data-permission-code="<?= htmlspecialchars($permission['permission_code']) ?>"
+                                                data-permission-description="<?= htmlspecialchars($permission['description']) ?>">
+                                                <i class="fas fa-edit" style="color: #007BFF;"></i>
+                                            </button>
+                                        <?php endif; ?>
 
-                                        <button type="button" class="btn-action" onclick="confirmDelete(<?= htmlspecialchars($permission['permission_id']) ?>)">
-                                            <i class="fas fa-times" style="color: #E50914;"></i>
-                                        </button>
+                                        <?php if (hasPermission('permissions_delete')): ?>
+                                            <button type="button" class="btn-action" onclick="confirmDeletePermission(<?= htmlspecialchars($permission['permission_id']) ?>)">
+                                                <i class="fas fa-times" style="color: #E50914;"></i>
+                                            </button>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
 
-                    <div style="margin-top:20px; text-align:right;">
-                        <button class="btn-primary" type="submit">Lưu phân quyền</button>
-                    </div>
+                    <?php if (hasPermission('permissions_update')): ?>
+                        <div style="margin-top:20px; text-align:right;">
+                            <button class="btn-primary" type="submit">Lưu phân quyền</button>
+                        </div>
+                    <?php endif; ?>
                 </form>
 
             </div>
@@ -115,12 +143,46 @@ unset($_SESSION['error']);
 
             <form id="addPermissionForm" action="../admin/index.php?page=permissions&action=create" method="POST">
                 <div class="modal-body">
+
+                    <!-- MODULE -->
                     <div class="form-group">
-                        <label>Tên quyền</label>
-                        <input type="text" name="permission_code"
-                            placeholder="VD: Xem người dùng" required>
+                        <label>Chức năng</label>
+                        <select name="module" required>
+                            <option value="">-- Chọn chức năng --</option>
+                            <option value="dashboard">Thống kê</option>
+
+                            <option value="movies">Danh sách phim</option>
+                            <option value="movie_genres">Thể loại phim</option>
+
+                            <option value="cinemas">Rạp chiếu</option>
+                            <option value="halls">Phòng chiếu</option>
+                            <option value="seat_types">Loại ghế & Giá</option>
+
+                            <option value="showtimes">Lịch chiếu</option>
+                            <option value="bookings">Đơn đặt vé</option>
+
+                            <option value="foods">Đồ ăn & Combo</option>
+                            <option value="promotions">Khuyến mãi</option>
+
+                            <option value="roles">Vai trò</option>
+                            <option value="permissions">Quyền</option>
+                            <option value="users">Người dùng</option>
+                        </select>
                     </div>
 
+                    <!-- ACTION -->
+                    <div class="form-group">
+                        <label>Hành động</label>
+                        <select name="action" required>
+                            <option value="">-- Chọn hành động --</option>
+                            <option value="view">Xem</option>
+                            <option value="create">Thêm</option>
+                            <option value="update">Sửa</option>
+                            <option value="delete">Xóa</option>
+                        </select>
+                    </div>
+
+                    <!-- DESCRIPTION -->
                     <div class="form-group">
                         <label>Mô tả</label>
                         <textarea name="description" placeholder="Mô tả quyền (tùy chọn)"></textarea>
@@ -131,6 +193,7 @@ unset($_SESSION['error']);
                             onclick="closeModal('addPermissionModal')">Hủy</button>
                         <button type="submit" class="btn-primary">Thêm quyền</button>
                     </div>
+
                 </div>
             </form>
         </div>
@@ -146,16 +209,48 @@ unset($_SESSION['error']);
 
             <form id="updatePermissionForm" action="../admin/index.php?page=permissions&action=update" method="POST">
                 <div class="modal-body">
+
+                    <input type="hidden" id="update_permission_id" name="permission_id">
+
+                    <!-- MODULE -->
                     <div class="form-group">
-                        <input type="hidden" id="update_permission_id" name="permission_id">
-                        <label>Tên quyền</label>
-                        <input type="text" id="update_permission_code" name="permission_code"
-                            placeholder="VD: Xem người dùng" required>
+                        <label>Module</label>
+                        <select id="update_module" name="module" required>
+                            <option value="dashboard">Thống kê</option>
+
+                            <option value="movies">Danh sách phim</option>
+                            <option value="movie_genres">Thể loại phim</option>
+
+                            <option value="cinemas">Rạp chiếu</option>
+                            <option value="halls">Phòng chiếu</option>
+                            <option value="seat_types">Loại ghế & Giá</option>
+
+                            <option value="showtimes">Lịch chiếu</option>
+                            <option value="bookings">Đơn đặt vé</option>
+
+                            <option value="foods">Đồ ăn & Combo</option>
+                            <option value="promotions">Khuyến mãi</option>
+
+                            <option value="roles">Vai trò</option>
+                            <option value="permissions">Quyền</option>
+                            <option value="users">Người dùng</option>
+                        </select>
+                    </div>
+
+                    <!-- ACTION -->
+                    <div class="form-group">
+                        <label>Hành động</label>
+                        <select id="update_action" name="action" required>
+                            <option value="view">Xem</option>
+                            <option value="create">Thêm</option>
+                            <option value="update">Sửa</option>
+                            <option value="delete">Xóa</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
                         <label>Mô tả</label>
-                        <textarea id="update_permission_description" name="description" placeholder="Mô tả quyền (tùy chọn)"></textarea>
+                        <textarea id="update_permission_description" name="description"></textarea>
                     </div>
 
                     <div class="modal-footer">
@@ -163,6 +258,7 @@ unset($_SESSION['error']);
                             onclick="closeModal('updatePermissionModal')">Hủy</button>
                         <button type="submit" class="btn-primary">Cập nhật quyền</button>
                     </div>
+
                 </div>
             </form>
         </div>

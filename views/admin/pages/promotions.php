@@ -37,6 +37,7 @@ function renderPromotionStatusLabel($status)
     <header class="admin-header">
         <h1>Quản lý Khuyến mãi</h1>
         <div class="header-actions">
+<<<<<<< HEAD
             <button class="btn-add" onclick="openModal('addPromoModal')">
                 <i class="fas fa-plus"></i>
                 <span>Thêm mã mới</span>
@@ -46,6 +47,14 @@ function renderPromotionStatusLabel($status)
                 <img src="../../assets/images/default-avatar.png" alt="Admin">
                 <span>Admin</span>
             </div>
+=======
+            <?php if (hasPermission('promotions_create')): ?>
+                <button class="btn-add" onclick="openModal('addPromoModal')">
+                    <i class="fas fa-plus"></i>
+                    <span>Thêm mã mới</span>
+                </button>
+            <?php endif; ?>
+>>>>>>> be2f5bae4c4696f07c85bd6d20c1e426963bfd9e
         </div>
     </header>
 

@@ -6,10 +6,7 @@ error_reporting(E_ALL);
 session_start();
 
 require_once __DIR__ . '/../../config/dbConfig.php';
-
-// =========================
-// MODELS
-// =========================
+require_once __DIR__ . '/../../config/permissionConfig.php';
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Role.php';
 require_once __DIR__ . '/../../models/Permission.php';
@@ -321,4 +318,12 @@ if (!file_exists($contentPath)) {
         </main>
     </div>
 </body>
+
 </html>
+
+        <!--
+                    <?php echo "<pre>";
+        print_r($_SESSION);
+        print_r($authUser);
+        echo "</pre>"; ?>
+        -->

@@ -7,12 +7,13 @@ $genres = $genreService->listAdmin($q);
 
     <header class="admin-header">
         <h1>Quản lý Thể loại Phim</h1>
-
+        <?php if (hasPermission('genres_create')): ?>
         <div class="header-actions">
             <button class="btn-add" type="button" onclick="openAddGenreModal()">
                 <span>Thêm thể loại</span>
             </button>
         </div>
+        <?php endif; ?>
     </header>
 
     <div class="dashboard-content">
@@ -74,12 +75,14 @@ $genres = $genreService->listAdmin($q);
                                 <td>#<?= (int)$g['genre_id'] ?></td>
                                 <td><strong><?= htmlspecialchars($g['name']) ?></strong></td>
                                 <td style="text-align:right;">
+                                    <?php if (hasPermission('genres_delete')): ?>
                                     <form method="POST"
                                           action="index.php?page=genres&action=delete&id=<?= (int)$g['genre_id'] ?>"
                                           style="display:inline;"
                                           onsubmit="return confirm('Xóa thể loại này?');">
                                         <button class="btn-action danger" type="submit">Xóa</button>
                                     </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

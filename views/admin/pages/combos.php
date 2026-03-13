@@ -37,11 +37,13 @@ if ($editComboId) {
 
     <header class="admin-header">
         <h1>Quản lý Đồ ăn & Combo</h1>
+        <?php if (hasPermission('combos_create')): ?>
         <div class="header-actions">
             <button class="btn-add" onclick="openModal('addFoodModal')">
                 <span>+ Thêm món mới</span>
             </button>
         </div>
+        <?php endif; ?>
     </header>
 
     <div class="dashboard-content">
@@ -105,15 +107,20 @@ if ($editComboId) {
                                         <?php echo number_format((float)$combo['price'], 0, ',', '.'); ?> ₫
                                     </td>
                                     <td>
+                                        <?php if (hasPermission('combos_update')): ?>
                                         <a href="index.php?page=combos&edit_id=<?php echo urlencode($combo['combo_id']); ?>"
                                            class="btn-action">
                                             Sửa
                                         </a>
+                                        <?php endif; ?>
+
+                                        <?php if (hasPermission('combos_delete')): ?>
                                         <a href="index.php?page=combos&action=delete&id=<?php echo urlencode($combo['combo_id']); ?>"
                                            class="btn-action danger"
                                            onclick="return confirm('Xóa combo này?');">
                                             Xóa
                                         </a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
