@@ -47,7 +47,7 @@ class ShowController
             header('Location: ../../views/admin/index.php?page=shows&add=1');
             exit;
         } catch (Exception $e) {
-             header('Location: ../../views/admin/index.php?page=shows&error=' . urlencode($e->getMessage()));
+            header('Location: ../../views/admin/index.php?page=shows&error=' . urlencode($e->getMessage()));
             exit;
         }
     }
@@ -75,5 +75,14 @@ class ShowController
             exit;
         }
     }
+
+    public function getAllHalls_CinemasByShow()
+    {
+        try {
+            return $this->showService->getAllHalls_CinemasByShow();
+        } catch (Exception $e) {
+            header('Location: index.php?page=shows&error=' . urlencode($e->getMessage()));
+            exit;
+        }
+    }
 }
-?>

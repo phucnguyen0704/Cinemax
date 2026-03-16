@@ -11,10 +11,12 @@ class Show
 
     public function getAllShows()
     {
-        $sql = "SELECT s.*, m.title AS movie_title 
+        $sql = "SELECT s.*, m.title AS movie_title, h.name AS hall_name, c.name AS cinema_name, c.cinema_id AS cinema_id 
                 FROM shows s 
                 JOIN movies m ON s.movie_id = m.movie_id 
-                WHERE s.status = 1";
+                JOIN halls h ON s.hall_id = h.hall_id
+                JOIN cinemas c ON h.cinema_id = c.cinema_id
+                ";
         $result = $this->conn->query($sql);
 
         $shows = [];
@@ -27,7 +29,7 @@ class Show
 
     public function getShowById($id)
     {
-        $sql = "SELECT * FROM shows WHERE id = ? AND status = 1";
+        $sql = "SELECT * FROM shows WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
@@ -40,7 +42,7 @@ class Show
         $sql = "SELECT s.*, m.title AS movie_title 
                 FROM shows s 
                 JOIN movies m ON s.movie_id = m.id 
-                WHERE s.movie_id = ? AND s.status = 1";
+                WHERE s.movie_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $movie_id);
         $stmt->execute();
@@ -54,39 +56,42 @@ class Show
 
     public function createShow($movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price)
     {
-        $sql = "INSERT INTO shows (movie_id, hall_id, show_date, start_time, end_time, base_price) VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO shows 
+            (movie_id, hall_id, show_date, start_time, end_time, base_price, status) 
+            VALUES (?, ?, ?, ?, ?, ?, 0)";
+
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iiisss", $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price);
-        return $stmt->execute();
+
+        $stmt->bind_param(
+            "iisssd",
+            $movie_id,
+            $hall_id,
+            $show_date,
+            $start_time,
+            $end_time,
+            $base_price
+        );
+
+        if (!$stmt->execute()) {
+            throw new Exception($stmt->error);
+        }
+
+        return true;
     }
 
-    public function updateShow($id, $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price)
+    public function updateShow($id, $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $status)
     {
-        $sql = "UPDATE shows SET movie_id = ?, hall_id = ?, show_date = ?, start_time = ?, end_time = ?, base_price = ? WHERE id = ?";
+        $sql = "UPDATE shows SET movie_id = ?, hall_id = ?, show_date = ?, start_time = ?, end_time = ?, base_price = ?, status WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iiisssi", $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $id);
+        $stmt->bind_param("iiissdii", $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $status, $id);
         return $stmt->execute();
     }
 
     public function deleteShow($id)
     {
-        $sql = "UPDATE shows SET status = 0 WHERE id = ?";
+        $sql = "DELETE shows WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
         return $stmt->execute();
-    }
-
-    public function getShowsByTimeRangeofHalls($hall_id, $show_date, $start_time, $end_time)
-    {
-        $sql = "SELECT * FROM shows WHERE hall_id = ? AND show_date = ? AND ((start_time <= ? AND end_time > ?) OR (start_time < ? AND end_time >= ?)) AND status = 1";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("isssss", $hall_id, $show_date, $start_time, $start_time, $end_time, $end_time);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        foreach ($result as $row) {
-            $shows[] = $row;
-        }
-
-        return $shows;
     }
 }

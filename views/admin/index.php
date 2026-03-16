@@ -15,6 +15,9 @@ require_once __DIR__ . '/../../models/Movie.php';
 require_once __DIR__ . '/../../models/Genre.php';
 require_once __DIR__ . '/../../models/Show.php';
 require_once __DIR__ . '/../../models/Promotion.php';
+require_once __DIR__ . '/../../models/Cinema.php';
+require_once __DIR__ . '/../../models/Hall.php';
+require_once __DIR__ . '/../../models/HallStatus.php';
 
 // Cac file services
 require_once __DIR__ . '/../../services/RoleService.php';
@@ -26,6 +29,9 @@ require_once __DIR__ . '/../../services/AuthMiddleware.php';
 require_once __DIR__ . '/../../services/MovieService.php';
 require_once __DIR__ . '/../../services/GenreService.php';
 require_once __DIR__ . '/../../services/ShowService.php';
+require_once __DIR__ . '/../../services/CinemaService.php';
+require_once __DIR__ . '/../../services/HallService.php';
+require_once __DIR__ . '/../../services/HallStatusService.php';
 
 // Cac file controllers
 require_once __DIR__ . '/../../controllers/AdminController.php';
@@ -34,6 +40,8 @@ require_once __DIR__ . '/../../controllers/FoodComboController.php';
 require_once __DIR__ . '/../../controllers/MovieController.php';
 require_once __DIR__ . '/../../controllers/GenreController.php';
 require_once __DIR__ . '/../../controllers/ShowController.php';
+require_once __DIR__ . '/../../controllers/CinemaController.php';
+require_once __DIR__ . '/../../controllers/HallController.php';
 
 session_start();
 
@@ -53,8 +61,11 @@ $foodComboModel = new FoodCombo($conn);
 $movieModel = new Movie($conn);
 $genreModel = new Genre($conn);
 $showModel = new Show($conn);
+$cinemaModel = new Cinema($conn);
+$hallModel = new Hall($conn);
+$hallStatusModel = new HallStatus($conn);
 
-//Khoi tao promotion
+//Khoi tao services
 $userService = new UserService($userModel);
 $roleService = new RoleService($roleModel);
 $permissionService = new PermissionService($permissionModel, $rolePermissionModel);
@@ -63,6 +74,9 @@ $foodComboService = new FoodComboService($foodComboModel);
 $movieService = new MovieService($movieModel, $genreModel);
 $genreService = new GenreService($genreModel);
 $showService = new ShowService($showModel);
+$cinemaService = new CinemaService($cinemaModel);
+$hallService = new HallService($hallModel);
+$hallStatusService = new HallStatusService($hallStatusModel);
 
 //Khoi tao controllers
 $adminController = new AdminController($userService, $roleService, $permissionService);
@@ -71,6 +85,9 @@ $foodComboController = new FoodComboController($foodComboService);
 $movieController = new MovieController($movieService);
 $showController = new ShowController($showService);
 $genreController = new GenreController($genreService);
+$cinemaController = new CinemaController($cinemaService);
+$hallController = new HallController($hallService, $hallStatusService);
+
 
 // Danh sach cac page hop le
 $allowedPages = [
