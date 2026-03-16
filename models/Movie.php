@@ -9,16 +9,22 @@ class Movie
         $this->conn = $conn;
     }
 
-    // ADMIN LIST + FILTER
-    // $status: null|1|0|-1
     public function getMoviesForAdmin($search = '', $genreId = null, $status = null)
     {
         $search = trim((string)$search);
 
+        $hasDirector = $this->columnExists('movies', 'director');
+        $hasActors   = $this->columnExists('movies', 'actors');
+
+        $extraCols = '';
+        if ($hasDirector) $extraCols .= ', m.director';
+        if ($hasActors)   $extraCols .= ', m.actors';
+
         $sql = "
             SELECT
-                m.*,
-                GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') AS genre_names
+                m.* {$extraCols},
+                GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') AS genre_names,
+                GROUP_CONCAT(DISTINCT g.genre_id ORDER BY g.genre_id SEPARATOR ',') AS genre_ids
             FROM movies m
             LEFT JOIN movie_genres mg ON mg.movie_id = m.movie_id
             LEFT JOIN genres g ON g.genre_id = mg.genre_id AND g.status = 1
@@ -36,10 +42,8 @@ class Movie
             $params[] = $like;
         }
 
-        // mặc định ẩn phim đã soft delete khi không lọc status
-        if ($status === null) {
-            $sql .= " AND m.status != -1";
-        } else {
+        // reset = hiện tất cả 1,2,3
+        if ($status !== null) {
             $sql .= " AND m.status = ?";
             $types .= "i";
             $params[] = (int)$status;
@@ -47,8 +51,10 @@ class Movie
 
         if ($genreId !== null) {
             $sql .= " AND EXISTS (
-                SELECT 1 FROM movie_genres mg2
-                WHERE mg2.movie_id = m.movie_id AND mg2.genre_id = ?
+                SELECT 1
+                FROM movie_genres mg2
+                WHERE mg2.movie_id = m.movie_id
+                  AND mg2.genre_id = ?
             )";
             $types .= "i";
             $params[] = (int)$genreId;
@@ -57,22 +63,38 @@ class Movie
         $sql .= " GROUP BY m.movie_id ORDER BY m.movie_id DESC";
 
         $stmt = $this->conn->prepare($sql);
-        if ($types !== "") $stmt->bind_param($types, ...$params);
+        if ($types !== "") {
+            $stmt->bind_param($types, ...$params);
+        }
         $stmt->execute();
 
         $result = $stmt->get_result();
         $movies = [];
-        while ($row = $result->fetch_assoc()) $movies[] = $row;
+        while ($row = $result->fetch_assoc()) {
+            $movies[] = $row;
+        }
+
         return $movies;
     }
 
-    // (optional) detail cho edit sau
     public function getMovieById($movieId)
     {
-        $sql = "SELECT * FROM movies WHERE movie_id = ? LIMIT 1";
+        $hasDirector = $this->columnExists('movies', 'director');
+        $hasActors   = $this->columnExists('movies', 'actors');
+
+        $extraCols = '';
+        if ($hasDirector) $extraCols .= ', director';
+        if ($hasActors)   $extraCols .= ', actors';
+
+        $sql = "SELECT movie_id, title, description, duration_min, release_date, poster_url, trailer_url, status {$extraCols}
+                FROM movies
+                WHERE movie_id = ?
+                LIMIT 1";
+
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $movieId);
         $stmt->execute();
+
         $movie = $stmt->get_result()->fetch_assoc();
         if (!$movie) return null;
 
@@ -81,69 +103,34 @@ class Movie
                  JOIN genres g ON g.genre_id = mg.genre_id
                  WHERE mg.movie_id = ? AND g.status = 1
                  ORDER BY g.name ASC";
+
         $stmtG = $this->conn->prepare($sqlG);
         $stmtG->bind_param("i", $movieId);
         $stmtG->execute();
+
         $genres = [];
         $rsG = $stmtG->get_result();
-        while ($row = $rsG->fetch_assoc()) $genres[] = $row;
-        $movie['genres'] = $genres;
+        while ($row = $rsG->fetch_assoc()) {
+            $genres[] = $row;
+        }
 
+        $movie['genres'] = $genres;
         return $movie;
     }
 
-    // CREATE (movies + pivot)
     public function createMovieWithGenres(array $data, array $genreIds)
     {
         $this->conn->begin_transaction();
+
         try {
-            $sql = "INSERT INTO movies (title, description, duration_min, release_date, poster_url, trailer_url, status, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
-            $stmt = $this->conn->prepare($sql);
+            $hasDirector = $this->columnExists('movies', 'director');
+            $hasActors   = $this->columnExists('movies', 'actors');
 
-            $stmt->bind_param(
-                "ssisssi",
-                $data['title'],
-                $data['description'],
-                $data['duration_min'],
-                $data['release_date'],   // null hoặc YYYY-MM-DD
-                $data['poster_url'],
-                $data['trailer_url'],
-                $data['status']
-            );
+            $columns = "title, description, duration_min, release_date, poster_url, trailer_url, status, created_at";
+            $values  = "?, ?, ?, ?, ?, ?, ?, NOW()";
+            $types   = "ssisssi";
 
-            if (!$stmt->execute()) throw new Exception("Insert movies failed.");
-            $movieId = (int)$this->conn->insert_id;
-
-            if (count($genreIds) > 0) {
-                $stmtMG = $this->conn->prepare("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)");
-                foreach ($genreIds as $gid) {
-                    $gid = (int)$gid;
-                    $stmtMG->bind_param("ii", $movieId, $gid);
-                    if (!$stmtMG->execute()) throw new Exception("Insert movie_genres failed.");
-                }
-            }
-
-            $this->conn->commit();
-            return $movieId;
-        } catch (Exception $e) {
-            $this->conn->rollback();
-            return false;
-        }
-    }
-
-    // UPDATE (movies + replace pivot)
-    public function updateMovieWithGenres(int $movieId, array $data, array $genreIds)
-    {
-        $this->conn->begin_transaction();
-        try {
-            $sql = "UPDATE movies
-                    SET title = ?, description = ?, duration_min = ?, release_date = ?, poster_url = ?, trailer_url = ?, status = ?
-                    WHERE movie_id = ?";
-            $stmt = $this->conn->prepare($sql);
-
-            $stmt->bind_param(
-                "ssisssii",
+            $params = [
                 $data['title'],
                 $data['description'],
                 $data['duration_min'],
@@ -151,22 +138,137 @@ class Movie
                 $data['poster_url'],
                 $data['trailer_url'],
                 $data['status'],
-                $movieId
-            );
+            ];
 
-            if (!$stmt->execute()) throw new Exception("Update movies failed.");
+            if ($hasDirector) {
+                $columns .= ", director";
+                $values  .= ", ?";
+                $types   .= "s";
+                $params[] = $data['director'] ?? '';
+            }
 
-            $stmtDel = $this->conn->prepare("DELETE FROM movie_genres WHERE movie_id = ?");
-            $stmtDel->bind_param("i", $movieId);
-            if (!$stmtDel->execute()) throw new Exception("Delete old movie_genres failed.");
+            if ($hasActors) {
+                $columns .= ", actors";
+                $values  .= ", ?";
+                $types   .= "s";
+                $params[] = $data['actors'] ?? '';
+            }
+
+            $sql = "INSERT INTO movies ($columns) VALUES ($values)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param($types, ...$params);
+
+            if (!$stmt->execute()) {
+                throw new Exception("Insert movies failed.");
+            }
+
+            $movieId = (int)$this->conn->insert_id;
 
             if (count($genreIds) > 0) {
                 $stmtMG = $this->conn->prepare("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)");
                 foreach ($genreIds as $gid) {
                     $gid = (int)$gid;
                     $stmtMG->bind_param("ii", $movieId, $gid);
-                    if (!$stmtMG->execute()) throw new Exception("Insert movie_genres failed.");
+                    if (!$stmtMG->execute()) {
+                        throw new Exception("Insert movie_genres failed.");
+                    }
                 }
+            }
+
+            $this->conn->commit();
+            return $movieId;
+
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            return false;
+        }
+    }
+
+    public function updateMovieWithGenres(int $movieId, array $data, array $genreIds)
+    {
+        $this->conn->begin_transaction();
+
+        try {
+            $hasDirector = $this->columnExists('movies', 'director');
+            $hasActors   = $this->columnExists('movies', 'actors');
+
+            $set   = "title = ?, description = ?, duration_min = ?, release_date = ?, poster_url = ?, trailer_url = ?, status = ?";
+            $types = "ssisssi";
+
+            $params = [
+                $data['title'],
+                $data['description'],
+                $data['duration_min'],
+                $data['release_date'],
+                $data['poster_url'],
+                $data['trailer_url'],
+                $data['status'],
+            ];
+
+            if ($hasDirector) {
+                $set .= ", director = ?";
+                $types .= "s";
+                $params[] = $data['director'] ?? '';
+            }
+
+            if ($hasActors) {
+                $set .= ", actors = ?";
+                $types .= "s";
+                $params[] = $data['actors'] ?? '';
+            }
+
+            $types .= "i";
+            $params[] = $movieId;
+
+            $sql = "UPDATE movies SET $set WHERE movie_id = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param($types, ...$params);
+
+            if (!$stmt->execute()) {
+                throw new Exception("Update movies failed.");
+            }
+
+            $stmtDel = $this->conn->prepare("DELETE FROM movie_genres WHERE movie_id = ?");
+            $stmtDel->bind_param("i", $movieId);
+            if (!$stmtDel->execute()) {
+                throw new Exception("Delete old movie_genres failed.");
+            }
+
+            if (count($genreIds) > 0) {
+                $stmtMG = $this->conn->prepare("INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)");
+                foreach ($genreIds as $gid) {
+                    $gid = (int)$gid;
+                    $stmtMG->bind_param("ii", $movieId, $gid);
+                    if (!$stmtMG->execute()) {
+                        throw new Exception("Insert movie_genres failed.");
+                    }
+                }
+            }
+
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            return false;
+        }
+    }
+
+    public function deleteMovie(int $movieId)
+    {
+        $this->conn->begin_transaction();
+
+        try {
+            $stmt1 = $this->conn->prepare("DELETE FROM movie_genres WHERE movie_id = ?");
+            $stmt1->bind_param("i", $movieId);
+            if (!$stmt1->execute()) {
+                throw new Exception("Delete movie_genres failed.");
+            }
+
+            $stmt2 = $this->conn->prepare("DELETE FROM movies WHERE movie_id = ?");
+            $stmt2->bind_param("i", $movieId);
+            if (!$stmt2->execute()) {
+                throw new Exception("Delete movie failed.");
             }
 
             $this->conn->commit();
@@ -177,12 +279,14 @@ class Movie
         }
     }
 
-    // SOFT DELETE
-    public function deleteMovie(int $movieId)
+    private function columnExists(string $table, string $column): bool
     {
-        $sql = "UPDATE movies SET status = -1 WHERE movie_id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("i", $movieId);
-        return $stmt->execute();
+        $table = $this->conn->real_escape_string($table);
+        $column = $this->conn->real_escape_string($column);
+
+        $sql = "SHOW COLUMNS FROM `$table` LIKE '$column'";
+        $rs = $this->conn->query($sql);
+
+        return $rs && $rs->num_rows > 0;
     }
 }

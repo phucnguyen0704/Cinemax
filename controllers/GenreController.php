@@ -16,10 +16,10 @@ class GenreController
             $name = $_POST['name'] ?? '';
             $this->genreService->create($name);
 
-            header('Location: index.php?page=genres&add=1');
+            header('Location: ../../views/admin/index.php?page=genres&add=1');
             exit;
         } catch (Exception $e) {
-            header('Location: index.php?page=genres&error=' . urlencode($e->getMessage()));
+            header('Location: ../../views/admin/index.php?page=genres&error=' . urlencode($e->getMessage()));
             exit;
         }
     }
@@ -29,10 +29,10 @@ class GenreController
         try {
             $this->genreService->delete((int)$id);
 
-            header('Location: index.php?page=genres&delete=1');
+            header('Location: ../../views/admin/index.php?page=genres&delete=1');
             exit;
         } catch (Exception $e) {
-            header('Location: index.php?page=genres&error=' . urlencode($e->getMessage()));
+            header('Location: ../../views/admin/index.php?page=genres&error=' . urlencode($e->getMessage()));
             exit;
         }
     }
