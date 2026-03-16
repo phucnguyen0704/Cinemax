@@ -89,9 +89,9 @@ function buildPosterSrc($posterUrl, $BASE_URL)
                     name="status_text"
                     style="padding:8px; border-radius:4px; border:1px solid #444; background:#222; color:#fff;">
                     <option value="" <?= $st === '' ? 'selected' : '' ?>>Tất cả trạng thái</option>
-                    <option value="Đang chiếu" <?= $st === 'Đang chiếu' ? 'selected' : '' ?>>Đang chiếu</option>
-                    <option value="Sắp chiếu" <?= $st === 'Sắp chiếu' ? 'selected' : '' ?>>Sắp chiếu</option>
-                    <option value="Ngừng chiếu" <?= $st === 'Ngừng chiếu' ? 'selected' : '' ?>>Ngừng chiếu</option>
+                <option value="Sắp chiếu" <?= $st === 'Sắp chiếu' ? 'selected' : '' ?>>Sắp chiếu</option>
+<option value="Đang chiếu" <?= $st === 'Đang chiếu' ? 'selected' : '' ?>>Đang chiếu</option>
+<option value="Ngừng chiếu" <?= $st === 'Ngừng chiếu' ? 'selected' : '' ?>>Ngừng chiếu</option>
                 </select>
 
                 <button type="submit" class="btn-primary">Lọc</button>
@@ -123,16 +123,15 @@ function buildPosterSrc($posterUrl, $BASE_URL)
                         <?php foreach ($movies as $m): ?>
                             <?php
                                 $posterSrc = buildPosterSrc($m['poster_url'] ?? '', $BASE_URL);
+                                $badge = 'badge-warning';
+                                $txt = 'Sắp chiếu';
 
-                                $badge = 'badge-success';
-                                $txt = 'Đang chiếu';
-
-                                if ((int)$m['status'] === 0) {
-                                    $badge = 'badge-warning';
-                                    $txt = 'Sắp chiếu';
+                                if ((int)$m['status'] === 2) {
+                                    $badge = 'badge-success';
+                                    $txt = 'Đang chiếu';
                                 }
 
-                                if ((int)$m['status'] === -1) {
+                                if ((int)$m['status'] === 3) {
                                     $badge = 'badge-danger';
                                     $txt = 'Ngừng chiếu';
                                 }
@@ -294,10 +293,9 @@ function buildPosterSrc($posterUrl, $BASE_URL)
                         <div class="form-group" style="flex:1">
                             <label>Trạng thái <span style="color:red">*</span></label>
                             <select name="status" required>
-                                <option value="">-- Chọn trạng thái --</option>
-                                <option value="0">Sắp chiếu</option>
-                                <option value="1">Đang chiếu</option>
-                                <option value="-1">Ngừng chiếu</option>
+                            <option value="1">Sắp chiếu</option>
+                            <option value="2">Đang chiếu</option>
+                            <option value="3">Ngừng chiếu</option>
                             </select>
                         </div>
 
@@ -415,10 +413,9 @@ function buildPosterSrc($posterUrl, $BASE_URL)
                         <div class="form-group" style="flex:1">
                             <label>Trạng thái <span style="color:red">*</span></label>
                             <select name="status" id="edit_status" required>
-                                <option value="">-- Chọn trạng thái --</option>
-                                <option value="0">Sắp chiếu</option>
-                                <option value="1">Đang chiếu</option>
-                                <option value="-1">Ngừng chiếu</option>
+                               <option value="1">Sắp chiếu</option>
+                                `<option value="2">Đang chiếu</option>
+                                <option value="3">Ngừng chiếu</option>`
                             </select>
                         </div>
 
@@ -607,10 +604,10 @@ function validateMovieForm(form, isEdit = false) {
         return false;
     }
 
-    if (!status || !['1', '0', '-1'].includes(status)) {
-        alert('Vui lòng chọn trạng thái phim.');
-        return false;
-    }
+    if (!status || !['1', '2', '3'].includes(status)) {
+    alert('Vui lòng chọn trạng thái phim.');
+    return false;
+}
 
     if (genreCheckboxes.length === 0) {
         alert('Vui lòng chọn ít nhất 1 thể loại.');
@@ -636,15 +633,15 @@ function validateMovieForm(form, isEdit = false) {
     const dd = String(today.getDate()).padStart(2, '0');
     const todayStr = `${yyyy}-${mm}-${dd}`;
 
-    if (status === '0' && releaseDate < todayStr) {
-        alert('Phim "Sắp chiếu" phải có ngày chiếu từ hôm nay trở đi.');
-        return false;
-    }
+   if (status === '1' && releaseDate < todayStr) {
+    alert('Phim "Sắp chiếu" phải có ngày chiếu từ hôm nay trở đi.');
+    return false;
+}
 
-    if (status === '1' && releaseDate > todayStr) {
-        alert('Phim "Đang chiếu" không thể có ngày chiếu ở tương lai.');
-        return false;
-    }
+if (status === '2' && releaseDate > todayStr) {
+    alert('Phim "Đang chiếu" không thể có ngày chiếu ở tương lai.');
+    return false;
+}
 
     if (trailerUrl !== '') {
         try {

@@ -20,9 +20,9 @@ class MovieService
     {
         $statusMap = [
             '' => null,
-            'Đang chiếu' => 1,
-            'Sắp chiếu' => 0,
-            'Ngừng chiếu' => -1,
+            'Sắp chiếu' => 1,
+            'Đang chiếu' => 2,
+            'Ngừng chiếu' => 3,
         ];
 
         if (!array_key_exists($statusText, $statusMap)) {
@@ -118,7 +118,6 @@ class MovieService
         $director    = trim((string)($movieData['director'] ?? ''));
         $actors      = trim((string)($movieData['actors'] ?? ''));
 
-        // title
         if ($title === '') {
             throw new InvalidArgumentException("Tên phim không được để trống.");
         }
@@ -126,27 +125,23 @@ class MovieService
             throw new InvalidArgumentException("Tên phim không được vượt quá 255 ký tự.");
         }
 
-        // description
         if ($description === '') {
             $description = '';
         }
 
-        // duration
         if ($durationMin === null || !is_numeric($durationMin) || (int)$durationMin <= 0) {
             throw new InvalidArgumentException("Thời lượng phim không hợp lệ.");
         }
         $durationMin = (int)$durationMin;
 
-        // status
         if ($status === null || !is_numeric($status)) {
             throw new InvalidArgumentException("Trạng thái phim không hợp lệ.");
         }
         $status = (int)$status;
-        if (!in_array($status, [1, 0, -1], true)) {
+        if (!in_array($status, [1, 2, 3], true)) {
             throw new InvalidArgumentException("Trạng thái phim không hợp lệ.");
         }
 
-        // release date
         $releaseDate = $releaseDate !== null ? trim((string)$releaseDate) : '';
         if ($releaseDate === '') {
             $releaseDate = null;
@@ -154,24 +149,20 @@ class MovieService
             throw new InvalidArgumentException("Ngày chiếu phải có định dạng YYYY-MM-DD.");
         }
 
-        // poster_url
         $posterUrl = $posterUrl !== null ? trim((string)$posterUrl) : null;
         if ($posterUrl === '') {
             $posterUrl = null;
         }
 
-        // trailer_url
         $trailerUrl = $trailerUrl !== null ? trim((string)$trailerUrl) : null;
         if ($trailerUrl === '') {
             $trailerUrl = null;
         }
 
-        // director / actors
         if (mb_strlen($director) > 255) {
             throw new InvalidArgumentException("Tên đạo diễn quá dài.");
         }
 
-        // genre ids normalize
         $normalizedGenreIds = [];
         if (is_array($genreIds)) {
             foreach ($genreIds as $gid) {

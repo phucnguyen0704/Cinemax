@@ -8,6 +8,16 @@ $openModal      = $_GET['open_modal'] ?? '';
 $editId         = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $editPromotion  = null;
 
+/**
+ * Fallback để tránh fatal error nếu chưa load permissionConfig.php
+ */
+if (!function_exists('hasPermission')) {
+    function hasPermission($permission)
+    {
+        return true;
+    }
+}
+
 if ($openModal === 'edit' && $editId > 0) {
     try {
         $editPromotion = $promotionService->getPromotionDetail($editId);
@@ -36,25 +46,19 @@ function renderPromotionStatusLabel($status)
 
     <header class="admin-header">
         <h1>Quản lý Khuyến mãi</h1>
-        <div class="header-actions">
-<<<<<<< HEAD
-            <button class="btn-add" onclick="openModal('addPromoModal')">
-                <i class="fas fa-plus"></i>
-                <span>Thêm mã mới</span>
-            </button>
 
-            <div class="user-menu">
-                <img src="../../assets/images/default-avatar.png" alt="Admin">
-                <span>Admin</span>
-            </div>
-=======
+        <div class="header-actions">
             <?php if (hasPermission('promotions_create')): ?>
                 <button class="btn-add" onclick="openModal('addPromoModal')">
                     <i class="fas fa-plus"></i>
                     <span>Thêm mã mới</span>
                 </button>
             <?php endif; ?>
->>>>>>> be2f5bae4c4696f07c85bd6d20c1e426963bfd9e
+
+            <div class="user-menu">
+                <img src="../../assets/images/default-avatar.png" alt="Admin">
+                <span>Admin</span>
+            </div>
         </div>
     </header>
 
@@ -100,7 +104,7 @@ function renderPromotionStatusLabel($status)
                             <th style="min-width:120px;">Ngày bắt đầu</th>
                             <th style="min-width:120px;">Ngày kết thúc</th>
                             <th style="min-width:170px; text-align:center;">Trạng thái</th>
-                            <th style="min-width:150px; text-align:center;">Hành động</th>
+                            <th style="min-width:180px; text-align:center;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,20 +132,24 @@ function renderPromotionStatusLabel($status)
                                     <td style="text-align:center; min-width:170px;">
                                         <?= renderPromotionStatusLabel($p['computed_status'] ?? 'expired') ?>
                                     </td>
-                                    <td style="white-space:nowrap; text-align:center; min-width:150px;">
-                                        <a href="index.php?page=promotions&open_modal=edit&id=<?= (int)$p['promotion_id'] ?>" class="btn-action">
-                                            Sửa
-                                        </a>
+                                    <td style="white-space:nowrap; text-align:center; min-width:180px;">
+                                        <?php if (hasPermission('promotions_update')): ?>
+                                            <a href="index.php?page=promotions&open_modal=edit&id=<?= (int)$p['promotion_id'] ?>" class="btn-action">
+                                                Sửa
+                                            </a>
+                                        <?php endif; ?>
 
-                                        <form method="POST"
-                                              action="index.php?page=promotions&action=delete&id=<?= (int)$p['promotion_id'] ?>"
-                                              style="display:inline;">
-                                            <button type="submit"
-                                                    class="btn-action danger"
-                                                    onclick="return confirm('Xóa khuyến mãi này?')">
-                                                Xóa
-                                            </button>
-                                        </form>
+                                        <?php if (hasPermission('promotions_delete')): ?>
+                                            <form method="POST"
+                                                  action="index.php?page=promotions&action=delete&id=<?= (int)$p['promotion_id'] ?>"
+                                                  style="display:inline;">
+                                                <button type="submit"
+                                                        class="btn-action danger"
+                                                        onclick="return confirm('Xóa khuyến mãi này?')">
+                                                    Xóa
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -152,144 +160,146 @@ function renderPromotionStatusLabel($status)
         </div>
     </div>
 
-    <div id="addPromoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Thêm khuyến mãi mới</h2>
-                <button type="button" class="btn-close" onclick="closeModal('addPromoModal')">&times;</button>
+    <?php if (hasPermission('promotions_create')): ?>
+        <div id="addPromoModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Thêm khuyến mãi mới</h2>
+                    <button type="button" class="btn-close" onclick="closeModal('addPromoModal')">&times;</button>
+                </div>
+
+                <form method="POST" action="index.php?page=promotions&action=create" onsubmit="return validatePromotionForm(this)">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Mã Code <span style="color:#ff6b6b">*</span></label>
+                            <input type="text" name="code" required maxlength="50" placeholder="VD: GIAM10">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tên khuyến mãi <span style="color:#ff6b6b">*</span></label>
+                            <input type="text" name="name" required maxlength="255" placeholder="VD: Giảm cuối tuần">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Đơn vị giảm giá <span style="color:#ff6b6b">*</span></label>
+                            <select name="discount_type" required>
+                                <option value="percent">%</option>
+                                <option value="fixed">VNĐ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Giá trị giảm <span style="color:#ff6b6b">*</span></label>
+                            <input type="number" name="discount_value" min="1" step="0.01" required placeholder="VD: 10 hoặc 5000.50">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Đơn tối thiểu (VNĐ)</label>
+                            <input type="number" name="min_amount" min="0" step="0.01" value="0" placeholder="VD: 50000">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ngày bắt đầu <span style="color:#ff6b6b">*</span></label>
+                            <input
+                                type="date"
+                                name="start_date"
+                                required
+                                min="1900-01-01"
+                                max="2100-12-31"
+                                onclick="this.showPicker && this.showPicker()">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ngày kết thúc <span style="color:#ff6b6b">*</span></label>
+                            <input
+                                type="date"
+                                name="end_date"
+                                required
+                                min="1900-01-01"
+                                max="2100-12-31"
+                                onclick="this.showPicker && this.showPicker()">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-action" onclick="closeModal('addPromoModal')">Hủy</button>
+                        <button type="submit" class="btn-primary">Thêm</button>
+                    </div>
+                </form>
             </div>
-
-            <form method="POST" action="index.php?page=promotions&action=create" onsubmit="return validatePromotionForm(this)">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Mã Code <span style="color:#ff6b6b">*</span></label>
-                        <input type="text" name="code" required maxlength="50" placeholder="VD: GIAM10">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Tên khuyến mãi <span style="color:#ff6b6b">*</span></label>
-                        <input type="text" name="name" required maxlength="255" placeholder="VD: Giảm cuối tuần">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Đơn vị giảm giá <span style="color:#ff6b6b">*</span></label>
-                        <select name="discount_type" required>
-                            <option value="percent">%</option>
-                            <option value="fixed">VNĐ</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Giá trị giảm <span style="color:#ff6b6b">*</span></label>
-                        <input type="number" name="discount_value" min="1" step="0.01" required placeholder="VD: 10 hoặc 5000.50">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Đơn tối thiểu (VNĐ)</label>
-                        <input type="number" name="min_amount" min="0" step="0.01" value="0" placeholder="VD: 50000">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Ngày bắt đầu <span style="color:#ff6b6b">*</span></label>
-                        <input
-                            type="date"
-                            name="start_date"
-                            required
-                            min="1900-01-01"
-                            max="2100-12-31"
-                            onclick="this.showPicker && this.showPicker()">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Ngày kết thúc <span style="color:#ff6b6b">*</span></label>
-                        <input
-                            type="date"
-                            name="end_date"
-                            required
-                            min="1900-01-01"
-                            max="2100-12-31"
-                            onclick="this.showPicker && this.showPicker()">
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn-action" onclick="closeModal('addPromoModal')">Hủy</button>
-                    <button type="submit" class="btn-primary">Thêm</button>
-                </div>
-            </form>
         </div>
-    </div>
+    <?php endif; ?>
 
-    <?php if ($editPromotion): ?>
-    <div id="editPromoModal" class="modal" style="display:<?= $openModal === 'edit' ? 'flex' : 'none' ?>;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Chỉnh sửa khuyến mãi</h2>
-                <button type="button" class="btn-close" onclick="window.location.href='index.php?page=promotions'">&times;</button>
+    <?php if ($editPromotion && hasPermission('promotions_update')): ?>
+        <div id="editPromoModal" class="modal" style="display:<?= $openModal === 'edit' ? 'flex' : 'none' ?>;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Chỉnh sửa khuyến mãi</h2>
+                    <button type="button" class="btn-close" onclick="window.location.href='index.php?page=promotions'">&times;</button>
+                </div>
+
+                <form method="POST" action="index.php?page=promotions&action=update&id=<?= (int)$editPromotion['promotion_id'] ?>" onsubmit="return validatePromotionForm(this)">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Mã Code <span style="color:#ff6b6b">*</span></label>
+                            <input type="text" name="code" required maxlength="50" value="<?= htmlspecialchars($editPromotion['code'] ?? '') ?>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tên khuyến mãi <span style="color:#ff6b6b">*</span></label>
+                            <input type="text" name="name" required maxlength="255" value="<?= htmlspecialchars($editPromotion['name'] ?? '') ?>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Đơn vị giảm giá <span style="color:#ff6b6b">*</span></label>
+                            <select name="discount_type" required>
+                                <option value="percent" <?= ($editPromotion['discount_type'] ?? 'percent') === 'percent' ? 'selected' : '' ?>>%</option>
+                                <option value="fixed" <?= ($editPromotion['discount_type'] ?? '') === 'fixed' ? 'selected' : '' ?>>VNĐ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Giá trị giảm <span style="color:#ff6b6b">*</span></label>
+                            <input type="number" name="discount_value" min="1" step="0.01" required value="<?= htmlspecialchars($editPromotion['discount_value'] ?? '1') ?>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Đơn tối thiểu (VNĐ)</label>
+                            <input type="number" name="min_amount" min="0" step="0.01" value="<?= htmlspecialchars($editPromotion['min_amount'] ?? '0') ?>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ngày bắt đầu <span style="color:#ff6b6b">*</span></label>
+                            <input
+                                type="date"
+                                name="start_date"
+                                required
+                                min="1900-01-01"
+                                max="2100-12-31"
+                                value="<?= htmlspecialchars($editPromotion['start_date'] ?? '') ?>"
+                                onclick="this.showPicker && this.showPicker()">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ngày kết thúc <span style="color:#ff6b6b">*</span></label>
+                            <input
+                                type="date"
+                                name="end_date"
+                                required
+                                min="1900-01-01"
+                                max="2100-12-31"
+                                value="<?= htmlspecialchars($editPromotion['end_date'] ?? '') ?>"
+                                onclick="this.showPicker && this.showPicker()">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <a href="index.php?page=promotions" class="btn-action">Hủy</a>
+                        <button type="submit" class="btn-primary">Cập nhật</button>
+                    </div>
+                </form>
             </div>
-
-            <form method="POST" action="index.php?page=promotions&action=update&id=<?= (int)$editPromotion['promotion_id'] ?>" onsubmit="return validatePromotionForm(this)">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Mã Code <span style="color:#ff6b6b">*</span></label>
-                        <input type="text" name="code" required maxlength="50" value="<?= htmlspecialchars($editPromotion['code'] ?? '') ?>">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Tên khuyến mãi <span style="color:#ff6b6b">*</span></label>
-                        <input type="text" name="name" required maxlength="255" value="<?= htmlspecialchars($editPromotion['name'] ?? '') ?>">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Đơn vị giảm giá <span style="color:#ff6b6b">*</span></label>
-                        <select name="discount_type" required>
-                            <option value="percent" <?= ($editPromotion['discount_type'] ?? 'percent') === 'percent' ? 'selected' : '' ?>>%</option>
-                            <option value="fixed" <?= ($editPromotion['discount_type'] ?? '') === 'fixed' ? 'selected' : '' ?>>VNĐ</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Giá trị giảm <span style="color:#ff6b6b">*</span></label>
-                        <input type="number" name="discount_value" min="1" step="0.01" required value="<?= htmlspecialchars($editPromotion['discount_value'] ?? '1') ?>">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Đơn tối thiểu (VNĐ)</label>
-                        <input type="number" name="min_amount" min="0" step="0.01" value="<?= htmlspecialchars($editPromotion['min_amount'] ?? '0') ?>">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Ngày bắt đầu <span style="color:#ff6b6b">*</span></label>
-                        <input
-                            type="date"
-                            name="start_date"
-                            required
-                            min="1900-01-01"
-                            max="2100-12-31"
-                            value="<?= htmlspecialchars($editPromotion['start_date'] ?? '') ?>"
-                            onclick="this.showPicker && this.showPicker()">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Ngày kết thúc <span style="color:#ff6b6b">*</span></label>
-                        <input
-                            type="date"
-                            name="end_date"
-                            required
-                            min="1900-01-01"
-                            max="2100-12-31"
-                            value="<?= htmlspecialchars($editPromotion['end_date'] ?? '') ?>"
-                            onclick="this.showPicker && this.showPicker()">
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <a href="index.php?page=promotions" class="btn-action">Hủy</a>
-                    <button type="submit" class="btn-primary">Cập nhật</button>
-                </div>
-            </form>
         </div>
-    </div>
     <?php endif; ?>
 
 </section>
@@ -358,11 +368,11 @@ function validatePromotionForm(form) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    <?php if ($openModal === 'add'): ?>
+    <?php if ($openModal === 'add' && hasPermission('promotions_create')): ?>
         openModal('addPromoModal');
     <?php endif; ?>
 
-    <?php if ($openModal === 'edit' && $editPromotion): ?>
+    <?php if ($openModal === 'edit' && $editPromotion && hasPermission('promotions_update')): ?>
         openModal('editPromoModal');
     <?php endif; ?>
 });

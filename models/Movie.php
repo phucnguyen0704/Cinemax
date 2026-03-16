@@ -42,9 +42,8 @@ class Movie
             $params[] = $like;
         }
 
-        if ($status === null) {
-            $sql .= " AND m.status != -1";
-        } else {
+        // reset = hiện tất cả 1,2,3
+        if ($status !== null) {
             $sql .= " AND m.status = ?";
             $types .= "i";
             $params[] = (int)$status;
@@ -257,10 +256,27 @@ class Movie
 
     public function deleteMovie(int $movieId)
     {
-        $sql = "UPDATE movies SET status = -1 WHERE movie_id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("i", $movieId);
-        return $stmt->execute();
+        $this->conn->begin_transaction();
+
+        try {
+            $stmt1 = $this->conn->prepare("DELETE FROM movie_genres WHERE movie_id = ?");
+            $stmt1->bind_param("i", $movieId);
+            if (!$stmt1->execute()) {
+                throw new Exception("Delete movie_genres failed.");
+            }
+
+            $stmt2 = $this->conn->prepare("DELETE FROM movies WHERE movie_id = ?");
+            $stmt2->bind_param("i", $movieId);
+            if (!$stmt2->execute()) {
+                throw new Exception("Delete movie failed.");
+            }
+
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            return false;
+        }
     }
 
     private function columnExists(string $table, string $column): bool
