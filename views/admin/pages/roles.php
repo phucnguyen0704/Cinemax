@@ -61,7 +61,7 @@ $error = $_GET['error'] ?? null;
                                             ? htmlspecialchars($role['description'])
                                             : '-' ?></td>
                                     <td>
-                                        <?php if (hasPermission('roles_update')): ?>
+                                        <?php if (hasPermission('roles_update') && $role['role_id'] !== 1): ?>
                                             <button class="btn-action"
                                                 onclick="openUpdateRoleModal(this)"
                                                 data-role-id="<?= htmlspecialchars($role['role_id']) ?>"
@@ -71,7 +71,7 @@ $error = $_GET['error'] ?? null;
                                             </button>
                                         <?php endif; ?>
 
-                                        <?php if (hasPermission('roles_delete')): ?>
+                                        <?php if (hasPermission('roles_delete') && $role['role_id'] !== 1): ?>
                                             <button class="btn-action danger"
                                                 onclick="confirmDeleteRole(this)"
                                                 data-role-id="<?= htmlspecialchars($role['role_id']) ?>">Xóa
