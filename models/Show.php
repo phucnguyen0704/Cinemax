@@ -11,11 +11,14 @@ class Show
 
     public function getAllShows()
     {
-        $sql = "SELECT * FROM shows WHERE status = 1";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        foreach ($result as $row) {
+        $sql = "SELECT s.*, m.title AS movie_title 
+                FROM shows s 
+                JOIN movies m ON s.movie_id = m.movie_id 
+                WHERE s.status = 1";
+        $result = $this->conn->query($sql);
+
+        $shows = [];
+        while ($row = $result->fetch_assoc()) {
             $shows[] = $row;
         }
 
@@ -34,7 +37,10 @@ class Show
 
     public function getShowsByMovieId($movie_id)
     {
-        $sql = "SELECT * FROM shows WHERE movie_id = ? AND status = 1";
+        $sql = "SELECT s.*, m.title AS movie_title 
+                FROM shows s 
+                JOIN movies m ON s.movie_id = m.id 
+                WHERE s.movie_id = ? AND s.status = 1";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $movie_id);
         $stmt->execute();
@@ -68,5 +74,19 @@ class Show
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
         return $stmt->execute();
+    }
+
+    public function getShowsByTimeRangeofHalls($hall_id, $show_date, $start_time, $end_time)
+    {
+        $sql = "SELECT * FROM shows WHERE hall_id = ? AND show_date = ? AND ((start_time <= ? AND end_time > ?) OR (start_time < ? AND end_time >= ?)) AND status = 1";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("isssss", $hall_id, $show_date, $start_time, $start_time, $end_time, $end_time);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        foreach ($result as $row) {
+            $shows[] = $row;
+        }
+
+        return $shows;
     }
 }

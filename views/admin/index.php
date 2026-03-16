@@ -11,6 +11,7 @@ require_once __DIR__ . '/../../models/Role_permissions.php';
 require_once __DIR__ . '/../../models/FoodCombo.php';
 require_once __DIR__ . '/../../models/Movie.php';
 require_once __DIR__ . '/../../models/Genre.php';
+require_once __DIR__ . '/../../models/Show.php';
 
 //Các file service
 require_once __DIR__ . '/../../services/RoleService.php';
@@ -21,12 +22,15 @@ require_once __DIR__ . '/../../services/FoodComboService.php';
 require_once __DIR__ . '/../../services/AuthMiddleware.php';
 require_once __DIR__ . '/../../services/MovieService.php';
 require_once __DIR__ . '/../../services/GenreService.php';
+require_once __DIR__ . '/../../services/ShowService.php';
+
 //Các file controller
 require_once __DIR__ . '/../../controllers/AdminController.php';
 require_once __DIR__ . '/../../controllers/Role_permissionsController.php';
 require_once __DIR__ . '/../../controllers/FoodComboController.php';
 require_once __DIR__ . '/../../controllers/MovieController.php';
 require_once __DIR__ . '/../../controllers/GenreController.php';
+require_once __DIR__ . '/../../controllers/ShowController.php';
 session_start();
 
 // Kiểm tra đăng nhập và quyền admin bằng JWT
@@ -43,6 +47,7 @@ $role_permissionModel = new Role_permissions($conn);
 $foodComboModel = new FoodCombo($conn);
 $movieModel = new Movie($conn);
 $genreModel = new Genre($conn);
+$showModel = new Show($conn);
 
 
 //Khởi tạo services
@@ -53,6 +58,7 @@ $role_permissionsService = new Role_permissionsService($role_permissionModel);
 $foodComboService = new FoodComboService($foodComboModel);
 $movieService = new MovieService($movieModel, $genreModel);
 $genreService = new GenreService($genreModel);
+$showService = new ShowService($showModel);
 
 
 //Khởi tạo controllers
@@ -61,6 +67,7 @@ $role_permissionsController = new Role_permissionsController($role_permissionsSe
 $genreController = new GenreController($genreService);
 $foodComboController = new FoodComboController($foodComboService);
 $movieController = new MovieController($movieService);
+$showController = new ShowController($showService);
 // Danh sách page hợp lệ (tránh hack ?content=../../)
 $allowedPages = [
     'users',
@@ -183,6 +190,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'genres' && $action) {
             exit;
     }
 }
+
+if ($page === 'shows' && $action) {
+    switch ($action) {
+        case 'create':
+            $showController->createShow();
+            exit;
+
+        case 'update':
+            $showId = $id ?? ($_POST['show_id'] ?? 0);
+            $showController->updateShow($showId);
+            exit;
+
+        case 'delete':
+            $showController->deleteShow($_GET['id'] ?? 0);
+            exit;
+    }
+}
+
+
+
 $contentPath = __DIR__ . "/pages/$page.php";
 ?>
 
