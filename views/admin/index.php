@@ -1,12 +1,11 @@
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-session_start();
 
 require_once __DIR__ . '/../../config/dbConfig.php';
 require_once __DIR__ . '/../../config/permissionConfig.php';
+
+//Cac file models
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Role.php';
 require_once __DIR__ . '/../../models/Permission.php';
@@ -16,15 +15,8 @@ require_once __DIR__ . '/../../models/Movie.php';
 require_once __DIR__ . '/../../models/Genre.php';
 require_once __DIR__ . '/../../models/Show.php';
 require_once __DIR__ . '/../../models/Promotion.php';
-// promotion model: chỉ load nếu file tồn tại
-$promotionModelFile = __DIR__ . '/../../models/Promotion.php';
-if (file_exists($promotionModelFile)) {
-    require_once $promotionModelFile;
-}
 
-// =========================
-// SERVICES
-// =========================
+// Cac file services
 require_once __DIR__ . '/../../services/RoleService.php';
 require_once __DIR__ . '/../../services/PermissionService.php';
 require_once __DIR__ . '/../../services/Role_permissionsService.php';
@@ -35,45 +27,24 @@ require_once __DIR__ . '/../../services/MovieService.php';
 require_once __DIR__ . '/../../services/GenreService.php';
 require_once __DIR__ . '/../../services/ShowService.php';
 
-//Các file controller
-
-// promotion service: chỉ load nếu file tồn tại
-$promotionServiceFile = __DIR__ . '/../../services/PromotionService.php';
-if (file_exists($promotionServiceFile)) {
-    require_once $promotionServiceFile;
-}
-
-// =========================
-// CONTROLLERS
-// =========================
+// Cac file controllers
 require_once __DIR__ . '/../../controllers/AdminController.php';
 require_once __DIR__ . '/../../controllers/Role_permissionsController.php';
 require_once __DIR__ . '/../../controllers/FoodComboController.php';
 require_once __DIR__ . '/../../controllers/MovieController.php';
 require_once __DIR__ . '/../../controllers/GenreController.php';
 require_once __DIR__ . '/../../controllers/ShowController.php';
+
 session_start();
-require_once __DIR__ . '/../../controllers/PromotionController.php';
 
-// promotion controller: chỉ load nếu file tồn tại
-$promotionControllerFile = __DIR__ . '/../../controllers/PromotionController.php';
-if (file_exists($promotionControllerFile)) {
-    require_once $promotionControllerFile;
-}
 
-// =========================
-// AUTH
-// =========================
+// Kiem tra dang nhap va phan quyen admin bang JWT
 $authUser = AuthMiddleware::requireAdmin();
 
-// =========================
-// DB CONNECTION
-// =========================
+//Ket noi DB
 $conn = getDBConnection();
 
-// =========================
-// INIT MODELS
-// =========================
+//Khoi tao models
 $userModel = new User($conn);
 $roleModel = new Role($conn);
 $permissionModel = new Permission($conn);
@@ -83,15 +54,7 @@ $movieModel = new Movie($conn);
 $genreModel = new Genre($conn);
 $showModel = new Show($conn);
 
-// promotion model init an toàn
-$promotionModel = null;
-if (class_exists('Promotion')) {
-    $promotionModel = new Promotion($conn);
-}
-
-// =========================
-// INIT SERVICES
-// =========================
+//Khoi tao promotion
 $userService = new UserService($userModel);
 $roleService = new RoleService($roleModel);
 $permissionService = new PermissionService($permissionModel, $rolePermissionModel);
@@ -101,33 +64,15 @@ $movieService = new MovieService($movieModel, $genreModel);
 $genreService = new GenreService($genreModel);
 $showService = new ShowService($showModel);
 
-// promotion service init an toàn
-$promotionService = null;
-if ($promotionModel !== null && class_exists('PromotionService')) {
-    $promotionService = new PromotionService($promotionModel);
-}
-
-// =========================
-// INIT CONTROLLERS
-// =========================
+//Khoi tao controllers
 $adminController = new AdminController($userService, $roleService, $permissionService);
 $rolePermissionsController = new Role_permissionsController($rolePermissionsService);
 $foodComboController = new FoodComboController($foodComboService);
 $movieController = new MovieController($movieService);
 $showController = new ShowController($showService);
-// Danh sách page hợp lệ (tránh hack ?content=../../)
 $genreController = new GenreController($genreService);
 
-
-// promotion controller init an toàn
-$promotionController = null;
-if ($promotionService !== null && class_exists('PromotionController')) {
-    $promotionController = new PromotionController($promotionService);
-}
-
-// =========================
-// ALLOWED PAGES
-// =========================
+// Danh sach cac page hop le
 $allowedPages = [
     'users',
     'roles',
@@ -288,55 +233,13 @@ if ($page === 'shows' && $action) {
     }
 }
 
-
-
 $contentPath = __DIR__ . "/pages/$page.php";
 ?>
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'promotions' && $action) {
-    switch ($action) {
-        case 'create':
-            $promotionController->create();
-            exit;
 
-        case 'update':
-            $promotionController->update($_GET['id'] ?? 0);
-            exit;
-
-        case 'delete':
-            $promotionController->delete($_GET['id'] ?? 0);
-            exit;
-    }
-}// =========================
-// PROMOTIONS
-// chỉ chạy nếu module promotion tồn tại đầy đủ
-// =========================
-// if ($promotionController !== null && $page === 'promotions' && $action) {
-//     switch ($action) {
-//         case 'create':
-//             $promotionController->create();
-//             exit;
-
-//         case 'update':
-//             $promotionController->update($_POST['promotion_id'] ?? 0);
-//             exit;
-
-//         case 'delete':
-//             $promotionController->delete($_GET['id'] ?? 0);
-//             exit;
-//     }
-// }
-
-// =========================
-// VIEW FILE
-// =========================
-$contentPath = __DIR__ . "/pages/$page.php";
-if (!file_exists($contentPath)) {
-    $contentPath = __DIR__ . "/pages/404.php";
-}
-?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <?php include __DIR__ . '/partials/head.php'; ?>
 </head>
@@ -353,9 +256,9 @@ if (!file_exists($contentPath)) {
 
 </html>
 
-        <!--
+<!--
                     <?php echo "<pre>";
-        print_r($_SESSION);
-        print_r($authUser);
-        echo "</pre>"; ?>
+                    print_r($_SESSION);
+                    print_r($authUser);
+                    echo "</pre>"; ?>
         -->
