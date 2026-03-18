@@ -55,7 +55,7 @@ class ShowController
     public function updateShow($id)
     {
         try {
-            $this->showService->updateShow($id, $_POST['movie_id'], $_POST['hall_id'], $_POST['show_date'], $_POST['start_time'], $_POST['end_time'], $_POST['base_price']);
+            $this->showService->updateShow($id, $_POST['movie_id'], $_POST['hall_id'], $_POST['show_date'], $_POST['start_time'], $_POST['end_time'], $_POST['base_price'], $_POST['status']);
             header('Location: ../../views/admin/index.php?page=shows&update=1');
             exit;
         } catch (Exception $e) {

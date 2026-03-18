@@ -1,7 +1,7 @@
 <?php
 $permissions = $adminController->getAllPermissions();
 $roles = $adminController->getAllRoles();
-$rolePermissions = $role_permissionsController->getAllRolePermissions();
+$rolePermissions = $rolePermissionsController->getAllRolePermissions();
 $error = $_GET['error'] ?? null;
 
 $moduleNames = [

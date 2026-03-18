@@ -33,6 +33,17 @@ body {
   background: #e50914;
 }
 
+.theater-name {
+  color: #f0e68c;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 10px;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 30px;
+  border-bottom: 1px solid grey;
+}
+
 /* CALENDAR */
 
 .calendar-wrapper {
@@ -48,6 +59,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  padding-top: 10px;
 }
 
 .toolbar-left {
@@ -284,4 +296,3 @@ body {
   border: none;
   padding: 6px 10px;
 }
-

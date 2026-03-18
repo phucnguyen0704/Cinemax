@@ -28,14 +28,22 @@ class ShowService
 
     public function createShow($movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price)
     {
-
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
         //Format thoi gian
         $show_date  = date('Y-m-d', strtotime($show_date));
         $start_time = date('H:i', strtotime($start_time));
         $end_time   = date('H:i', strtotime($end_time));
 
+
+        $now = new DateTime();
+        $showDateTime = new DateTime($show_date . ' ' . $start_time);
+
+        if ($showDateTime <= $now) {
+            throw new Exception("Không thể tạo suất chiếu trong quá khứ.");
+        }
+
         if ($end_time < $start_time) {
-            return throw new Exception("End time must be greater than start time");
+            throw new Exception("End time must be greater than start time");
         }
 
         if (empty($movie_id) || empty($base_price) || empty($hall_id) || empty($show_date) || empty($start_time) || empty($end_time)) {
@@ -45,22 +53,32 @@ class ShowService
         return $this->showModel->createShow($movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price);
     }
 
-    public function updateShow($id, $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price)
+    public function updateShow($id, $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $status)
     {
+
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
         //Format thoi gian
-        $show_date = date('Y-m-d', strtotime($show_date));
-        $start_time = date('H:i:s', strtotime($start_time));
-        $end_time = date('H:i:s', strtotime($end_time));
+        $show_date  = date('Y-m-d', strtotime($show_date));
+        $start_time = date('H:i', strtotime($start_time));
+        $end_time   = date('H:i', strtotime($end_time));
+
+
+        // $now = new DateTime();
+        // $showDateTime = new DateTime($show_date . ' ' . $start_time);
+
+        // if ($showDateTime <= $now) {
+        //     throw new Exception("Không thể cập nhật suất chiếu đã chiếu.");
+        // }
 
         if ($end_time < $start_time) {
-            return throw new Exception("End time must be greater than start time");
+            throw new Exception("End time must be greater than start time");
         }
 
-        if ($this->showModel->getShowsByTimeRangeofHalls($hall_id, $show_date, $start_time, $end_time, $id)) {
-            return throw new Exception("This time range is not available for this hall");
+        if (empty($movie_id) || empty($base_price) || empty($hall_id) || empty($show_date) || empty($start_time) || empty($end_time)) {
+            throw new InvalidArgumentException("All fields are required to create a show.");
         }
 
-        return $this->showModel->updateShow($id, $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price);
+        return $this->showModel->updateShow($id, $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $status);
     }
 
     public function deleteShow($id)

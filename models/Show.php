@@ -81,15 +81,15 @@ class Show
 
     public function updateShow($id, $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $status)
     {
-        $sql = "UPDATE shows SET movie_id = ?, hall_id = ?, show_date = ?, start_time = ?, end_time = ?, base_price = ?, status WHERE id = ?";
+        $sql = "UPDATE shows SET movie_id = ?, hall_id = ?, show_date = ?, start_time = ?, end_time = ?, base_price = ?, status = ? WHERE show_id = ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iiissdii", $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $status, $id);
+        $stmt->bind_param("iisssdii", $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $status, $id);
         return $stmt->execute();
     }
 
     public function deleteShow($id)
     {
-        $sql = "DELETE shows WHERE id = ?";
+        $sql = "DELETE FROM shows WHERE show_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
         return $stmt->execute();
