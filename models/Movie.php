@@ -289,4 +289,52 @@ class Movie
 
         return $rs && $rs->num_rows > 0;
     }
+    public function getMoviesForUser($status = null)
+{
+    $hasDirector = $this->columnExists('movies', 'director');
+    $hasActors   = $this->columnExists('movies', 'actors');
+
+    $extraCols = '';
+    if ($hasDirector) $extraCols .= ', m.director';
+    if ($hasActors)   $extraCols .= ', m.actors';
+
+    $sql = "
+        SELECT
+            m.* {$extraCols},
+            GROUP_CONCAT(DISTINCT g.name ORDER BY g.name SEPARATOR ', ') AS genre_names,
+            GROUP_CONCAT(DISTINCT g.genre_id ORDER BY g.genre_id SEPARATOR ',') AS genre_ids
+        FROM movies m
+        LEFT JOIN movie_genres mg ON mg.movie_id = m.movie_id
+        LEFT JOIN genres g ON g.genre_id = mg.genre_id AND g.status = 1
+        WHERE m.status IN (1, 2)
+    ";
+
+    $types = "";
+    $params = [];
+
+    if ($status !== null) {
+        $sql .= " AND m.status = ?";
+        $types .= "i";
+        $params[] = (int)$status;
+    }
+
+    $sql .= " GROUP BY m.movie_id ORDER BY 
+              CASE WHEN m.status = 2 THEN 1 ELSE 2 END,
+              m.release_date DESC,
+              m.movie_id DESC";
+
+    $stmt = $this->conn->prepare($sql);
+    if ($types !== "") {
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    $movies = [];
+    while ($row = $result->fetch_assoc()) {
+        $movies[] = $row;
+    }
+
+    return $movies;
+}
 }

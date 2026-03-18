@@ -106,6 +106,32 @@ class MovieService
         return true;
     }
 
+    public function listMoviesForUser($filter = 'all')
+    {
+        $allowed = ['all', 'now-showing', 'coming-soon'];
+        if (!in_array($filter, $allowed, true)) {
+            $filter = 'all';
+        }
+
+        $status = null;
+        if ($filter === 'now-showing') {
+            $status = 2;
+        } elseif ($filter === 'coming-soon') {
+            $status = 1;
+        }
+
+        return $this->movieModel->getMoviesForUser($status);
+    }
+
+    public function getMovieDetailForUser($movieId)
+    {
+        if (!is_numeric($movieId) || (int)$movieId <= 0) {
+            throw new InvalidArgumentException("Movie ID không hợp lệ.");
+        }
+
+        return $this->movieModel->getMovieById((int)$movieId);
+    }
+
     private function sanitizeMoviePayload($movieData, $genreIds)
     {
         $title       = trim((string)($movieData['title'] ?? ''));
