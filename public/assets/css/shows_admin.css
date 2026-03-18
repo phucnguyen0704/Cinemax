@@ -195,6 +195,12 @@ body {
 
   font-weight: 500;
   color: #111;
+
+  white-space: normal;
+  overflow: hidden;
+  word-break: break-word;
+
+  flex-shrink: 0;
 }
 
 .event-title {
@@ -247,7 +253,7 @@ body {
 .week-row {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  height: 70px;
+  min-height: 70px;
 }
 
 .time-label {
@@ -262,6 +268,15 @@ body {
   border-top: 1px solid #333;
   cursor: pointer;
   position: relative;
+
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+
+  max-height: 80px;
+  overflow-y: auto;
 }
 
 /* POPUP */
