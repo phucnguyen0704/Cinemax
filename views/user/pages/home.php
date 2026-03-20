@@ -1,3 +1,32 @@
+<?php
+$allPromotions = isset($promotionService) ? $promotionService->listPromotions() : [];
+
+$activePromotions = array_values(array_filter($allPromotions, function ($promo) {
+    return ($promo['computed_status'] ?? '') === 'active';
+}));
+if (!isset($movieService)) {
+    die('MovieService chưa được khởi tạo.');
+}
+
+$nowShowingMovies = $movieService->listMoviesForUser('now-showing');
+$comingSoonMovies = $movieService->listMoviesForUser('coming-soon');
+
+function buildPosterUrlHome($posterUrl)
+{
+    $posterUrl = trim((string)$posterUrl);
+
+    if ($posterUrl === '') {
+        return '/webb/Cinemax/assets/posters/no-image.png';
+    }
+
+    if (preg_match('/^https?:\/\//i', $posterUrl)) {
+        return $posterUrl;
+    }
+
+    return '/webb/Cinemax/' . ltrim($posterUrl, '/');
+}
+?>
+
 <section class="home hero">
     <div class="hero-slider">
         <div class="hero-slide active"
@@ -28,7 +57,7 @@
     <div class="container">
         <div class="section-header">
             <h2>Phim đang chiếu</h2>
-            <a href="movies.php?filter=now-showing" class="view-all">
+            <a href="index.php?page=movies&filter=now-showing" class="view-all">
                 Xem tất cả
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2">
@@ -38,23 +67,36 @@
         </div>
 
         <div class="movie-grid" id="nowShowingMovies">
-            <div class="movie-card">
-                <div class="movie-poster">
-                    <img src="https://via.placeholder.com/400x600" alt="Movie title">
+            <?php if (empty($nowShowingMovies)): ?>
+                <p>Hiện chưa có phim đang chiếu.</p>
+            <?php else: ?>
+                <?php foreach (array_slice($nowShowingMovies, 0, 8) as $movie): ?>
+                    <div class="movie-card">
+                        <div class="movie-poster">
+                            <img
+                                src="<?= htmlspecialchars(buildPosterUrlHome($movie['poster_url'] ?? '')) ?>"
+                                alt="<?= htmlspecialchars($movie['title'] ?? 'Movie title') ?>"
+                                onerror="this.src='/webb/Cinemax/assets/posters/no-image.png'">
 
-                    <div class="movie-overlay">
-                        <a href="index.php?page=movie_detail" class="overlay-btn btn-detail">Chi tiết</a>
-                        <a href="index.php?page=showtimes" class="overlay-btn btn-buy-overlay">Đặt vé</a>
-                    </div>
-                </div>
+                            <div class="movie-overlay">
+                                <a href="index.php?page=movie_detail&id=<?= (int)$movie['movie_id'] ?>" class="overlay-btn btn-detail">
+                                    Chi tiết
+                                </a>
+                                <a href="index.php?page=movie_detail&id=<?= (int)$movie['movie_id'] ?>#booking" class="overlay-btn btn-buy-overlay">
+                                    Đặt vé
+                                </a>
+                            </div>
+                        </div>
 
-                <div class="movie-info">
-                    <h3>Tên phim</h3>
-                    <div class="movie-meta">
-                        <span class="duration">120 phút</span>
+                        <div class="movie-info">
+                            <h3><?= htmlspecialchars($movie['title'] ?? 'Tên phim') ?></h3>
+                            <div class="movie-meta">
+                                <span class="duration"><?= (int)($movie['duration_min'] ?? 0) ?> phút</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>
@@ -63,30 +105,43 @@
     <div class="container">
         <div class="section-header">
             <h2>Phim sắp chiếu</h2>
-            <a href="movies.php?filter=coming-soon" class="view-all">Xem tất cả</a>
+            <a href="index.php?page=movies&filter=coming-soon" class="view-all">
+                Xem tất cả
+            </a>
         </div>
 
         <div class="movie-grid" id="comingSoonMovies">
-            <div class="movie-card">
-                <div class="movie-poster">
-                    <img src="https://via.placeholder.com/400x600" alt="Movie title">
+            <?php if (empty($comingSoonMovies)): ?>
+                <p>Hiện chưa có phim sắp chiếu.</p>
+            <?php else: ?>
+                <?php foreach (array_slice($comingSoonMovies, 0, 8) as $movie): ?>
+                    <div class="movie-card">
+                        <div class="movie-poster">
+                            <img
+                                src="<?= htmlspecialchars(buildPosterUrlHome($movie['poster_url'] ?? '')) ?>"
+                                alt="<?= htmlspecialchars($movie['title'] ?? 'Movie title') ?>"
+                                onerror="this.src='/webb/Cinemax/assets/posters/no-image.png'">
 
-                    <div class="movie-overlay">
-                        <a href="index.php?page=movie_detail" class="overlay-btn btn-detail">Chi tiết</a>
-                    </div>
-                </div>
+                            <div class="movie-overlay">
+                                <a href="index.php?page=movie_detail&id=<?= (int)$movie['movie_id'] ?>" class="overlay-btn btn-detail">
+                                    Chi tiết
+                                </a>
+                            </div>
+                        </div>
 
-                <div class="movie-info">
-                    <h3>Tên phim</h3>
-                    <div class="movie-meta">
-                        <span class="duration">110 phút</span>
+                        <div class="movie-info">
+                            <h3><?= htmlspecialchars($movie['title'] ?? 'Tên phim') ?></h3>
+                            <div class="movie-meta">
+                                <span class="duration"><?= (int)($movie['duration_min'] ?? 0) ?> phút</span>
+                            </div>
+                            <button class="btn-book-ticket" disabled
+                                style="background: var(--bg-tertiary); cursor: not-allowed; opacity: 0.7;">
+                                Chưa mở bán
+                            </button>
+                        </div>
                     </div>
-                    <button class="btn-book-ticket" disabled
-                        style="background: var(--bg-tertiary); cursor: not-allowed; opacity: 0.7;">
-                        Chưa mở bán
-                    </button>
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>
@@ -95,7 +150,7 @@
     <div class="container">
         <div class="section-header">
             <h2>Khuyến mãi hot</h2>
-            <a href="promotions.php" class="view-all">Xem tất cả</a>
+            <a href="index.php?page=promotions" class="view-all">Xem tất cả</a>
         </div>
 
         <div class="promo-grid">

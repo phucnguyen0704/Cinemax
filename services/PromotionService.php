@@ -44,7 +44,7 @@ class PromotionService
 
     public function createPromotion(array $data)
     {
-        $clean = $this->sanitizePromotionPayload($data);
+        $clean = $this->sanitizePromotionPayload($data, true);
 
         $existing = $this->promotionModel->getPromotionByCode($clean['code']);
         if ($existing && (int)$existing['status'] !== -1) {
@@ -67,14 +67,29 @@ class PromotionService
 
         $promotionId = (int)$promotionId;
         $existingPromotion = $this->promotionModel->getPromotionById($promotionId);
+
         if (!$existingPromotion) {
             throw new RuntimeException("Không tìm thấy khuyến mãi cần cập nhật.");
         }
 
-        $clean = $this->sanitizePromotionPayload($data);
+        $existingStatus = $this->computeStatus(
+            $existingPromotion['start_date'] ?? '',
+            $existingPromotion['end_date'] ?? ''
+        );
+
+        // Promotion đã hết hạn thì không cho sửa
+        if ($existingStatus === 'expired') {
+            throw new RuntimeException("Khuyến mãi đã hết hạn, không được phép chỉnh sửa. Vui lòng tạo mới nếu muốn áp dụng lại.");
+        }
+
+        $clean = $this->sanitizePromotionPayload($data, false);
 
         $sameCode = $this->promotionModel->getPromotionByCode($clean['code']);
-        if ($sameCode && (int)$sameCode['promotion_id'] !== $promotionId && (int)$sameCode['status'] !== -1) {
+        if (
+            $sameCode &&
+            (int)$sameCode['promotion_id'] !== $promotionId &&
+            (int)$sameCode['status'] !== -1
+        ) {
             throw new InvalidArgumentException("Mã khuyến mãi đã tồn tại.");
         }
 
@@ -105,7 +120,7 @@ class PromotionService
         $today = date('Y-m-d');
 
         if ($today < $startDate) {
-            return 'pending';
+            return 'scheduled';
         }
 
         if ($today > $endDate) {
@@ -115,7 +130,7 @@ class PromotionService
         return 'active';
     }
 
-    private function sanitizePromotionPayload(array $data)
+    private function sanitizePromotionPayload(array $data, bool $isCreate = true): array
     {
         $code = strtoupper(trim((string)($data['code'] ?? '')));
         $name = trim((string)($data['name'] ?? ''));
@@ -176,8 +191,16 @@ class PromotionService
         $this->validateDate($startDate, "Ngày bắt đầu");
         $this->validateDate($endDate, "Ngày kết thúc");
 
-        if ($startDate > $endDate) {
-            throw new InvalidArgumentException("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
+        $today = date('Y-m-d');
+
+        // Rule: start_date không nhỏ hơn ngày hiện tại
+        if ($startDate < $today) {
+            throw new InvalidArgumentException("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
+        }
+
+        // Rule: end_date không nhỏ hơn start_date
+        if ($endDate < $startDate) {
+            throw new InvalidArgumentException("Ngày kết thúc không được nhỏ hơn ngày bắt đầu.");
         }
 
         return [
