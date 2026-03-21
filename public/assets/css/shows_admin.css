@@ -195,6 +195,11 @@ body {
 
   font-weight: 500;
   color: #111;
+  white-space: normal; /* cho xuống dòng */
+  overflow: hidden;
+  word-break: break-word; /* tránh tràn chữ */
+
+  flex-shrink: 0; /* không bị co */
 }
 
 .event-title {
@@ -262,6 +267,15 @@ body {
   border-top: 1px solid #333;
   cursor: pointer;
   position: relative;
+
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+
+  max-height: 80px;
+  overflow-y: auto;
 }
 
 /* POPUP */
