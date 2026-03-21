@@ -27,14 +27,14 @@ function buildPosterUrl($posterUrl)
     $posterUrl = trim((string)$posterUrl);
 
     if ($posterUrl === '') {
-        return '/webb/Cinemax/public/assets/uploads/movies/no-image.png';
+        return '/Cinemax/public/assets/uploads/movies/no-image.png';
     }
 
     if (preg_match('/^https?:\/\//i', $posterUrl)) {
         return $posterUrl;
     }
 
-    return '/webb/Cinemax/public/' . ltrim($posterUrl, '/');
+    return '/Cinemax/public/' . ltrim($posterUrl, '/');
 }
 ?>
 
@@ -68,7 +68,7 @@ function buildPosterUrl($posterUrl)
                                 <img
                                     src="<?= htmlspecialchars(buildPosterUrl($movie['poster_url'] ?? '')) ?>"
                                     alt="<?= htmlspecialchars($movie['title'] ?? 'Tên phim') ?>"
-                                    onerror="this.src='/webb/Cinemax/public/assets/uploads/movies/no-image.png'">
+                                    onerror="this.src='/Cinemax/public/assets/uploads/movies/no-image.png'">
 
                                 <div class="movie-overlay">
                                     <a href="index.php?page=movie_detail&id=<?= (int)$movie['movie_id'] ?>" class="overlay-btn btn-detail">

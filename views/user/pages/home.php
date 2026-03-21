@@ -18,7 +18,7 @@ function buildPosterUrlHome($posterUrl)
     $posterUrl = trim((string)$posterUrl);
 
     if ($posterUrl === '') {
-        return '/webb/Cinemax/public/assets/uploads/movies/no-image.png';
+        return '/Cinemax/public/assets/uploads/movies/no-image.png';
     }
 
     if (preg_match('/^https?:\/\//i', $posterUrl)) {
@@ -31,7 +31,7 @@ function buildPosterUrlHome($posterUrl)
         $posterUrl = substr($posterUrl, 7);
     }
 
-    return '/webb/Cinemax/public/' . $posterUrl;
+    return '/Cinemax/public/' . $posterUrl;
 }
 
 function formatPromotionDateVNHome($date)
@@ -102,7 +102,7 @@ function getPromotionBadgeTextHome($promo)
                             <img
                                 src="<?= htmlspecialchars(buildPosterUrlHome($movie['poster_url'] ?? '')) ?>"
                                 alt="<?= htmlspecialchars($movie['title'] ?? 'Movie title') ?>"
-                                onerror="this.src='/webb/Cinemax/public/assets/uploads/movies/no-image.png'">
+                                onerror="this.src='/Cinemax/public/assets/uploads/movies/no-image.png'">
 
                             <div class="movie-overlay">
                                 <a href="index.php?page=movie_detail&id=<?= (int)$movie['movie_id'] ?>" class="overlay-btn btn-detail">
@@ -146,7 +146,7 @@ function getPromotionBadgeTextHome($promo)
                             <img
                                 src="<?= htmlspecialchars(buildPosterUrlHome($movie['poster_url'] ?? '')) ?>"
                                 alt="<?= htmlspecialchars($movie['title'] ?? 'Movie title') ?>"
-                                onerror="this.src='/webb/Cinemax/public/assets/uploads/movies/no-image.png'">
+                                onerror="this.src='/Cinemax/public/assets/uploads/movies/no-image.png'">
 
                             <div class="movie-overlay">
                                 <a href="index.php?page=movie_detail&id=<?= (int)$movie['movie_id'] ?>" class="overlay-btn btn-detail">

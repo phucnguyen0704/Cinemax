@@ -38,7 +38,7 @@ function buildPosterUrlDetail($posterUrl)
     $posterUrl = trim((string)$posterUrl);
 
     if ($posterUrl === '') {
-        return '/webb/Cinemax/public/assets/posters/no-image.png';
+        return '/Cinemax/public/assets/posters/no-image.png';
     }
 
     // link ngoài
@@ -54,7 +54,7 @@ function buildPosterUrlDetail($posterUrl)
         $posterUrl = substr($posterUrl, 7);
     }
 
-    return '/webb/Cinemax/public/' . $posterUrl;
+    return '/Cinemax/public/' . $posterUrl;
 }
 
 function buildYoutubeEmbedUrl($url)
@@ -117,7 +117,7 @@ $genreNames = !empty($movie['genres']) ? implode(', ', array_column($movie['genr
                 <img src="<?= htmlspecialchars($poster) ?>"
                     alt="<?= htmlspecialchars($movie['title'] ?? 'Movie title') ?>"
                     class="detail-poster"
-                    onerror="this.src='/webb/Cinemax/public/assets/posters/no-image.png'">
+                    onerror="this.src='/Cinemax/public/assets/posters/no-image.png'">
 
                 <div class="detail-info">
                     <h1><?= htmlspecialchars($movie['title'] ?? 'Tên phim') ?></h1>

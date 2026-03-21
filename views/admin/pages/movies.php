@@ -6,7 +6,7 @@ $statusTx = $_GET['status_text'] ?? '';
 $movies = $movieService->listMoviesAdmin($search, $genreId, $statusTx);
 $genres = $movieService->getAllGenres();
 
-$BASE_URL = '/webb/Cinemax';
+$BASE_URL = '/Cinemax';
 
 function buildPosterSrc($posterUrl, $BASE_URL)
 {
