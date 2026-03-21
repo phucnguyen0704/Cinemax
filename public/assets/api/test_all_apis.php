@@ -33,13 +33,10 @@ echo "<!DOCTYPE html>
 
 require_once __DIR__ . '/config/dbConfig.php';
 require_once __DIR__ . '/models/Hall.php';
-require_once __DIR__ . '/models/HallStatus.php';
 require_once __DIR__ . '/models/SeatType.php';
 require_once __DIR__ . '/services/HallService.php';
-require_once __DIR__ . '/services/HallStatusService.php';
 require_once __DIR__ . '/services/SeatTypeService.php';
 require_once __DIR__ . '/controllers/HallController.php';
-require_once __DIR__ . '/controllers/HallStatusController.php';
 require_once __DIR__ . '/controllers/SeatTypeController.php';
 
 $results = [
@@ -88,31 +85,15 @@ try {
     $conn = getDBConnection();
     
     $hallModel = new Hall($conn);
-    $hallStatusModel = new HallStatus($conn);
     $seatTypeModel = new SeatType($conn);
     
     $hallService = new HallService($hallModel);
-    $hallStatusService = new HallStatusService($hallStatusModel);
     $seatTypeService = new SeatTypeService($seatTypeModel);
     
-    $hallController = new HallController($hallService, $hallStatusService);
-    $hallStatusController = new HallStatusController($hallStatusService);
+    $hallController = new HallController($hallService);
     $seatTypeController = new SeatTypeController($seatTypeService);
-    
-    echo "<div class='test-section'><h2>1. Hall Status API (Trạng thái phòng)</h2>";
-    
-    // Test Hall Status
-    testAPI("HallStatus - getAllStatuses()", function() use ($hallStatusController) {
-        return $hallStatusController->getAllStatuses();
-    }, $results);
-    
-    testAPI("HallStatus - getStatusById(1)", function() use ($hallStatusController) {
-        return $hallStatusController->getStatusById(1);
-    }, $results);
-    
-    echo "</div>";
-    
-    echo "<div class='test-section'><h2>2. Seat Types API (Loại ghế)</h2>";
+
+    echo "<div class='test-section'><h2>1. Seat Types API (Loại ghế)</h2>";
     
     // Test Seat Types
     testAPI("SeatType - getAllSeatTypes()", function() use ($seatTypeController) {
@@ -125,7 +106,7 @@ try {
     
     echo "</div>";
     
-    echo "<div class='test-section'><h2>3. Halls API (Phòng chiếu)</h2>";
+    echo "<div class='test-section'><h2>2. Halls API (Phòng chiếu)</h2>";
     
     // Test Halls
     testAPI("Hall - getAllHalls()", function() use ($hallController) {

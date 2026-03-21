@@ -260,18 +260,20 @@ async function handleCreateHall(event) {
     const cinemaId = formData.get('cinema_id');
     const name = formData.get('name');
     const statusId = formData.get('status_id');
+    const seatCount = parseInt(formData.get('seat_count'), 10);
     
-    console.log('Creating hall with data:', { cinemaId, name, statusId });
+    console.log('Creating hall with data:', { cinemaId, name, statusId, seatCount });
     
-    if (!cinemaId || !name || !statusId) {
-        showAlert('Vui lòng điền đầy đủ thông tin (Rạp, Tên phòng, Trạng thái)', 'error');
+    if (!cinemaId || !name || !statusId || !seatCount) {
+        showAlert('Vui lòng điền đầy đủ thông tin (Rạp, Tên phòng, Trạng thái, Số ghế)', 'error');
         return;
     }
     
     const data = {
         cinema_id: cinemaId,
         name: name.trim(),
-        status_id: statusId
+        status_id: statusId,
+        seat_count: seatCount
     };
     
     // Validation
@@ -282,6 +284,11 @@ async function handleCreateHall(event) {
     
     if (data.name.length > 50) {
         showAlert('Tên phòng chiếu không được vượt quá 50 ký tự', 'error');
+        return;
+    }
+
+    if (!Number.isInteger(data.seat_count) || data.seat_count < 1 || data.seat_count > 500) {
+        showAlert('Số lượng ghế phải là số nguyên từ 1 đến 500', 'error');
         return;
     }
     

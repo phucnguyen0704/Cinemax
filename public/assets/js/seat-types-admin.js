@@ -4,13 +4,8 @@
  * JS chỉ dùng cho CRUD (thêm / sửa / xóa) và modal.
  */
 
-// Gắn handler cho form thêm mới sau khi DOM sẵn sàng
-document.addEventListener('DOMContentLoaded', function() {
-    const addForm = document.querySelector('#addSeatTypeModal form');
-    if (addForm) {
-        addForm.addEventListener('submit', handleCreateSeatType);
-    }
-});
+// Form thêm mới đã dùng inline onsubmit trong view (seat_types.php),
+// không gắn addEventListener lần nữa để tránh submit bị chạy 2 lần.
 
 /**
  * Edit seat type
@@ -25,7 +20,7 @@ async function editSeatType(id) {
         
         // Tính phụ thu từ PriceMultiplier
         const basePrice = 100000;
-        const priceSurcharge = Math.round((seatType.PriceMultiplier - 1) * basePrice);
+        const priceSurcharge = Number(((seatType.PriceMultiplier - 1) * basePrice).toFixed(2));
         
         openEditModal(seatType, priceSurcharge);
     } catch (error) {
@@ -42,7 +37,7 @@ async function deleteSeatType(id) {
     }
     
     try {
-        await deleteSeatType(id);
+        await deleteAPI('seat_types', 'delete', id);
         showAlert('Xóa loại ghế thành công!', 'success');
         // Reload lại trang để cập nhật bảng render bằng PHP
         setTimeout(() => window.location.reload(), 500);
@@ -76,7 +71,7 @@ function openEditModal(seatType, priceSurcharge) {
                         </div>
                         <div class="form-group">
                             <label>Phụ thu (VNĐ)</label>
-                            <input type="number" name="price_surcharge" id="editPriceSurcharge" value="0" required step="1000" min="0">
+                            <input type="number" name="price_surcharge" id="editPriceSurcharge" value="0" required step="0.01" min="0">
                         </div>
                     </div>
                     <div class="modal-footer">

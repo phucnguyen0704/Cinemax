@@ -15,7 +15,8 @@ class CinemaController
     public function getAllCinemas()
     {
         try {
-            return $this->cinemaService->getAllCinemas();
+            // Trang admin cần thấy cả rạp đã đóng để hiển thị mờ và cho phép mở lại
+            return $this->cinemaService->getAllCinemas(true);
         } catch (Exception $e) {
             $_SESSION['error'] = $e->getMessage();
             return [];

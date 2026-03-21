@@ -508,7 +508,7 @@
 
       async function testStatusAPI() {
         const action = document.getElementById("statusAction").value;
-        let url = `test_api.php?controller=hall_status&action=${action}`;
+        let url = `test_api.php?controller=halls&action=getStatuses`;
 
         const options = {
           method: "GET",

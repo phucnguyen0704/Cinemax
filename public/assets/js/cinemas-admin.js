@@ -50,17 +50,16 @@ function renderCinemasTable() {
     
     cinemasData.forEach(cinema => {
         const isActive = String(cinema.Status) === '1';
-<<<<<<< HEAD
-        const actionLabel = isActive ? 'Đóng rạp' : 'Mở rạp';
-        const actionFn = isActive ? 'closeCinema' : 'openCinema';
-=======
         const statusLabel = isActive ? 'Đang hoạt động' : 'Ngừng hoạt động';
         const actionButton = isActive
             ? `<button class="btn-action danger" onclick="closeCinema(${cinema.CinemaID})">Đóng rạp</button>`
             : `<button class="btn-action" onclick="openCinema(${cinema.CinemaID})">Mở rạp</button>`;
 
->>>>>>> main
         const row = document.createElement('tr');
+        if (!isActive) {
+            row.style.opacity = '0.45';
+            row.style.transition = 'opacity 0.2s ease';
+        }
         row.innerHTML = `
             <td><strong>#${cinema.CinemaID}</strong></td>
             <td>${cinema.Name}</td>
@@ -72,11 +71,7 @@ function renderCinemasTable() {
             </td>
             <td>
                 <a href="#" class="btn-action" onclick="editCinema(${cinema.CinemaID}); return false;">Sửa</a>
-<<<<<<< HEAD
-                <button class="btn-action ${isActive ? 'danger' : ''}" onclick="${actionFn}(${cinema.CinemaID})">${actionLabel}</button>
-=======
                 ${actionButton}
->>>>>>> main
                 <a href="index.php?page=halls&cinema_id=${cinema.CinemaID}" class="btn-action">Quản lý phòng</a>
             </td>
         `;
@@ -138,33 +133,14 @@ async function editCinema(cinemaId) {
 }
 
 /**
-<<<<<<< HEAD
- * Đóng rạp (soft delete) và đóng luôn các phòng chiếu
- */
-async function closeCinema(cinemaId) {
-    if (!confirm('Bạn có chắc chắn muốn ĐÓNG rạp chiếu này? Tất cả phòng chiếu trong rạp cũng sẽ bị đóng.')) {
-=======
  * Đóng rạp (ngừng hoạt động)
  */
 async function closeCinema(cinemaId) {
     if (!confirm('Bạn có chắc chắn muốn đóng rạp này (ngừng hoạt động)?')) {
->>>>>>> main
         return;
     }
 
     try {
-<<<<<<< HEAD
-        await postAPI('cinemas', 'setStatus', {
-            cinema_id: cinemaId,
-            status_id: 0
-        });
-        showAlert('Đã đóng rạp chiếu và các phòng chiếu liên quan.', 'success');
-        await loadAllData();
-        renderCinemasTable();
-    } catch (error) {
-        console.error('Đóng rạp lỗi:', error);
-        showAlert('Lỗi khi đóng rạp chiếu: ' + (error.message || 'Có lỗi xảy ra'), 'error');
-=======
         // Hàm deleteCinema() được khai báo ở public/assets/js/api.js
         await window.deleteCinema(cinemaId);
         showAlert('Đóng rạp thành công (đã chuyển sang ngừng hoạt động)!', 'success');
@@ -172,32 +148,10 @@ async function closeCinema(cinemaId) {
         renderCinemasTable();
     } catch (error) {
         showAlert('Lỗi khi đóng rạp: ' + error.message, 'error');
->>>>>>> main
     }
 }
 
 /**
-<<<<<<< HEAD
- * Mở lại rạp và mở luôn các phòng chiếu thuộc rạp
- */
-async function openCinema(cinemaId) {
-    if (!confirm('Mở lại rạp chiếu này và tất cả phòng chiếu thuộc rạp?')) {
-        return;
-    }
-
-    try {
-        // Gọi API setStatus với status_id = 1.
-        await postAPI('cinemas', 'setStatus', {
-            cinema_id: cinemaId,
-            status_id: 1
-        });
-        showAlert('Đã mở lại rạp chiếu và các phòng chiếu liên quan.', 'success');
-        await loadAllData();
-        renderCinemasTable();
-    } catch (error) {
-        console.error('Mở rạp lỗi:', error);
-        showAlert('Lỗi khi mở rạp chiếu: ' + (error.message || 'Có lỗi xảy ra'), 'error');
-=======
  * Mở rạp (chuyển về trạng thái đang hoạt động)
  */
 async function openCinema(cinemaId) {
@@ -225,7 +179,6 @@ async function openCinema(cinemaId) {
         renderCinemasTable();
     } catch (error) {
         showAlert('Lỗi khi mở rạp: ' + error.message, 'error');
->>>>>>> main
     }
 }
 
