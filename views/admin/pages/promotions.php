@@ -133,11 +133,6 @@ function selectedValue($old, $field, $value, $default = '')
                     <span>Thêm mã mới</span>
                 </button>
             <?php endif; ?>
-
-            <div class="user-menu">
-                <img src="../../assets/images/default-avatar.png" alt="Admin">
-                <span>Admin</span>
-            </div>
         </div>
     </header>
 
@@ -227,11 +222,11 @@ function selectedValue($old, $field, $value, $default = '')
 
                                         <?php if (hasPermission('promotions_delete')): ?>
                                             <form method="POST"
-                                                  action="index.php?page=promotions&action=delete&id=<?= (int)$p['promotion_id'] ?>"
-                                                  style="display:inline;">
+                                                action="index.php?page=promotions&action=delete&id=<?= (int)$p['promotion_id'] ?>"
+                                                style="display:inline;">
                                                 <button type="submit"
-                                                        class="btn-action danger"
-                                                        onclick="return confirm('Xóa khuyến mãi này?')">
+                                                    class="btn-action danger"
+                                                    onclick="return confirm('Xóa khuyến mãi này?')">
                                                     Xóa
                                                 </button>
                                             </form>
@@ -479,113 +474,113 @@ function selectedValue($old, $field, $value, $default = '')
 </section>
 
 <script>
-function clearInlineErrors(form) {
-    form.querySelectorAll('.field-error.client-error').forEach(el => el.remove());
-    form.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
-}
-
-function appendFieldError(input, message) {
-    if (!input) return;
-    input.classList.add('input-error');
-
-    const error = document.createElement('div');
-    error.className = 'field-error client-error';
-    error.textContent = message;
-    input.insertAdjacentElement('afterend', error);
-}
-
-function validatePromotionForm(form) {
-    clearInlineErrors(form);
-
-    const code = form.querySelector('[name="code"]');
-    const name = form.querySelector('[name="name"]');
-    const discountType = form.querySelector('[name="discount_type"]');
-    const discountValue = form.querySelector('[name="discount_value"]');
-    const minAmount = form.querySelector('[name="min_amount"]');
-    const startDate = form.querySelector('[name="start_date"]');
-    const endDate = form.querySelector('[name="end_date"]');
-
-    let isValid = true;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const codeVal = code?.value.trim() || '';
-    const nameVal = name?.value.trim() || '';
-    const discountTypeVal = discountType?.value || '';
-    const discountValueVal = discountValue?.value.trim() || '';
-    const minAmountVal = minAmount?.value.trim() || '0';
-    const startDateVal = startDate?.value.trim() || '';
-    const endDateVal = endDate?.value.trim() || '';
-
-    if (codeVal === '') {
-        appendFieldError(code, 'Vui lòng nhập mã code.');
-        isValid = false;
-    } else if (!/^[a-zA-Z0-9_-]+$/.test(codeVal)) {
-        appendFieldError(code, 'Mã code chỉ được chứa chữ, số, gạch dưới hoặc gạch ngang.');
-        isValid = false;
+    function clearInlineErrors(form) {
+        form.querySelectorAll('.field-error.client-error').forEach(el => el.remove());
+        form.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
     }
 
-    if (nameVal === '') {
-        appendFieldError(name, 'Vui lòng nhập tên khuyến mãi.');
-        isValid = false;
+    function appendFieldError(input, message) {
+        if (!input) return;
+        input.classList.add('input-error');
+
+        const error = document.createElement('div');
+        error.className = 'field-error client-error';
+        error.textContent = message;
+        input.insertAdjacentElement('afterend', error);
     }
 
-    if (!['percent', 'fixed'].includes(discountTypeVal)) {
-        appendFieldError(discountType, 'Vui lòng chọn đơn vị giảm giá.');
-        isValid = false;
-    }
+    function validatePromotionForm(form) {
+        clearInlineErrors(form);
 
-    if (discountValueVal === '' || isNaN(discountValueVal) || Number(discountValueVal) < 1) {
-        appendFieldError(discountValue, 'Giá trị giảm phải lớn hơn hoặc bằng 1.');
-        isValid = false;
-    } else if (discountTypeVal === 'percent' && Number(discountValueVal) > 100) {
-        appendFieldError(discountValue, 'Giảm theo % không được vượt quá 100.');
-        isValid = false;
-    }
+        const code = form.querySelector('[name="code"]');
+        const name = form.querySelector('[name="name"]');
+        const discountType = form.querySelector('[name="discount_type"]');
+        const discountValue = form.querySelector('[name="discount_value"]');
+        const minAmount = form.querySelector('[name="min_amount"]');
+        const startDate = form.querySelector('[name="start_date"]');
+        const endDate = form.querySelector('[name="end_date"]');
 
-    if (minAmountVal === '' || isNaN(minAmountVal) || Number(minAmountVal) < 0) {
-        appendFieldError(minAmount, 'Đơn tối thiểu không hợp lệ.');
-        isValid = false;
-    }
+        let isValid = true;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-    if (startDateVal === '') {
-        appendFieldError(startDate, 'Vui lòng chọn ngày bắt đầu.');
-        isValid = false;
-    }
+        const codeVal = code?.value.trim() || '';
+        const nameVal = name?.value.trim() || '';
+        const discountTypeVal = discountType?.value || '';
+        const discountValueVal = discountValue?.value.trim() || '';
+        const minAmountVal = minAmount?.value.trim() || '0';
+        const startDateVal = startDate?.value.trim() || '';
+        const endDateVal = endDate?.value.trim() || '';
 
-    if (endDateVal === '') {
-        appendFieldError(endDate, 'Vui lòng chọn ngày kết thúc.');
-        isValid = false;
-    }
-
-    if (startDateVal !== '') {
-        const start = new Date(startDateVal + 'T00:00:00');
-        if (start < today) {
-            appendFieldError(startDate, 'Ngày bắt đầu không được nhỏ hơn ngày hiện tại.');
+        if (codeVal === '') {
+            appendFieldError(code, 'Vui lòng nhập mã code.');
+            isValid = false;
+        } else if (!/^[a-zA-Z0-9_-]+$/.test(codeVal)) {
+            appendFieldError(code, 'Mã code chỉ được chứa chữ, số, gạch dưới hoặc gạch ngang.');
             isValid = false;
         }
-    }
 
-    if (startDateVal !== '' && endDateVal !== '') {
-        const start = new Date(startDateVal + 'T00:00:00');
-        const end = new Date(endDateVal + 'T00:00:00');
-
-        if (end < start) {
-            appendFieldError(endDate, 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
+        if (nameVal === '') {
+            appendFieldError(name, 'Vui lòng nhập tên khuyến mãi.');
             isValid = false;
         }
+
+        if (!['percent', 'fixed'].includes(discountTypeVal)) {
+            appendFieldError(discountType, 'Vui lòng chọn đơn vị giảm giá.');
+            isValid = false;
+        }
+
+        if (discountValueVal === '' || isNaN(discountValueVal) || Number(discountValueVal) < 1) {
+            appendFieldError(discountValue, 'Giá trị giảm phải lớn hơn hoặc bằng 1.');
+            isValid = false;
+        } else if (discountTypeVal === 'percent' && Number(discountValueVal) > 100) {
+            appendFieldError(discountValue, 'Giảm theo % không được vượt quá 100.');
+            isValid = false;
+        }
+
+        if (minAmountVal === '' || isNaN(minAmountVal) || Number(minAmountVal) < 0) {
+            appendFieldError(minAmount, 'Đơn tối thiểu không hợp lệ.');
+            isValid = false;
+        }
+
+        if (startDateVal === '') {
+            appendFieldError(startDate, 'Vui lòng chọn ngày bắt đầu.');
+            isValid = false;
+        }
+
+        if (endDateVal === '') {
+            appendFieldError(endDate, 'Vui lòng chọn ngày kết thúc.');
+            isValid = false;
+        }
+
+        if (startDateVal !== '') {
+            const start = new Date(startDateVal + 'T00:00:00');
+            if (start < today) {
+                appendFieldError(startDate, 'Ngày bắt đầu không được nhỏ hơn ngày hiện tại.');
+                isValid = false;
+            }
+        }
+
+        if (startDateVal !== '' && endDateVal !== '') {
+            const start = new Date(startDateVal + 'T00:00:00');
+            const end = new Date(endDateVal + 'T00:00:00');
+
+            if (end < start) {
+                appendFieldError(endDate, 'Ngày kết thúc không được nhỏ hơn ngày bắt đầu.');
+                isValid = false;
+            }
+        }
+
+        return isValid;
     }
 
-    return isValid;
-}
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if (($openModal === 'add' || !empty($addErrors)) && hasPermission('promotions_create')): ?>
+            openModal('addPromoModal');
+        <?php endif; ?>
 
-document.addEventListener('DOMContentLoaded', function () {
-    <?php if (($openModal === 'add' || !empty($addErrors)) && hasPermission('promotions_create')): ?>
-        openModal('addPromoModal');
-    <?php endif; ?>
-
-    <?php if ((($openModal === 'edit' && $editPromotion) || $editOldId > 0 || !empty($editErrors)) && hasPermission('promotions_update')): ?>
-        openModal('editPromoModal');
-    <?php endif; ?>
-});
+        <?php if ((($openModal === 'edit' && $editPromotion) || $editOldId > 0 || !empty($editErrors)) && hasPermission('promotions_update')): ?>
+            openModal('editPromoModal');
+        <?php endif; ?>
+    });
 </script>

@@ -32,6 +32,7 @@ require_once __DIR__ . '/../../services/ShowService.php';
 require_once __DIR__ . '/../../services/CinemaService.php';
 require_once __DIR__ . '/../../services/HallService.php';
 require_once __DIR__ . '/../../services/HallStatusService.php';
+require_once __DIR__ . '/../../services/PromotionService.php';
 
 // Cac file controllers
 require_once __DIR__ . '/../../controllers/AdminController.php';
@@ -42,6 +43,7 @@ require_once __DIR__ . '/../../controllers/GenreController.php';
 require_once __DIR__ . '/../../controllers/ShowController.php';
 require_once __DIR__ . '/../../controllers/CinemaController.php';
 require_once __DIR__ . '/../../controllers/HallController.php';
+require_once __DIR__ . '/../../controllers/PromotionController.php';
 
 session_start();
 
@@ -64,6 +66,7 @@ $showModel = new Show($conn);
 $cinemaModel = new Cinema($conn);
 $hallModel = new Hall($conn);
 $hallStatusModel = new HallStatus($conn);
+$promotionModel = new Promotion($conn);
 
 //Khoi tao services
 $userService = new UserService($userModel);
@@ -77,6 +80,7 @@ $showService = new ShowService($showModel);
 $cinemaService = new CinemaService($cinemaModel);
 $hallService = new HallService($hallModel);
 $hallStatusService = new HallStatusService($hallStatusModel);
+$promotionService = new PromotionService($promotionModel);
 
 //Khoi tao controllers
 $adminController = new AdminController($userService, $roleService, $permissionService);
@@ -87,7 +91,6 @@ $showController = new ShowController($showService);
 $genreController = new GenreController($genreService);
 $cinemaController = new CinemaController($cinemaService);
 $hallController = new HallController($hallService, $hallStatusService);
-
 
 // Danh sach cac page hop le
 $allowedPages = [
