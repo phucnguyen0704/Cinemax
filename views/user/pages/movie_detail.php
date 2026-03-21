@@ -38,14 +38,23 @@ function buildPosterUrlDetail($posterUrl)
     $posterUrl = trim((string)$posterUrl);
 
     if ($posterUrl === '') {
-        return '/webb/Cinemax/assets/posters/no-image.png';
+        return '/webb/Cinemax/public/assets/posters/no-image.png';
     }
 
+    // link ngoài
     if (preg_match('/^https?:\/\//i', $posterUrl)) {
         return $posterUrl;
     }
 
-    return '/webb/Cinemax/' . ltrim($posterUrl, '/');
+    // ❗ fix chuẩn mọi trường hợp
+    $posterUrl = ltrim($posterUrl, '/');
+
+    // nếu DB đã có public thì bỏ đi
+    if (strpos($posterUrl, 'public/') === 0) {
+        $posterUrl = substr($posterUrl, 7);
+    }
+
+    return '/webb/Cinemax/public/' . $posterUrl;
 }
 
 function buildYoutubeEmbedUrl($url)
@@ -108,7 +117,7 @@ $genreNames = !empty($movie['genres']) ? implode(', ', array_column($movie['genr
                 <img src="<?= htmlspecialchars($poster) ?>"
                     alt="<?= htmlspecialchars($movie['title'] ?? 'Movie title') ?>"
                     class="detail-poster"
-                    onerror="this.src='/webb/Cinemax/assets/posters/no-image.png'">
+                    onerror="this.src='/webb/Cinemax/public/assets/posters/no-image.png'">
 
                 <div class="detail-info">
                     <h1><?= htmlspecialchars($movie['title'] ?? 'Tên phim') ?></h1>
