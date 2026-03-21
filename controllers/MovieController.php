@@ -22,7 +22,7 @@ class MovieController
         }
 
         $tmpName = $_FILES[$fieldName]['tmp_name'];
-        $originalName = $_FILES[$fieldName]['name'];
+        $originalName = $_FILES[$fieldName]['name'] ?? '';
         $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
         $allowed = ['jpg', 'jpeg', 'png', 'webp'];
@@ -30,19 +30,23 @@ class MovieController
             throw new Exception("Poster chỉ hỗ trợ jpg, jpeg, png, webp.");
         }
 
-        $folder = __DIR__ . '/../assets/posters/';
+        // Lưu file thật trong public để user/admin đều truy cập được
+        $folder = __DIR__ . '/../public/assets/uploads/movies/';
         if (!is_dir($folder)) {
-            mkdir($folder, 0777, true);
+            if (!mkdir($folder, 0777, true) && !is_dir($folder)) {
+                throw new Exception("Không thể tạo thư mục lưu poster.");
+            }
         }
 
-        $fileName = time() . '_' . uniqid() . '.' . $ext;
+        $fileName = 'movie_' . time() . '_' . random_int(1000, 9999) . '.' . $ext;
         $destination = $folder . $fileName;
 
         if (!move_uploaded_file($tmpName, $destination)) {
             throw new Exception("Không thể lưu file poster.");
         }
 
-        return 'assets/posters/' . $fileName;
+        // Chỉ lưu path tương đối vào DB
+        return 'assets/uploads/movies/' . $fileName;
     }
 
     public function create(): void
@@ -79,12 +83,18 @@ class MovieController
         try {
             $posterPath = $this->uploadPoster('poster');
 
+            $existingPoster = $_POST['existing_poster_url'] ?? null;
+            $existingPoster = is_string($existingPoster) ? trim($existingPoster) : null;
+            if ($existingPoster === '') {
+                $existingPoster = null;
+            }
+
             $movieData = [
                 'title'        => $_POST['title'] ?? '',
                 'description'  => $_POST['description'] ?? '',
                 'duration_min' => $_POST['duration_min'] ?? null,
                 'release_date' => $_POST['release_date'] ?? null,
-                'poster_url'   => $posterPath ?: ($_POST['existing_poster_url'] ?? null),
+                'poster_url'   => $posterPath ?: $existingPoster,
                 'trailer_url'  => $_POST['trailer_url'] ?? null,
                 'status'       => $_POST['status'] ?? 1,
                 'director'     => $_POST['director'] ?? '',

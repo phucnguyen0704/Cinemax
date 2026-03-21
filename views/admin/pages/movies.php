@@ -26,7 +26,7 @@ function buildPosterSrc($posterUrl, $BASE_URL)
         return $BASE_URL . $posterUrl;
     }
 
-    return $BASE_URL . '/' . ltrim($posterUrl, '/');
+    return $BASE_URL . '/public/' . ltrim($posterUrl, '/');
 }
 ?>
 

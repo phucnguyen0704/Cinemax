@@ -32,7 +32,7 @@ function getPromotionStatusText($status)
 {
     return match ($status) {
         'active' => 'Đang áp dụng',
-        'pending' => 'Sắp diễn ra',
+        'scheduled' => 'Sắp diễn ra',
         'expired' => 'Đã hết hạn',
         default => 'Không xác định',
     };
@@ -47,7 +47,7 @@ function getPromotionStatusText($status)
 
         <div class="promo-grid">
             <?php if (empty($promotions)): ?>
-                <p>Hiện chưa có khuyến mãi nào.</p>
+                <p>Hiện chưa có khuyến mãi nào đang áp dụng hoặc sắp diễn ra.</p>
             <?php else: ?>
                 <?php foreach ($promotions as $promo): ?>
                     <div class="promo-card">

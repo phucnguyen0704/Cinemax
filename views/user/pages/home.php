@@ -1,9 +1,11 @@
 <?php
 $allPromotions = isset($promotionService) ? $promotionService->listPromotions() : [];
 
+// Chỉ lấy khuyến mãi đang áp dụng
 $activePromotions = array_values(array_filter($allPromotions, function ($promo) {
     return ($promo['computed_status'] ?? '') === 'active';
 }));
+
 if (!isset($movieService)) {
     die('MovieService chưa được khởi tạo.');
 }
@@ -16,14 +18,38 @@ function buildPosterUrlHome($posterUrl)
     $posterUrl = trim((string)$posterUrl);
 
     if ($posterUrl === '') {
-        return '/webb/Cinemax/assets/posters/no-image.png';
+        return '/webb/Cinemax/public/assets/uploads/movies/no-image.png';
     }
 
     if (preg_match('/^https?:\/\//i', $posterUrl)) {
         return $posterUrl;
     }
 
-    return '/webb/Cinemax/' . ltrim($posterUrl, '/');
+    $posterUrl = ltrim($posterUrl, '/');
+
+    if (strpos($posterUrl, 'public/') === 0) {
+        $posterUrl = substr($posterUrl, 7);
+    }
+
+    return '/webb/Cinemax/public/' . $posterUrl;
+}
+
+function formatPromotionDateVNHome($date)
+{
+    if (!$date) return 'Chưa cập nhật';
+    return date('d/m/Y', strtotime($date));
+}
+
+function getPromotionBadgeTextHome($promo)
+{
+    $type = $promo['discount_type'] ?? 'percent';
+    $value = (float)($promo['discount_value'] ?? 0);
+
+    if ($type === 'percent') {
+        return 'Giảm ' . rtrim(rtrim(number_format($value, 2, '.', ''), '0'), '.') . '%';
+    }
+
+    return 'Giảm ' . number_format($value, 0, ',', '.') . 'đ';
 }
 ?>
 
@@ -76,7 +102,7 @@ function buildPosterUrlHome($posterUrl)
                             <img
                                 src="<?= htmlspecialchars(buildPosterUrlHome($movie['poster_url'] ?? '')) ?>"
                                 alt="<?= htmlspecialchars($movie['title'] ?? 'Movie title') ?>"
-                                onerror="this.src='/webb/Cinemax/assets/posters/no-image.png'">
+                                onerror="this.src='/webb/Cinemax/public/assets/uploads/movies/no-image.png'">
 
                             <div class="movie-overlay">
                                 <a href="index.php?page=movie_detail&id=<?= (int)$movie['movie_id'] ?>" class="overlay-btn btn-detail">
@@ -120,7 +146,7 @@ function buildPosterUrlHome($posterUrl)
                             <img
                                 src="<?= htmlspecialchars(buildPosterUrlHome($movie['poster_url'] ?? '')) ?>"
                                 alt="<?= htmlspecialchars($movie['title'] ?? 'Movie title') ?>"
-                                onerror="this.src='/webb/Cinemax/assets/posters/no-image.png'">
+                                onerror="this.src='/webb/Cinemax/public/assets/uploads/movies/no-image.png'">
 
                             <div class="movie-overlay">
                                 <a href="index.php?page=movie_detail&id=<?= (int)$movie['movie_id'] ?>" class="overlay-btn btn-detail">
@@ -154,14 +180,33 @@ function buildPosterUrlHome($posterUrl)
         </div>
 
         <div class="promo-grid">
-            <div class="promo-card">
-                <img src="https://via.placeholder.com/400x200?text=Promotion" alt="Promotion">
-                <div class="promo-content">
-                    <span class="promo-badge">Giảm 20%</span>
-                    <h3>Mã: SALE20</h3>
-                    <p>HSD: 31/12/2026</p>
-                </div>
-            </div>
+            <?php if (empty($activePromotions)): ?>
+                <p>Hiện chưa có khuyến mãi hot.</p>
+            <?php else: ?>
+                <?php foreach (array_slice($activePromotions, 0, 4) as $promo): ?>
+                    <div class="promo-card">
+                        <img
+                            src="https://via.placeholder.com/400x200?text=Promotion"
+                            alt="<?= htmlspecialchars($promo['code'] ?? 'Promotion') ?>">
+
+                        <div class="promo-content">
+                            <span class="promo-badge">
+                                <?= htmlspecialchars(getPromotionBadgeTextHome($promo)) ?>
+                            </span>
+
+                            <h3>Mã: <?= htmlspecialchars($promo['code'] ?? '') ?></h3>
+
+                            <p>
+                                HSD: <?= htmlspecialchars(formatPromotionDateVNHome($promo['end_date'] ?? null)) ?>
+                            </p>
+
+                            <?php if (!empty($promo['name'])): ?>
+                                <p><?= htmlspecialchars($promo['name']) ?></p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>
