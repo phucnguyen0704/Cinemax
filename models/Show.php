@@ -29,7 +29,7 @@ class Show
 
     public function getShowById($id)
     {
-        $sql = "SELECT * FROM shows WHERE id = ?";
+        $sql = "SELECT * FROM shows WHERE show_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
@@ -39,14 +39,18 @@ class Show
 
     public function getShowsByMovieId($movie_id)
     {
-        $sql = "SELECT s.*, m.title AS movie_title 
+        $sql = "SELECT s.*, c.name AS cinema_name, h.name AS hall_name
                 FROM shows s 
-                JOIN movies m ON s.movie_id = m.id 
-                WHERE s.movie_id = ?";
+                JOIN movies m ON s.movie_id = m.movie_id 
+                JOIN halls h ON s.hall_id = h.hall_id
+                JOIN cinemas c ON h.cinema_id = c.cinema_id
+                WHERE s.movie_id = ? AND s.status = 1";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $movie_id);
         $stmt->execute();
         $result = $stmt->get_result();
+
+        $shows = [];
         foreach ($result as $row) {
             $shows[] = $row;
         }

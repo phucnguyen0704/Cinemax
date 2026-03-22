@@ -669,9 +669,14 @@ body {
 }
 
 .btn-buy-overlay {
-  background: var(--primary-color);
-  border: 2px solid var(--primary-color);
-  color: #fff;
+  padding: 10px 24px;
+  background: transparent;
+  border: 2px solid var(--text-primary);
+  color: var(--text-primary);
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
 }
 .btn-buy-overlay:hover {
   background: #b20710;

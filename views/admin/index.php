@@ -17,7 +17,6 @@ require_once __DIR__ . '/../../models/Show.php';
 require_once __DIR__ . '/../../models/Promotion.php';
 require_once __DIR__ . '/../../models/Cinema.php';
 require_once __DIR__ . '/../../models/Hall.php';
-require_once __DIR__ . '/../../models/HallStatus.php';
 require_once __DIR__ . '/../../models/Ticket.php';
 
 require_once __DIR__ . '/../../models/Bill.php';
@@ -34,7 +33,6 @@ require_once __DIR__ . '/../../services/GenreService.php';
 require_once __DIR__ . '/../../services/ShowService.php';
 require_once __DIR__ . '/../../services/CinemaService.php';
 require_once __DIR__ . '/../../services/HallService.php';
-require_once __DIR__ . '/../../services/HallStatusService.php';
 require_once __DIR__ . '/../../services/PromotionService.php';
 require_once __DIR__ . '/../../services/TicketService.php';
 require_once __DIR__ . '/../../services/BillService.php';
@@ -70,7 +68,6 @@ $genreModel = new Genre($conn);
 $showModel = new Show($conn);
 $cinemaModel = new Cinema($conn);
 $hallModel = new Hall($conn);
-$hallStatusModel = new HallStatus($conn);
 $promotionModel = new Promotion($conn);
 $ticketModel = new Ticket($conn);
 
@@ -86,7 +83,6 @@ $movieService = new MovieService($movieModel, $genreModel);
 $genreService = new GenreService($genreModel);
 $cinemaService = new CinemaService($cinemaModel);
 $hallService = new HallService($hallModel);
-$hallStatusService = new HallStatusService($hallStatusModel);
 $promotionService = new PromotionService($promotionModel);
 $ticketService = new TicketService($ticketModel);
 $showService = new ShowService($showModel, $ticketService);
@@ -100,8 +96,8 @@ $movieController = new MovieController($movieService);
 $showController = new ShowController($showService);
 $genreController = new GenreController($genreService);
 $cinemaController = new CinemaController($cinemaService);
-$hallController = new HallController($hallService, $hallStatusService);
 $promotionController = new PromotionController($promotionService);
+$hallController = new HallController($hallService);
 
 // Danh sach cac page hop le
 $allowedPages = [

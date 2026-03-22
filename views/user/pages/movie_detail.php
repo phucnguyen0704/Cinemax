@@ -107,6 +107,21 @@ function buildYoutubeEmbedUrl($url)
 $poster = buildPosterUrlDetail($movie['poster_url'] ?? '');
 $trailerEmbed = buildYoutubeEmbedUrl($movie['trailer_url'] ?? '');
 $genreNames = !empty($movie['genres']) ? implode(', ', array_column($movie['genres'], 'name')) : 'Chưa cập nhật';
+
+
+$shows = $showController->getShowsByMovieId((int)$movieId);
+$groupedShows = [];
+
+foreach ($shows as $show) {
+    $date = $show['show_date'];
+    $cinema = $show['cinema_name'];
+
+    $groupedShows[$date][$cinema][] = $show;
+}
+function formatMoney($amount)
+{
+    return number_format($amount, 0, ',', '.') . ' ₫';
+}
 ?>
 
 <section class="movie_deail">
@@ -161,9 +176,40 @@ $genreNames = !empty($movie['genres']) ? implode(', ', array_column($movie['genr
             </div>
 
             <?php if ((int)$movie['status'] === 2): ?>
-                <div style="text-align: center; padding: 40px; border: 1px dashed #444; border-radius: 8px;">
-                    <p style="color: #aaa;">Phần lịch chiếu sẽ nối tiếp với bảng showtimes/shows sau.</p>
-                </div>
+                <?php foreach ($groupedShows as $date => $cinemas): ?>
+                    <div class="date-group">
+                        <h3 class="date-label">
+                            <?= htmlspecialchars(formatDateVN($date)) ?>
+                        </h3>
+
+                        <?php foreach ($cinemas as $cinemaName => $showsList): ?>
+                            <div class="theater-group">
+                                <div class="theater-name">
+                                    <?= htmlspecialchars($cinemaName) ?>
+                                </div>
+
+                                <div class="time-list">
+                                    <?php foreach ($showsList as $show): ?>
+                                        <a href="../user/pages/seat_selection.php?show_id=<?= (int)$show['show_id'] ?>"
+                                            class="time-btn">
+
+                                            <div>
+                                                <?= htmlspecialchars($show['hall_name']) ?>
+                                            </div>
+
+                                            <?= htmlspecialchars(substr($show['start_time'], 0, 5)) ?>
+
+                                            <br>
+                                            <small>
+                                                <?= formatMoney($show['base_price']) ?>
+                                            </small>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endforeach; ?>
             <?php else: ?>
                 <div style="text-align: center; padding: 40px; border: 1px dashed #444; border-radius: 8px;">
                     <p style="color: #aaa;">Phim sắp chiếu, hiện chưa mở lịch chiếu.</p>
