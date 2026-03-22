@@ -195,11 +195,20 @@ body {
 
   font-weight: 500;
   color: #111;
+<<<<<<< HEAD
   white-space: normal; /* cho xuống dòng */
   overflow: hidden;
   word-break: break-word; /* tránh tràn chữ */
 
   flex-shrink: 0; /* không bị co */
+=======
+
+  white-space: normal;
+  overflow: hidden;
+  word-break: break-word;
+
+  flex-shrink: 0;
+>>>>>>> b427dfbad300f26d6c90dcaf309827d71e2a9931
 }
 
 .event-title {
@@ -252,7 +261,7 @@ body {
 .week-row {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  height: 70px;
+  min-height: 70px;
 }
 
 .time-label {

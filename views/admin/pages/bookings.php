@@ -1,8 +1,72 @@
+<?php
+/** @var AdminController $adminController */
+
+// Lấy các tham số filter
+$currentPage = isset($_GET['p']) ? max(1, (int)$_GET['p']) : 1;
+$limit = 10;
+$statusFilter = $_GET['status'] ?? null;
+$search = $_GET['search'] ?? null;
+
+// Lấy dữ liệu từ controller
+$billsData = $adminController->getBillsPaginated($currentPage, $limit, $statusFilter, $search);
+$stats = $adminController->getBillStats();
+
+$bills = $billsData['data'];
+$totalPages = $billsData['totalPages'];
+$total = $billsData['total'];
+
+// Helper function để format tiền
+function formatMoney($amount) {
+    return number_format($amount, 0, ',', '.') . ' ₫';
+}
+
+// Helper function để lấy class CSS cho status
+function getStatusClass($status) {
+    $classes = [
+        'pending' => 'status-Pending',
+        'paid' => 'status-Paid',
+        'cancelled' => 'status-Cancelled',
+        'refunded' => 'status-Refunded'
+    ];
+    return $classes[$status] ?? 'status-Pending';
+}
+
+// Helper function để lấy tên hiển thị cho status
+function getStatusLabel($status) {
+    $labels = [
+        'pending' => 'Chờ thanh toán',
+        'paid' => 'Đã thanh toán',
+        'cancelled' => 'Đã hủy',
+        'refunded' => 'Đã hoàn tiền'
+    ];
+    return $labels[$status] ?? $status;
+}
+?>
+
 <section class="bookings">
 
     <header class="admin-header">
         <h1>Quản lý đơn hàng</h1>
     </header>
+
+    <?php if (isset($_GET['success'])): ?>
+        <div class="alert alert-success" style="margin-bottom: 20px; padding: 10px 15px; background: rgba(70, 211, 105, 0.1); border: 1px solid #46d369; border-radius: 8px; color: #46d369;">
+            <?php
+            $successMessages = [
+                'confirmed' => 'Xác nhận thanh toán thành công!',
+                'cancelled' => 'Hủy đơn hàng thành công!'
+            ];
+            $successMsg = $successMessages[$_GET['success']] ?? 'Thao tác thành công!';
+            echo htmlspecialchars($successMsg);
+            ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error'])): ?>
+        <div class="alert alert-error" style="margin-bottom: 20px; padding: 10px 15px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; color: #ef4444;">
+            <?= htmlspecialchars($_GET['error']) ?>
+        </div>
+    <?php endif; ?>
 
     <div class="dashboard-content">
 
@@ -17,8 +81,8 @@
                     </svg>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-label">Hiển thị</span>
-                    <span class="stat-value">120</span>
+                    <span class="stat-label">Tổng đơn</span>
+                    <span class="stat-value"><?= $stats['total'] ?></span>
                 </div>
             </div>
 
@@ -31,7 +95,7 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Đã thanh toán</span>
-                    <span class="stat-value">85</span>
+                    <span class="stat-value"><?= $stats['paid'] ?></span>
                 </div>
             </div>
 
@@ -45,7 +109,7 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Chờ thanh toán</span>
-                    <span class="stat-value">25</span>
+                    <span class="stat-value"><?= $stats['pending'] ?></span>
                 </div>
             </div>
 
@@ -59,7 +123,7 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-label">Đã hủy</span>
-                    <span class="stat-value">10</span>
+                    <span class="stat-value"><?= $stats['cancelled'] ?></span>
                 </div>
             </div>
 
@@ -68,9 +132,34 @@
         <!-- Bảng đơn hàng -->
         <div class="dashboard-card">
 
-            <div class="card-header">
-                <form class="search-form" style="width: 300px;">
-                    <input type="text" placeholder="Nhập mã đơn, tên, email...">
+            <div class="card-header" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <form class="search-form" method="GET" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <input type="hidden" name="page" value="bookings">
+                    
+                    <input type="text" name="search" placeholder="Nhập mã đơn, tên, email..." 
+                           value="<?= htmlspecialchars($search ?? '') ?>" style="width: 250px;">
+                    
+                    <select name="status" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #333; background: #1a1a2e; color: #fff;">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Chờ thanh toán</option>
+                        <option value="paid" <?= $statusFilter === 'paid' ? 'selected' : '' ?>>Đã thanh toán</option>
+                        <option value="cancelled" <?= $statusFilter === 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
+                        <option value="refunded" <?= $statusFilter === 'refunded' ? 'selected' : '' ?>>Đã hoàn tiền</option>
+                    </select>
+                    
+                    <button type="submit" class="btn-primary" style="padding: 8px 16px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        Tìm kiếm
+                    </button>
+                    
+                    <?php if ($search || $statusFilter): ?>
+                        <a href="index.php?page=bookings" class="btn-secondary" style="padding: 8px 16px; text-decoration: none;">
+                            Xóa bộ lọc
+                        </a>
+                    <?php endif; ?>
                 </form>
             </div>
 
@@ -88,74 +177,86 @@
                         </tr>
                     </thead>
                     <tbody>
-
-                        <tr>
-                            <td><strong>#BK001</strong></td>
-                            <td>
-                                <div style="font-weight:bold;">Nguyễn Văn A</div>
-                                <small style="color:#888;">a@gmail.com</small>
-                            </td>
-                            <td style="color: var(--primary-color); font-weight: bold;">
-                                180.000 ₫
-                            </td>
-                            <td>2 vé</td>
-                            <td>
-                                <span class="status-badge status-Paid">
-                                    Đã thanh toán
-                                </span>
-                            </td>
-                            <td>19:30 18/01/2026</td>
-                            <td>
-                                <span style="color:#555;font-size:12px;">-</span>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><strong>#BK002</strong></td>
-                            <td>
-                                <div style="font-weight:bold;">Trần Thị B</div>
-                                <small style="color:#888;">b@gmail.com</small>
-                            </td>
-                            <td style="color: var(--primary-color); font-weight: bold;">
-                                270.000 ₫
-                            </td>
-                            <td>3 vé</td>
-                            <td>
-                                <span class="status-badge status-Pending">
-                                    Chờ thanh toán
-                                </span>
-                            </td>
-                            <td>20:15 18/01/2026</td>
-                            <td>
-                                <button class="action-btn btn-approve" title="Xác nhận thanh toán">✔</button>
-                                <button class="action-btn btn-cancel" title="Hủy đơn">✖</button>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><strong>#BK003</strong></td>
-                            <td>
-                                <div style="font-weight:bold;">Lê Văn C</div>
-                                <small style="color:#888;">c@gmail.com</small>
-                            </td>
-                            <td style="color: var(--primary-color); font-weight: bold;">
-                                90.000 ₫
-                            </td>
-                            <td>1 vé</td>
-                            <td>
-                                <span class="status-badge status-Cancelled">
-                                    Đã hủy
-                                </span>
-                            </td>
-                            <td>21:00 17/01/2026</td>
-                            <td>
-                                <span style="color:#555;font-size:12px;">-</span>
-                            </td>
-                        </tr>
-
+                        <?php if (empty($bills)): ?>
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 40px; color: #888;">
+                                    Không có đơn hàng nào
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($bills as $bill): ?>
+                                <tr>
+                                    <td><strong>#BK<?= str_pad($bill['bill_id'], 3, '0', STR_PAD_LEFT) ?></strong></td>
+                                    <td>
+                                        <div style="font-weight:bold;"><?= htmlspecialchars($bill['full_name']) ?></div>
+                                        <small style="color:#888;"><?= htmlspecialchars($bill['email']) ?></small>
+                                    </td>
+                                    <td style="color: var(--primary-color); font-weight: bold;">
+                                        <?= formatMoney($bill['final_amount']) ?>
+                                    </td>
+                                    <td><?= $bill['total_tickets'] ?> vé</td>
+                                    <td>
+                                        <span class="status-badge <?= getStatusClass($bill['status']) ?>">
+                                            <?= getStatusLabel($bill['status']) ?>
+                                        </span>
+                                    </td>
+                                    <td><?= date('H:i d/m/Y', strtotime($bill['created_at'])) ?></td>
+                                    <td>
+                                        <?php if ($bill['status'] === 'pending'): ?>
+                                            <?php if (hasPermission('bookings_update')): ?>
+                                                <a href="index.php?page=bookings&action=confirm&id=<?= $bill['bill_id'] ?>" 
+                                                   class="action-btn btn-approve" title="Xác nhận thanh toán"
+                                                   onclick="return confirm('Xác nhận thanh toán đơn hàng #BK<?= str_pad($bill['bill_id'], 3, '0', STR_PAD_LEFT) ?>?')">✔</a>
+                                            <?php endif; ?>
+                                            <?php if (hasPermission('bookings_delete')): ?>
+                                                <a href="index.php?page=bookings&action=cancel&id=<?= $bill['bill_id'] ?>" 
+                                                   class="action-btn btn-cancel" title="Hủy đơn"
+                                                   onclick="return confirm('Bạn có chắc muốn hủy đơn hàng #BK<?= str_pad($bill['bill_id'], 3, '0', STR_PAD_LEFT) ?>?')">✖</a>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span style="color:#555;font-size:12px;">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination -->
+            <?php if ($totalPages > 1): ?>
+                <div class="pagination" style="display: flex; justify-content: center; gap: 8px; padding: 20px;">
+                    <?php 
+                    $queryParams = [];
+                    if ($statusFilter) $queryParams['status'] = $statusFilter;
+                    if ($search) $queryParams['search'] = $search;
+                    $queryParams['page'] = 'bookings';
+                    ?>
+                    
+                    <?php if ($currentPage > 1): ?>
+                        <a href="?<?= http_build_query(array_merge($queryParams, ['p' => $currentPage - 1])) ?>" 
+                           class="page-btn" style="padding: 8px 12px; background: #333; border-radius: 6px; color: #fff; text-decoration: none;">
+                            &laquo; Trước
+                        </a>
+                    <?php endif; ?>
+                    
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <a href="?<?= http_build_query(array_merge($queryParams, ['p' => $i])) ?>" 
+                           class="page-btn <?= $i === $currentPage ? 'active' : '' ?>" 
+                           style="padding: 8px 12px; background: <?= $i === $currentPage ? 'var(--primary-color)' : '#333' ?>; border-radius: 6px; color: #fff; text-decoration: none;">
+                            <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+                    
+                    <?php if ($currentPage < $totalPages): ?>
+                        <a href="?<?= http_build_query(array_merge($queryParams, ['p' => $currentPage + 1])) ?>" 
+                           class="page-btn" style="padding: 8px 12px; background: #333; border-radius: 6px; color: #fff; text-decoration: none;">
+                            Sau &raquo;
+                        </a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
 
     </div>

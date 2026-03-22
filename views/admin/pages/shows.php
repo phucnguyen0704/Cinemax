@@ -9,10 +9,10 @@ $error = $_GET['error'] ?? null;
 
 <!-- Script chuyển data sang js -->
 <script>
-    window.initialShows   = <?= json_encode($shows) ?>;
-    window.initialHalls   = <?= json_encode($halls) ?>;
+    window.initialShows = <?= json_encode($shows) ?>;
+    window.initialHalls = <?= json_encode($halls) ?>;
     window.initialCinemas = <?= json_encode($cinemas) ?>;
-    window.initialMovies  = <?= json_encode($movies) ?>;
+    window.initialMovies = <?= json_encode($movies) ?>;
 </script>
 
 <section class="schedule-page shows">
@@ -94,8 +94,8 @@ $error = $_GET['error'] ?? null;
             <h3>Thêm suất chiếu</h3>
 
             <!-- Ngày + hall được gán qua JS, không cho user sửa -->
-            <input type="hidden" name="show_date"  id="add_showDate">
-            <input type="hidden" name="hall_id"    id="add_hallId">
+            <input type="hidden" name="show_date" id="add_showDate">
+            <input type="hidden" name="hall_id" id="add_hallId">
 
             <label>Phòng</label>
             <!-- Day view: hiển thị tên phòng cố định -->
@@ -111,7 +111,7 @@ $error = $_GET['error'] ?? null;
                 <option value="">Chọn phim</option>
                 <?php foreach ($movies as $movie): ?>
                     <option value="<?= $movie['movie_id'] ?>"
-                            data-duration="<?= $movie['duration_min'] ?>">
+                        data-duration="<?= $movie['duration_min'] ?>">
                         <?= htmlspecialchars($movie['title']) ?>
                     </option>
                 <?php endforeach; ?>
@@ -121,7 +121,7 @@ $error = $_GET['error'] ?? null;
             <input type="time" id="add_startTime" name="start_time" step="60">
 
             <label>Giờ kết thúc</label>
-            <input type="time" id="add_endTime"   name="end_time"   step="60" readonly>
+            <input type="time" id="add_endTime" name="end_time" step="60" readonly>
 
             <label>Giá vé cơ bản</label>
             <input type="number" id="add_price" name="base_price">
@@ -142,9 +142,9 @@ $error = $_GET['error'] ?? null;
         <div id="popupEdit" class="popup" style="display:none">
             <h3>Chi tiết suất chiếu</h3>
 
-            <input type="hidden" name="show_id"   id="edit_showId">
+            <input type="hidden" name="show_id" id="edit_showId">
             <input type="hidden" name="show_date" id="edit_showDate">
-            <input type="hidden" name="hall_id"   id="edit_hallId">
+            <input type="hidden" name="hall_id" id="edit_hallId">
 
             <label>Phòng</label>
             <input id="edit_hallDisplay" readonly>
@@ -154,7 +154,7 @@ $error = $_GET['error'] ?? null;
                 <option value="">Chọn phim</option>
                 <?php foreach ($movies as $movie): ?>
                     <option value="<?= $movie['movie_id'] ?>"
-                            data-duration="<?= $movie['duration_min'] ?>">
+                        data-duration="<?= $movie['duration_min'] ?>">
                         <?= htmlspecialchars($movie['title']) ?>
                     </option>
                 <?php endforeach; ?>
@@ -164,7 +164,7 @@ $error = $_GET['error'] ?? null;
             <input type="time" id="edit_startTime" name="start_time" step="60">
 
             <label>Giờ kết thúc</label>
-            <input type="time" id="edit_endTime"   name="end_time"   step="60" readonly>
+            <input type="time" id="edit_endTime" name="end_time" step="60" readonly>
 
             <label>Giá vé cơ bản</label>
             <input type="number" id="edit_price" name="base_price">

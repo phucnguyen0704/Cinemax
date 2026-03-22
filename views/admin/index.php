@@ -20,6 +20,7 @@ require_once __DIR__ . '/../../models/Hall.php';
 require_once __DIR__ . '/../../models/HallStatus.php';
 require_once __DIR__ . '/../../models/Ticket.php';
 
+require_once __DIR__ . '/../../models/Bill.php';
 
 // Cac file services
 require_once __DIR__ . '/../../services/RoleService.php';
@@ -36,6 +37,7 @@ require_once __DIR__ . '/../../services/HallService.php';
 require_once __DIR__ . '/../../services/HallStatusService.php';
 require_once __DIR__ . '/../../services/PromotionService.php';
 require_once __DIR__ . '/../../services/TicketService.php';
+require_once __DIR__ . '/../../services/BillService.php';
 
 // Cac file controllers
 require_once __DIR__ . '/../../controllers/AdminController.php';
@@ -72,6 +74,7 @@ $hallStatusModel = new HallStatus($conn);
 $promotionModel = new Promotion($conn);
 $ticketModel = new Ticket($conn);
 
+$billModel = new Bill($conn);
 
 //Khoi tao services
 $userService = new UserService($userModel);
@@ -87,9 +90,10 @@ $hallStatusService = new HallStatusService($hallStatusModel);
 $promotionService = new PromotionService($promotionModel);
 $ticketService = new TicketService($ticketModel);
 $showService = new ShowService($showModel, $ticketService);
+$billService = new BillService($billModel);
 
 //Khoi tao controllers
-$adminController = new AdminController($userService, $roleService, $permissionService);
+$adminController = new AdminController($userService, $roleService, $permissionService, $billService);
 $rolePermissionsController = new Role_permissionsController($rolePermissionsService);
 $foodComboController = new FoodComboController($foodComboService);
 $movieController = new MovieController($movieService);
@@ -278,6 +282,20 @@ if ($page === 'promotions' && $action) {
             exit;
     }
 }
+// BOOKINGS
+// =========================
+if ($page === 'bookings' && $action) {
+    switch ($action) {
+        case 'confirm':
+            $adminController->confirmPayment($_GET['id'] ?? 0);
+            exit;
+
+        case 'cancel':
+            $adminController->cancelBill($_GET['id'] ?? 0);
+            exit;
+    }
+}
+
 $contentPath = __DIR__ . "/pages/$page.php";
 ?>
 
