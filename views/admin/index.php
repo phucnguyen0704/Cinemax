@@ -18,6 +18,7 @@ require_once __DIR__ . '/../../models/Promotion.php';
 require_once __DIR__ . '/../../models/Cinema.php';
 require_once __DIR__ . '/../../models/Hall.php';
 require_once __DIR__ . '/../../models/HallStatus.php';
+require_once __DIR__ . '/../../models/Bill.php';
 
 // Cac file services
 require_once __DIR__ . '/../../services/RoleService.php';
@@ -32,6 +33,7 @@ require_once __DIR__ . '/../../services/ShowService.php';
 require_once __DIR__ . '/../../services/CinemaService.php';
 require_once __DIR__ . '/../../services/HallService.php';
 require_once __DIR__ . '/../../services/HallStatusService.php';
+require_once __DIR__ . '/../../services/BillService.php';
 
 // Cac file controllers
 require_once __DIR__ . '/../../controllers/AdminController.php';
@@ -64,6 +66,7 @@ $showModel = new Show($conn);
 $cinemaModel = new Cinema($conn);
 $hallModel = new Hall($conn);
 $hallStatusModel = new HallStatus($conn);
+$billModel = new Bill($conn);
 
 //Khoi tao services
 $userService = new UserService($userModel);
@@ -77,9 +80,10 @@ $showService = new ShowService($showModel);
 $cinemaService = new CinemaService($cinemaModel);
 $hallService = new HallService($hallModel);
 $hallStatusService = new HallStatusService($hallStatusModel);
+$billService = new BillService($billModel);
 
 //Khoi tao controllers
-$adminController = new AdminController($userService, $roleService, $permissionService);
+$adminController = new AdminController($userService, $roleService, $permissionService, $billService);
 $rolePermissionsController = new Role_permissionsController($rolePermissionsService);
 $foodComboController = new FoodComboController($foodComboService);
 $movieController = new MovieController($movieService);
@@ -246,6 +250,21 @@ if ($page === 'shows' && $action) {
 
         case 'delete':
             $showController->deleteShow($_GET['id'] ?? 0);
+            exit;
+    }
+}
+
+// =========================
+// BOOKINGS
+// =========================
+if ($page === 'bookings' && $action) {
+    switch ($action) {
+        case 'confirm':
+            $adminController->confirmPayment($_GET['id'] ?? 0);
+            exit;
+
+        case 'cancel':
+            $adminController->cancelBill($_GET['id'] ?? 0);
             exit;
     }
 }

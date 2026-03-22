@@ -9,6 +9,7 @@ require_once __DIR__ . '/../config/JwtHelper.php';
 require_once __DIR__ . '/../config/dbConfig.php';
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/Role_permissions.php';
+require_once __DIR__ . '/../models/Role.php';
 
 class AuthMiddleware
 {
@@ -135,7 +136,15 @@ class AuthMiddleware
     {
         $user = self::requireLogin();
 
-        if ((int)$user['role_id'] == 2) {
+        // Lấy role_name từ bảng roles dựa vào role_id
+        $roleModel = new Role(getDBConnection());
+        $role = $roleModel->getRoleById($user['role_id']);
+        
+        // Chuyển về lowercase để so sánh chính xác
+        $roleName = strtolower($role['role_name'] ?? '');
+        
+        // Nếu là user thường thì không cho vào admin
+        if ($roleName === 'user') {
             header('Location: /Cinemax/views/auth/login.php?error=unauthorized');
             exit;
         }

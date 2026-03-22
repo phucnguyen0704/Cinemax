@@ -45,11 +45,11 @@ class AuthService
         try {
             $result = $this->userModel->createUser($fullName, $email, $password, $phone, $defaultRoleId);
         } catch (\Exception $e) {
-            throw new \Exception("unknown");
+            throw new \Exception($e->getMessage());
         }
 
         if (!$result) {
-            throw new \Exception("unknown");
+            throw new \Exception("can not create user");
         }
 
         return true;
