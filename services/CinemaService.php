@@ -10,9 +10,9 @@ class CinemaService
         $this->cinemaModel = $cinemaModel;
     }
 
-    public function getAllCinemas()
+    public function getAllCinemas(bool $includeInactive = false)
     {
-        return $this->cinemaModel->getAllCinemas();
+        return $this->cinemaModel->getAllCinemas($includeInactive);
     }
 
     public function getCinemaById($cinemaId)

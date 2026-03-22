@@ -33,7 +33,7 @@ class HallService
         return $this->hallModel->getHallsByCinema($cinemaId);
     }
 
-    public function createHall($cinemaId, $name, $statusId)
+    public function createHall($cinemaId, $name, $statusId, $seatCount = 0)
     {
         if (empty($cinemaId) || !is_numeric($cinemaId)) {
             throw new InvalidArgumentException("Cinema ID không hợp lệ.");
@@ -51,7 +51,14 @@ class HallService
             throw new InvalidArgumentException("Status ID không hợp lệ.");
         }
 
-        return $this->hallModel->createHall($cinemaId, $name, $statusId);
+        if ($seatCount === null || $seatCount === '') {
+            $seatCount = 0;
+        }
+        if (!is_numeric($seatCount) || (int)$seatCount < 0 || (int)$seatCount > 500) {
+            throw new InvalidArgumentException("Số lượng ghế không hợp lệ (0-500).");
+        }
+
+        return $this->hallModel->createHall($cinemaId, $name, $statusId, (int)$seatCount);
     }
 
     public function updateHall($hallId, $cinemaId, $name, $statusId)

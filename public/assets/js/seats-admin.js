@@ -6,6 +6,20 @@ let seatsData = [];
 let seatTypesData = [];
 let hallData = null;
 let currentHallId = null;
+const seatTypeColorMap = {};
+
+const seatTypePalette = [
+    '#555555',
+    '#e50914',
+    '#4169e1',
+    '#ffd700',
+    '#8a2be2',
+    '#00b894',
+    '#ff7f50',
+    '#20b2aa',
+    '#f39c12',
+    '#6c5ce7'
+];
 
 // Load dữ liệu khi trang được tải
 document.addEventListener('DOMContentLoaded', async function() {
@@ -38,6 +52,7 @@ async function loadAllData() {
             getAllSeatTypes(),
             getHallById(currentHallId)
         ]);
+        buildSeatTypeColorMap();
         
         // Cập nhật header với thông tin phòng
         if (hallData) {
@@ -98,7 +113,15 @@ function renderSeatLayout() {
     
     // Render từng hàng
     sortedRows.forEach(rowName => {
-        const rowSeats = seatsByRow[rowName].sort((a, b) => a.SeatNumber - b.SeatNumber);
+        const rowSeats = seatsByRow[rowName].sort((a, b) => Number(a.SeatNumber) - Number(b.SeatNumber));
+        const seatMap = {};
+        rowSeats.forEach(seat => {
+            seatMap[Number(seat.SeatNumber)] = seat;
+        });
+        const maxSeatNumber = rowSeats.reduce((max, seat) => {
+            const seatNum = Number(seat.SeatNumber);
+            return seatNum > max ? seatNum : max;
+        }, 0);
         
         const rowDiv = document.createElement('div');
         rowDiv.className = 'seat-row';
@@ -109,14 +132,24 @@ function renderSeatLayout() {
         rowLabel.textContent = rowName;
         rowDiv.appendChild(rowLabel);
         
-        // Render ghế trong hàng
-        rowSeats.forEach(seat => {
+        // Render ghế theo trục số để giữ vị trí trống khi xóa (vd: mất A10 vẫn giữ chỗ A10)
+        for (let seatNum = 1; seatNum <= maxSeatNumber; seatNum++) {
+            const seat = seatMap[seatNum];
+            if (!seat) {
+                const emptySeat = document.createElement('div');
+                emptySeat.className = 'seat-empty';
+                emptySeat.title = `Vị trí trống ${rowName}${seatNum}`;
+                rowDiv.appendChild(emptySeat);
+                continue;
+            }
+
             const seatWrapper = document.createElement('div');
             seatWrapper.style.position = 'relative';
             
             const seatItem = document.createElement('a');
             seatItem.href = '#';
             seatItem.className = `seat-item type-${seat.SeatTypeID}`;
+            seatItem.style.backgroundColor = getSeatTypeColor(seat.SeatTypeID);
             seatItem.title = `Loại: ${seat.TypeName}`;
             seatItem.textContent = `${rowName}${seat.SeatNumber}`;
             seatItem.onclick = function(e) {
@@ -138,7 +171,7 @@ function renderSeatLayout() {
             seatWrapper.appendChild(seatItem);
             seatWrapper.appendChild(deleteBtn);
             rowDiv.appendChild(seatWrapper);
-        });
+        }
         
         seatGrid.appendChild(rowDiv);
     });
@@ -161,14 +194,20 @@ function populateLegend() {
     });
     
     legend.innerHTML = '';
+
+    const seatTypeCounts = {};
+    seatsData.forEach(seat => {
+        const key = String(seat.SeatTypeID);
+        seatTypeCounts[key] = (seatTypeCounts[key] || 0) + 1;
+    });
     
     // Thêm legend cho từng loại ghế
     seatTypesData.forEach(seatType => {
         const legendItem = document.createElement('div');
         legendItem.className = 'legend-item';
         legendItem.innerHTML = `
-            <div class="dot type-${seatType.SeatTypeID}"></div>
-            ${seatType.TypeName}
+            <div class="dot type-${seatType.SeatTypeID}" style="background:${getSeatTypeColor(seatType.SeatTypeID)};"></div>
+            ${seatType.TypeName} (${seatTypeCounts[String(seatType.SeatTypeID)] || 0})
         `;
         legend.appendChild(legendItem);
     });
@@ -186,6 +225,11 @@ function populateLegend() {
  */
 async function changeSeatType(seatId) {
     try {
+        if (!seatTypesData || seatTypesData.length <= 1) {
+            showAlert('Hiện chỉ có 1 loại ghế, không thể đổi loại.', 'success');
+            return;
+        }
+
         const seat = seatsData.find(s => s.SeatID == seatId);
         if (!seat) {
             showAlert('Không tìm thấy ghế', 'error');
@@ -472,4 +516,21 @@ async function handleAutoCreateSeats(event) {
         console.error('Auto create seats error:', error);
         showAlert('Lỗi khi tạo sơ đồ ghế: ' + error.message, 'error');
     }
+}
+
+function buildSeatTypeColorMap() {
+    Object.keys(seatTypeColorMap).forEach(key => delete seatTypeColorMap[key]);
+    seatTypesData.forEach((seatType, index) => {
+        const color = seatTypePalette[index % seatTypePalette.length];
+        seatTypeColorMap[String(seatType.SeatTypeID)] = color;
+    });
+}
+
+function getSeatTypeColor(seatTypeId) {
+    const key = String(seatTypeId);
+    if (!seatTypeColorMap[key]) {
+        const fallbackIndex = Object.keys(seatTypeColorMap).length % seatTypePalette.length;
+        seatTypeColorMap[key] = seatTypePalette[fallbackIndex];
+    }
+    return seatTypeColorMap[key];
 }

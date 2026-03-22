@@ -56,14 +56,14 @@ $basePrice = 100000;
                             <?php foreach ($seatTypes as $seatType): ?>
                                 <?php
                                 $multiplier = (float)($seatType['PriceMultiplier'] ?? $seatType['price_multiplier'] ?? 1);
-                                $surcharge = (int)round(($multiplier - 1) * $basePrice);
+                                $surcharge = (float)(($multiplier - 1) * $basePrice);
                                 $seatTypeId = $seatType['SeatTypeID'] ?? $seatType['seat_type_id'] ?? 0;
                                 ?>
                                 <tr>
                                     <td>#<?php echo htmlspecialchars($seatTypeId); ?></td>
                                     <td><strong><?php echo htmlspecialchars($seatType['TypeName'] ?? $seatType['type_name'] ?? ''); ?></strong></td>
                                     <td style="color: var(--success-color); font-weight: bold;">
-                                        +<?php echo number_format($surcharge, 0, ',', '.'); ?> ₫
+                                        +<?php echo number_format($surcharge, 2, ',', '.'); ?> ₫
                                     </td>
                                     <td>
                                         <?php if (hasPermission('seat_types_update')): ?>
@@ -105,7 +105,7 @@ $basePrice = 100000;
                     </div>
                     <div class="form-group">
                         <label>Phụ thu (VNĐ)</label>
-                        <input type="number" name="price_surcharge" value="0" required step="1000" min="0">
+                        <input type="number" name="price_surcharge" value="0" required step="0.01" min="0">
                     </div>
                 </div>
                 <div class="modal-footer">

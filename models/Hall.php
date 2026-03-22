@@ -23,7 +23,7 @@ class Hall
                     END as StatusName
                     FROM halls h 
                     INNER JOIN cinemas c ON h.cinema_id = c.cinema_id 
-                    WHERE h.status = 1 AND h.cinema_id = ? 
+                    WHERE h.cinema_id = ? 
                     ORDER BY h.hall_id DESC";
             $stmt = $this->conn->prepare($sql);
             if (!$stmt) {
@@ -50,7 +50,7 @@ class Hall
                     END as StatusName
                     FROM halls h 
                     INNER JOIN cinemas c ON h.cinema_id = c.cinema_id 
-                    WHERE h.status = 1 
+                    WHERE 1=1
                     ORDER BY h.hall_id DESC";
             $result = $this->conn->query($sql);
             if (!$result) {
@@ -127,16 +127,41 @@ class Hall
         return $halls;
     }
 
-    public function createHall($cinemaId, $name, $statusId = 1)
+    public function createHall($cinemaId, $name, $statusId = 1, $seatCount = 0)
     {
-        $sql = "INSERT INTO halls (cinema_id, name, status) VALUES (?, ?, ?)";
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) {
-            throw new Exception("SQL Error: " . $this->conn->error);
-        }
-        $stmt->bind_param("isi", $cinemaId, $name, $statusId);
+        $this->conn->begin_transaction();
+        try {
+            $sql = "INSERT INTO halls (cinema_id, name, total_seats, status) VALUES (?, ?, ?, ?)";
+            $stmt = $this->conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("SQL Error: " . $this->conn->error);
+            }
+            $seatCountInt = (int)$seatCount;
+            $stmt->bind_param("isii", $cinemaId, $name, $seatCountInt, $statusId);
+            if (!$stmt->execute()) {
+                throw new Exception("SQL Execute Error: " . $stmt->error);
+            }
 
-        return $stmt->execute();
+            $hallId = (int)$this->conn->insert_id;
+            if ($hallId <= 0) {
+                throw new Exception("Không tạo được phòng chiếu.");
+            }
+
+            $createdCount = 0;
+            if ($seatCountInt > 0) {
+                $defaultSeatTypeId = $this->getDefaultSeatTypeId();
+                $createdCount = $this->createDefaultSeats($hallId, $defaultSeatTypeId, $seatCountInt);
+            }
+
+            $this->conn->commit();
+            return [
+                'hall_id' => $hallId,
+                'seat_count' => $createdCount
+            ];
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            throw $e;
+        }
     }
 
     public function updateHall($hallId, $cinemaId, $name, $statusId = 1)
@@ -153,7 +178,8 @@ class Hall
 
     public function deleteHall($hallId)
     {
-        $sql = "UPDATE halls SET status = 0 WHERE hall_id = ?";
+        // Xóa thật phòng chiếu khỏi DB
+        $sql = "DELETE FROM halls WHERE hall_id = ?";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -180,6 +206,53 @@ class Hall
         }
         $row = $result->fetch_assoc();
         return $row['count'] ?? 0;
+    }
+
+    private function getDefaultSeatTypeId()
+    {
+        $sql = "SELECT seat_type_id FROM seat_types WHERE status = 1 ORDER BY seat_type_id ASC LIMIT 1";
+        $result = $this->conn->query($sql);
+        if (!$result) {
+            throw new Exception("SQL Error (seat_types): " . $this->conn->error);
+        }
+        $row = $result->fetch_assoc();
+        if (!$row || empty($row['seat_type_id'])) {
+            throw new Exception("Chưa có loại ghế hoạt động để tạo sơ đồ mặc định.");
+        }
+        return (int)$row['seat_type_id'];
+    }
+
+    private function createDefaultSeats($hallId, $seatTypeId, $seatCount)
+    {
+        $rowsNeeded = (int)ceil($seatCount / 12);
+        $maxRows = 26;
+        if ($rowsNeeded > $maxRows) {
+            $rowsNeeded = $maxRows;
+        }
+        $seatsPerRow = (int)ceil($seatCount / $rowsNeeded);
+
+        $sql = "INSERT INTO seats (hall_id, seat_type_id, row_name, seat_number, status) VALUES (?, ?, ?, ?, 1)";
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            throw new Exception("SQL Prepare Error (seats): " . $this->conn->error);
+        }
+
+        $created = 0;
+        for ($row = 0; $row < $rowsNeeded; $row++) {
+            $rowName = chr(65 + $row);
+            for ($seatNum = 1; $seatNum <= $seatsPerRow; $seatNum++) {
+                if ($created >= $seatCount) {
+                    break 2;
+                }
+                $stmt->bind_param("iisi", $hallId, $seatTypeId, $rowName, $seatNum);
+                if (!$stmt->execute()) {
+                    throw new Exception("SQL Execute Error (seats): " . $stmt->error);
+                }
+                $created++;
+            }
+        }
+
+        return $created;
     }
 }
 

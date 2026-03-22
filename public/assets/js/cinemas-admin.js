@@ -56,6 +56,10 @@ function renderCinemasTable() {
             : `<button class="btn-action" onclick="openCinema(${cinema.CinemaID})">Mở rạp</button>`;
 
         const row = document.createElement('tr');
+        if (!isActive) {
+            row.style.opacity = '0.45';
+            row.style.transition = 'opacity 0.2s ease';
+        }
         row.innerHTML = `
             <td><strong>#${cinema.CinemaID}</strong></td>
             <td>${cinema.Name}</td>
@@ -135,7 +139,7 @@ async function closeCinema(cinemaId) {
     if (!confirm('Bạn có chắc chắn muốn đóng rạp này (ngừng hoạt động)?')) {
         return;
     }
-    
+
     try {
         // Hàm deleteCinema() được khai báo ở public/assets/js/api.js
         await window.deleteCinema(cinemaId);

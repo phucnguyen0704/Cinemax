@@ -8,7 +8,7 @@ class Cinema
         $this->conn = $conn;
     }
 
-    public function getAllCinemas()
+    public function getAllCinemas(bool $includeInactive = false)
     {
         $sql = "SELECT 
                     c.cinema_id   AS CinemaID,
@@ -23,8 +23,9 @@ class Cinema
                      WHERE h.cinema_id = c.cinema_id 
                        AND h.status = 1) AS HallCount
                 FROM cinemas c 
-                INNER JOIN locations l ON c.location_id = l.location_id 
-                ORDER BY c.cinema_id DESC";
+                INNER JOIN locations l ON c.location_id = l.location_id " .
+                ($includeInactive ? "" : " WHERE c.status = 1 ") .
+                " ORDER BY c.cinema_id DESC";
         
         $result = $this->conn->query($sql);
         if (!$result) {
@@ -39,7 +40,7 @@ class Cinema
         return $cinemas;
     }
 
-    public function getCinemaById($cinemaId)
+    public function getCinemaById($cinemaId, bool $includeInactive = false)
     {
         $sql = "SELECT 
                     c.cinema_id   AS CinemaID,
@@ -55,7 +56,7 @@ class Cinema
                        AND h.status = 1) AS HallCount
                 FROM cinemas c 
                 INNER JOIN locations l ON c.location_id = l.location_id 
-                WHERE c.cinema_id = ? AND c.status = 1";
+                WHERE c.cinema_id = ? " . ($includeInactive ? "" : "AND c.status = 1");
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -77,14 +78,15 @@ class Cinema
 
     public function createCinema($name, $address, $locationId, $statusId = null)
     {
-        $sql = "INSERT INTO cinemas (name, address, location_id, status) VALUES (?, ?, ?, 1)";
+        $status = ($statusId === null || $statusId === '') ? 1 : (int)$statusId;
+        $sql = "INSERT INTO cinemas (name, address, location_id, status) VALUES (?, ?, ?, ?)";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Prepare Error: " . $this->conn->error);
         }
         
-        $stmt->bind_param("ssi", $name, $address, $locationId);
+        $stmt->bind_param("ssii", $name, $address, $locationId, $status);
         if (!$stmt->execute()) {
             throw new Exception("SQL Execute Error: " . $stmt->error);
         }
@@ -94,45 +96,44 @@ class Cinema
 
     public function updateCinema($cinemaId, $name, $address, $locationId, $statusId = null)
     {
-        $sql = "UPDATE cinemas SET name = ?, address = ?, location_id = ?, status = ? WHERE cinema_id = ?";
+        $status = ($statusId === null || $statusId === '') ? null : (int)$statusId;
+
+        if ($status === null) {
+            $sql = "UPDATE cinemas SET name = ?, address = ?, location_id = ? WHERE cinema_id = ?";
+        } else {
+            $sql = "UPDATE cinemas SET name = ?, address = ?, location_id = ?, status = ? WHERE cinema_id = ?";
+        }
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Prepare Error: " . $this->conn->error);
         }
         
-        $status = $statusId !== null ? (int)$statusId : 1;
-        $stmt->bind_param("ssiii", $name, $address, $locationId, $status, $cinemaId);
+        if ($status === null) {
+            $stmt->bind_param("ssii", $name, $address, $locationId, $cinemaId);
+        } else {
+            $stmt->bind_param("ssiii", $name, $address, $locationId, $status, $cinemaId);
+        }
         if (!$stmt->execute()) {
             throw new Exception("SQL Execute Error: " . $stmt->error);
         }
 
-        // Đồng bộ trạng thái phòng chiếu theo trạng thái rạp
-        if ($status === 0) {
-            // Rạp ngừng hoạt động -> đóng tất cả phòng chiếu
-            $hallSql = "UPDATE halls SET status = 0 WHERE cinema_id = ?";
-        } elseif ($status === 1) {
-            // Rạp mở lại -> mở lại tất cả phòng chiếu
-            $hallSql = "UPDATE halls SET status = 1 WHERE cinema_id = ?";
-        } else {
-            $hallSql = null;
-        }
-
-        if ($hallSql !== null) {
+        // Đồng bộ trạng thái phòng chiếu khi đóng/mở rạp
+        if ($status === 0 || $status === 1) {
+            $hallSql = "UPDATE halls SET status = ? WHERE cinema_id = ?";
             $hallStmt = $this->conn->prepare($hallSql);
             if ($hallStmt) {
-                $hallStmt->bind_param("i", $cinemaId);
+                $hallStmt->bind_param("ii", $status, $cinemaId);
                 $hallStmt->execute();
             }
         }
 
-        // Nếu dữ liệu không đổi, affected_rows có thể = 0 nhưng vẫn coi là thành công
         return true;
     }
 
     public function deleteCinema($cinemaId)
     {
-        // Soft delete: chỉ đổi status = 0
+        // Soft delete: đổi status = 0 và đóng luôn các phòng chiếu
         $sql = "UPDATE cinemas SET status = 0 WHERE cinema_id = ?";
         
         $stmt = $this->conn->prepare($sql);
@@ -145,7 +146,7 @@ class Cinema
             throw new Exception("SQL Execute Error: " . $stmt->error);
         }
 
-        // Đồng thời đóng (status = 0) tất cả phòng chiếu thuộc rạp này
+        // Đóng tất cả phòng chiếu thuộc rạp
         $hallSql = "UPDATE halls SET status = 0 WHERE cinema_id = ?";
         $hallStmt = $this->conn->prepare($hallSql);
         if ($hallStmt) {

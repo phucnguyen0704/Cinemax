@@ -1,21 +1,17 @@
 <?php
 require_once __DIR__ . '/../../../config/dbConfig.php';
 require_once __DIR__ . '/../../../models/Hall.php';
-require_once __DIR__ . '/../../../models/HallStatus.php';
 require_once __DIR__ . '/../../../models/Cinema.php';
 require_once __DIR__ . '/../../../services/HallService.php';
-require_once __DIR__ . '/../../../services/HallStatusService.php';
 
 $conn = getDBConnection();
 
 $hallModel = new Hall($conn);
-$hallStatusModel = new HallStatus($conn);
 $hallService = new HallService($hallModel);
-$hallStatusService = new HallStatusService($hallStatusModel);
 
 // Danh sách rạp cho filter & modal
 $cinemas = [];
-$cinemaResult = $conn->query("SELECT cinema_id as CinemaID, name as Name FROM cinemas WHERE status = 1 ORDER BY name");
+$cinemaResult = $conn->query("SELECT cinema_id as CinemaID, name as Name, status as Status FROM cinemas ORDER BY name");
 if ($cinemaResult) {
     while ($row = $cinemaResult->fetch_assoc()) {
         $cinemas[] = $row;
@@ -23,17 +19,11 @@ if ($cinemaResult) {
 }
 
 // Danh sách trạng thái phòng
-$statuses = [];
-try {
-    $statuses = $hallStatusService->getAllStatuses();
-} catch (Exception $e) {
-    // Nếu bảng hall_status không tồn tại, dùng danh sách mặc định
-    $statuses = [
-        ['StatusID' => 1, 'StatusName' => 'Đang hoạt động'],
-        ['StatusID' => 0, 'StatusName' => 'Tạm dừng'],
-        ['StatusID' => 2, 'StatusName' => 'Bảo trì']
-    ];
-}
+$statuses = [
+    ['StatusID' => 1, 'StatusName' => 'Đang hoạt động'],
+    ['StatusID' => 0, 'StatusName' => 'Tạm dừng'],
+    ['StatusID' => 2, 'StatusName' => 'Bảo trì']
+];
 
 // Lọc theo rạp
 $selectedCinemaId = $_GET['cinema_id'] ?? null;
@@ -108,7 +98,8 @@ try {
                             </tr>
                         <?php else: ?>
                             <?php foreach ($halls as $hall): ?>
-                                <tr>
+                                <?php $isHallActive = (int)($hall['status'] ?? $hall['Status'] ?? 0) === 1; ?>
+                                <tr style="<?php echo $isHallActive ? '' : 'opacity: 0.45;'; ?>">
                                     <td>#<?php echo htmlspecialchars($hall['hall_id'] ?? $hall['HallID'] ?? ''); ?></td>
                                     <td><?php echo htmlspecialchars($hall['CinemaName'] ?? ''); ?></td>
                                     <td><strong><?php echo htmlspecialchars($hall['name'] ?? $hall['Name'] ?? ''); ?></strong></td>
@@ -196,6 +187,10 @@ try {
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Số lượng ghế</label>
+                        <input type="number" name="seat_count" min="1" max="500" value="120" required>
                     </div>
                 </div>
                 <div class="modal-footer">

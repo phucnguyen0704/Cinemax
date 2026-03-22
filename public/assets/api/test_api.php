@@ -1,7 +1,7 @@
 <?php
 
 /**
- * File test API cho HallController, HallStatusController, SeatTypeController
+ * File test API cho HallController, SeatTypeController
  * 
  * Cách sử dụng:
  * - GET: test_api.php?controller=halls&action=getAll
@@ -31,17 +31,14 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline) {
 try {
     require_once __DIR__ . '/../../../config/dbConfig.php';
     require_once __DIR__ . '/../../../models/Hall.php';
-    require_once __DIR__ . '/../../../models/HallStatus.php';
     require_once __DIR__ . '/../../../models/SeatType.php';
     require_once __DIR__ . '/../../../models/Cinema.php';
     require_once __DIR__ . '/../../../models/Seat.php';
     require_once __DIR__ . '/../../../services/HallService.php';
-    require_once __DIR__ . '/../../../services/HallStatusService.php';
     require_once __DIR__ . '/../../../services/SeatTypeService.php';
     require_once __DIR__ . '/../../../services/CinemaService.php';
     require_once __DIR__ . '/../../../services/SeatService.php';
     require_once __DIR__ . '/../../../controllers/HallController.php';
-    require_once __DIR__ . '/../../../controllers/HallStatusController.php';
     require_once __DIR__ . '/../../../controllers/SeatTypeController.php';
     require_once __DIR__ . '/../../../controllers/CinemaController.php';
     require_once __DIR__ . '/../../../controllers/SeatController.php';
@@ -77,19 +74,16 @@ try {
     $conn = getDBConnection();
 
     $hallModel = new Hall($conn);
-    $hallStatusModel = new HallStatus($conn);
     $seatTypeModel = new SeatType($conn);
     $cinemaModel = new Cinema($conn);
     $seatModel = new Seat($conn);
 
     $hallService = new HallService($hallModel);
-    $hallStatusService = new HallStatusService($hallStatusModel);
     $seatTypeService = new SeatTypeService($seatTypeModel);
     $cinemaService = new CinemaService($cinemaModel);
     $seatService = new SeatService($seatModel);
 
-    $hallController = new HallController($hallService, $hallStatusService);
-    $hallStatusController = new HallStatusController($hallStatusService);
+    $hallController = new HallController($hallService);
     $seatTypeController = new SeatTypeController($seatTypeService);
     $cinemaController = new CinemaController($cinemaService);
     $seatController = new SeatController($seatService);
@@ -120,11 +114,6 @@ try {
     switch ($controller) {
         case 'halls':
             handleHallRequests($hallController, $action, $method, $response, $hallService);
-            break;
-
-        case 'hall_status':
-        case 'hallstatus':
-            handleHallStatusRequests($hallStatusController, $action, $method, $response, $hallStatusService);
             break;
 
         case 'seat_types':
@@ -221,6 +210,7 @@ function handleHallRequests($controller, $action, $method, &$response, $hallServ
                     $cinemaId = $_POST['cinema_id'] ?? null;
                     $name = $_POST['name'] ?? '';
                     $statusId = $_POST['status_id'] ?? null;
+                    $seatCount = $_POST['seat_count'] ?? 0;
 
                     if (!$cinemaId || !$name || !$statusId) {
                         throw new Exception('Vui lòng điền đầy đủ thông tin (cinema_id, name, status_id)');
@@ -230,15 +220,17 @@ function handleHallRequests($controller, $action, $method, &$response, $hallServ
                     if (!$hallService) {
                         throw new Exception('Service không được khởi tạo');
                     }
-                    $result = $hallService->createHall($cinemaId, $name, $statusId);
+                    $result = $hallService->createHall($cinemaId, $name, $statusId, $seatCount);
 
                     if ($result) {
                         $response['success'] = true;
                         $response['message'] = 'Tạo phòng chiếu thành công';
                         $response['data'] = [
+                            'hall_id' => is_array($result) ? ($result['hall_id'] ?? null) : null,
                             'cinema_id' => $cinemaId,
                             'name' => $name,
-                            'status_id' => $statusId
+                            'status_id' => $statusId,
+                            'seat_count' => is_array($result) ? ($result['seat_count'] ?? (int)$seatCount) : (int)$seatCount
                         ];
                     } else {
                         throw new Exception('Không thể tạo phòng chiếu');
@@ -313,135 +305,6 @@ function handleHallRequests($controller, $action, $method, &$response, $hallServ
 
             default:
                 throw new Exception('Action không hợp lệ. Các action hợp lệ: getAll, getById, getStatuses, getCinemas, create, update, delete');
-        }
-    } catch (Exception $e) {
-        $response['success'] = false;
-        $response['error'] = $e->getMessage();
-        $response['message'] = 'Có lỗi xảy ra: ' . $e->getMessage();
-    }
-
-    echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-}
-
-function handleHallStatusRequests($controller, $action, $method, &$response, $hallStatusService = null)
-{
-    try {
-        switch ($action) {
-            case 'getAll':
-                if ($method === 'GET') {
-                    $statuses = $controller->getAllStatuses();
-                    $response['success'] = true;
-                    $response['data'] = $statuses;
-                    $response['message'] = 'Lấy danh sách trạng thái phòng thành công';
-                } else {
-                    throw new Exception('Method không hợp lệ. Sử dụng GET');
-                }
-                break;
-
-            case 'getById':
-                if ($method === 'GET') {
-                    $id = $_GET['id'] ?? null;
-                    if (!$id) {
-                        throw new Exception('Thiếu tham số id');
-                    }
-                    $status = $controller->getStatusById($id);
-                    $response['success'] = true;
-                    $response['data'] = $status;
-                    $response['message'] = $status ? 'Lấy thông tin trạng thái thành công' : 'Không tìm thấy trạng thái';
-                } else {
-                    throw new Exception('Method không hợp lệ. Sử dụng GET');
-                }
-                break;
-
-            case 'create':
-                if ($method === 'POST') {
-                    $statusName = $_POST['status_name'] ?? '';
-
-                    if (empty($statusName)) {
-                        throw new Exception('Vui lòng nhập tên trạng thái');
-                    }
-
-                    // Gọi service trực tiếp để tránh redirect
-                    if (!$hallStatusService) {
-                        throw new Exception('Service không được khởi tạo');
-                    }
-                    $result = $hallStatusService->createStatus($statusName);
-
-                    if ($result) {
-                        $response['success'] = true;
-                        $response['message'] = 'Tạo trạng thái phòng thành công';
-                        $response['data'] = [
-                            'status_name' => $statusName
-                        ];
-                    } else {
-                        throw new Exception('Không thể tạo trạng thái phòng');
-                    }
-                } else {
-                    throw new Exception('Method không hợp lệ. Sử dụng POST');
-                }
-                break;
-
-            case 'update':
-                if ($method === 'POST') {
-                    $id = $_GET['id'] ?? $_POST['id'] ?? null;
-                    if (!$id) {
-                        throw new Exception('Thiếu tham số id');
-                    }
-
-                    $statusName = $_POST['status_name'] ?? '';
-
-                    if (empty($statusName)) {
-                        throw new Exception('Vui lòng nhập tên trạng thái');
-                    }
-
-                    // Gọi service trực tiếp để tránh redirect
-                    if (!$hallStatusService) {
-                        throw new Exception('Service không được khởi tạo');
-                    }
-                    $result = $hallStatusService->updateStatus($id, $statusName);
-
-                    if ($result) {
-                        $response['success'] = true;
-                        $response['message'] = 'Cập nhật trạng thái phòng thành công';
-                        $response['data'] = [
-                            'id' => $id,
-                            'status_name' => $statusName
-                        ];
-                    } else {
-                        throw new Exception('Không thể cập nhật trạng thái phòng');
-                    }
-                } else {
-                    throw new Exception('Method không hợp lệ. Sử dụng POST');
-                }
-                break;
-
-            case 'delete':
-                if ($method === 'POST' || $method === 'DELETE') {
-                    $id = $_GET['id'] ?? $_POST['id'] ?? null;
-                    if (!$id) {
-                        throw new Exception('Thiếu tham số id');
-                    }
-
-                    // Gọi service trực tiếp để tránh redirect
-                    if (!$hallStatusService) {
-                        throw new Exception('Service không được khởi tạo');
-                    }
-                    $result = $hallStatusService->deleteStatus($id);
-
-                    if ($result) {
-                        $response['success'] = true;
-                        $response['message'] = 'Xóa trạng thái phòng thành công';
-                        $response['data'] = ['id' => $id];
-                    } else {
-                        throw new Exception('Không thể xóa trạng thái phòng');
-                    }
-                } else {
-                    throw new Exception('Method không hợp lệ. Sử dụng POST hoặc DELETE');
-                }
-                break;
-
-            default:
-                throw new Exception('Action không hợp lệ. Các action hợp lệ: getAll, getById, create, update, delete');
         }
     } catch (Exception $e) {
         $response['success'] = false;
@@ -960,16 +823,6 @@ function showApiList()
                     'delete' => 'POST/DELETE - Xóa phòng chiếu (?id=1)'
                 ]
             ],
-            'hall_status' => [
-                'description' => 'Quản lý trạng thái phòng',
-                'actions' => [
-                    'getAll' => 'GET - Lấy danh sách trạng thái',
-                    'getById' => 'GET - Lấy trạng thái theo ID (?id=1)',
-                    'create' => 'POST - Tạo trạng thái mới (POST: status_name)',
-                    'update' => 'POST - Cập nhật trạng thái (?id=1, POST: status_name)',
-                    'delete' => 'POST/DELETE - Xóa trạng thái (?id=1)'
-                ]
-            ],
             'seat_types' => [
                 'description' => 'Quản lý loại ghế',
                 'actions' => [
@@ -985,7 +838,6 @@ function showApiList()
             'GET - Lấy tất cả phòng chiếu' => 'test_api.php?controller=halls&action=getAll',
             'GET - Lấy phòng chiếu theo ID' => 'test_api.php?controller=halls&action=getById&id=1',
             'GET - Lấy phòng chiếu theo rạp' => 'test_api.php?controller=halls&action=getAll&cinema_id=1',
-            'GET - Lấy tất cả trạng thái' => 'test_api.php?controller=hall_status&action=getAll',
             'GET - Lấy tất cả loại ghế' => 'test_api.php?controller=seat_types&action=getAll'
         ]
     ];

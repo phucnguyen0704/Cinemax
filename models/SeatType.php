@@ -87,7 +87,7 @@ class SeatType
     public function deleteSeatType($seatTypeId)
     {
         // Kiểm tra xem có ghế nào đang sử dụng loại ghế này không
-        $checkSql = "SELECT COUNT(*) as count FROM seats WHERE seat_type_id = ? AND status = 1";
+        $checkSql = "SELECT COUNT(*) as count FROM seats WHERE seat_type_id = ?";
         $checkStmt = $this->conn->prepare($checkSql);
         if (!$checkStmt) {
             throw new Exception("SQL Error: " . $this->conn->error);
@@ -106,7 +106,8 @@ class SeatType
             throw new Exception("Không thể xóa loại ghế này vì đang có ghế đang sử dụng.");
         }
 
-        $sql = "UPDATE seat_types SET status = 0 WHERE seat_type_id = ?";
+        // Xóa thật khỏi DB
+        $sql = "DELETE FROM seat_types WHERE seat_type_id = ?";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("SQL Error: " . $this->conn->error);

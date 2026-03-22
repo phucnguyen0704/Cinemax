@@ -145,30 +145,6 @@ async function deleteHall(id) {
 }
 
 // ============================
-// HALL STATUS API
-// ============================
-
-async function getAllHallStatuses() {
-  return await fetchAPI("hall_status", "getAll");
-}
-
-async function getHallStatusById(id) {
-  return await fetchAPI("hall_status", "getById", { id });
-}
-
-async function createHallStatus(data) {
-  return await postAPI("hall_status", "create", data);
-}
-
-async function updateHallStatus(id, data) {
-  return await postAPI("hall_status", "update", data, { id });
-}
-
-async function deleteHallStatus(id) {
-  return await deleteAPI("hall_status", "delete", id);
-}
-
-// ============================
 // SEAT TYPES API
 // ============================
 
@@ -308,10 +284,6 @@ if (typeof module !== "undefined" && module.exports) {
     createHall,
     updateHall,
     deleteHall,
-    getHallStatusById,
-    createHallStatus,
-    updateHallStatus,
-    deleteHallStatus,
     getAllSeatTypes,
     getSeatTypeById,
     createSeatType,

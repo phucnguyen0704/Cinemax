@@ -1,18 +1,15 @@
 <?php
 
 require_once __DIR__ . '/../services/HallService.php';
-require_once __DIR__ . '/../services/HallStatusService.php';
 require_once __DIR__ . '/../config/dbConfig.php';
 
 class HallController
 {
     private HallService $hallService;
-    private HallStatusService $hallStatusService;
 
-    public function __construct(HallService $hallService, HallStatusService $hallStatusService)
+    public function __construct(HallService $hallService)
     {
         $this->hallService = $hallService;
-        $this->hallStatusService = $hallStatusService;
     }
 
     public function getAllHalls()
@@ -50,12 +47,13 @@ class HallController
             $cinemaId = $_POST['cinema_id'] ?? null;
             $name = $_POST['name'] ?? '';
             $statusId = $_POST['status_id'] ?? null;
+            $seatCount = $_POST['seat_count'] ?? 0;
 
             if (!$cinemaId || !$name || !$statusId) {
                 throw new InvalidArgumentException("Vui lòng điền đầy đủ thông tin.");
             }
 
-            $result = $this->hallService->createHall($cinemaId, $name, $statusId);
+            $result = $this->hallService->createHall($cinemaId, $name, $statusId, $seatCount);
 
             if ($result) {
                 $_SESSION['success'] = "Thêm phòng chiếu thành công!";
@@ -113,12 +111,11 @@ class HallController
 
     public function getAllStatuses()
     {
-        try {
-            return $this->hallStatusService->getAllStatuses();
-        } catch (Exception $e) {
-            $_SESSION['error'] = $e->getMessage();
-            return [];
-        }
+        return [
+            ['StatusID' => 1, 'StatusName' => 'Đang hoạt động'],
+            ['StatusID' => 0, 'StatusName' => 'Tạm dừng'],
+            ['StatusID' => 2, 'StatusName' => 'Bảo trì'],
+        ];
     }
 
     // Helper function để lấy danh sách cinemas

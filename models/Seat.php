@@ -120,8 +120,8 @@ class Seat
 
     public function deleteSeat($seatId)
     {
-        // Soft delete
-        $sql = "UPDATE seats SET status = 0 WHERE seat_id = ?";
+        // Xóa thật khỏi DB
+        $sql = "DELETE FROM seats WHERE seat_id = ?";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -138,8 +138,8 @@ class Seat
 
     public function deleteAllSeatsByHall($hallId)
     {
-        // Soft delete tất cả ghế trong phòng
-        $sql = "UPDATE seats SET status = 0 WHERE hall_id = ?";
+        // Xóa thật tất cả ghế trong phòng
+        $sql = "DELETE FROM seats WHERE hall_id = ?";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
