@@ -18,6 +18,8 @@ require_once __DIR__ . '/../../models/Promotion.php';
 require_once __DIR__ . '/../../models/Cinema.php';
 require_once __DIR__ . '/../../models/Hall.php';
 require_once __DIR__ . '/../../models/HallStatus.php';
+require_once __DIR__ . '/../../models/Ticket.php';
+
 
 // Cac file services
 require_once __DIR__ . '/../../services/RoleService.php';
@@ -33,6 +35,7 @@ require_once __DIR__ . '/../../services/CinemaService.php';
 require_once __DIR__ . '/../../services/HallService.php';
 require_once __DIR__ . '/../../services/HallStatusService.php';
 require_once __DIR__ . '/../../services/PromotionService.php';
+require_once __DIR__ . '/../../services/TicketService.php';
 
 // Cac file controllers
 require_once __DIR__ . '/../../controllers/AdminController.php';
@@ -67,6 +70,8 @@ $cinemaModel = new Cinema($conn);
 $hallModel = new Hall($conn);
 $hallStatusModel = new HallStatus($conn);
 $promotionModel = new Promotion($conn);
+$ticketModel = new Ticket($conn);
+
 
 //Khoi tao services
 $userService = new UserService($userModel);
@@ -76,11 +81,12 @@ $rolePermissionsService = new Role_permissionsService($rolePermissionModel);
 $foodComboService = new FoodComboService($foodComboModel);
 $movieService = new MovieService($movieModel, $genreModel);
 $genreService = new GenreService($genreModel);
-$showService = new ShowService($showModel);
 $cinemaService = new CinemaService($cinemaModel);
 $hallService = new HallService($hallModel);
 $hallStatusService = new HallStatusService($hallStatusModel);
 $promotionService = new PromotionService($promotionModel);
+$ticketService = new TicketService($ticketModel);
+$showService = new ShowService($showModel, $ticketService);
 
 //Khoi tao controllers
 $adminController = new AdminController($userService, $roleService, $permissionService);
@@ -91,6 +97,7 @@ $showController = new ShowController($showService);
 $genreController = new GenreController($genreService);
 $cinemaController = new CinemaController($cinemaService);
 $hallController = new HallController($hallService, $hallStatusService);
+$promotionController = new PromotionController($promotionService);
 
 // Danh sach cac page hop le
 $allowedPages = [
@@ -253,6 +260,24 @@ if ($page === 'shows' && $action) {
     }
 }
 
+// =========================
+// PROMOTIONS
+// =========================
+if ($page === 'promotions' && $action) {
+    switch ($action) {
+        case 'create':
+            $promotionController->createPromotion();
+            exit;
+
+        case 'update':
+            $promotionController->updatePromotion($_POST['promotion_id'] ?? 0);
+            exit;
+
+        case 'delete':
+            $promotionController->deletePromotion($_GET['id'] ?? 0);
+            exit;
+    }
+}
 $contentPath = __DIR__ . "/pages/$page.php";
 ?>
 

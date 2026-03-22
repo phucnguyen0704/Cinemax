@@ -1,14 +1,18 @@
 <?php
 
 require_once __DIR__ . '/../models/Show.php';
+require_once __DIR__ . '/../services/TicketService.php';
 
 class ShowService
 {
     private $showModel;
+    private $ticketService;
 
-    public function __construct($showModel)
+
+    public function __construct($showModel, $ticketService)
     {
         $this->showModel = $showModel;
+        $this->ticketService = $ticketService;
     }
 
     public function getAllShows()
@@ -50,7 +54,22 @@ class ShowService
             throw new InvalidArgumentException("All fields are required to create a show.");
         }
 
-        return $this->showModel->createShow($movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price);
+        $conn = $this->showModel->getConnection();
+
+        try {
+            $conn->begin_transaction();
+
+            $show_id = $this->showModel->createShow($movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price);
+
+            $this->ticketService->createTicket($show_id);
+
+            $conn->commit();
+
+            return $show_id;
+        } catch (Exception $e) {
+            $conn->rollback();
+            throw $e;
+        }
     }
 
     public function updateShow($id, $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $status)

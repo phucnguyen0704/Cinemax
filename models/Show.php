@@ -76,7 +76,7 @@ class Show
             throw new Exception($stmt->error);
         }
 
-        return true;
+        return $this->conn->insert_id;
     }
 
     public function updateShow($id, $movie_id, $hall_id, $show_date, $start_time, $end_time, $base_price, $status)
@@ -93,5 +93,10 @@ class Show
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
         return $stmt->execute();
+    }
+
+    public function getConnection()
+    {
+        return $this->conn;
     }
 }

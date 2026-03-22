@@ -1,70 +1,78 @@
 <?php
 
+require_once __DIR__ . '/../services/PromotionService.php';
+require_once __DIR__ . '/../config/dbConfig.php';
+
 class PromotionController
 {
-    private $promotionService;
+    private PromotionService $promotionService;
 
-    public function __construct($promotionService)
+    public function __construct(PromotionService $promotionService)
     {
         $this->promotionService = $promotionService;
     }
 
-    public function create()
+    public function getAllPromotions($search = '')
+    {
+        try {
+            return $this->promotionService->listPromotions($search);
+        } catch (Exception $e) {
+            header('Location: /index.php?page=promotions&error=' . urlencode($e->getMessage()));
+        }
+    }
+
+    public function createPromotion()
     {
         try {
             $data = [
-                'code' => $_POST['code'] ?? '',
-                'name' => $_POST['name'] ?? '',
-                'discount_type' => $_POST['discount_type'] ?? 'percent',
-                'discount_value' => $_POST['discount_value'] ?? 0,
-                'start_date' => $_POST['start_date'] ?? '',
-                'end_date' => $_POST['end_date'] ?? '',
-                'min_amount' => $_POST['min_amount'] ?? 0,
+                'code'             => $_POST['code'] ?? '',
+                'name'             => $_POST['name'] ?? '',
+                'discount_type'    => $_POST['discount_type'] ?? 'percent',
+                'discount_value'   => $_POST['discount_value'] ?? 0,
+                'discount_percent' => $_POST['discount_percent'] ?? 0,
+                'start_date'       => $_POST['start_date'] ?? '',
+                'end_date'         => $_POST['end_date'] ?? '',
+                'min_amount'       => $_POST['min_amount'] ?? 0,
             ];
 
             $this->promotionService->createPromotion($data);
 
-            header("Location: index.php?page=promotions&success=" . urlencode("Thêm khuyến mãi thành công."));
-            exit;
-        } catch (Throwable $e) {
-            header("Location: index.php?page=promotions&error=" . urlencode($e->getMessage()) . "&open_modal=add");
-            exit;
+            header('Location: ../../views/admin/index.php?page=promotions&add=1');
+        } catch (Exception $e) {
+            header('Location: ../../views/admin/index.php?page=promotions&error=' . urlencode($e->getMessage()));
         }
     }
 
-    public function update($id)
+    public function updatePromotion($id)
     {
         try {
             $data = [
-                'code' => $_POST['code'] ?? '',
-                'name' => $_POST['name'] ?? '',
-                'discount_type' => $_POST['discount_type'] ?? 'percent',
-                'discount_value' => $_POST['discount_value'] ?? 0,
-                'start_date' => $_POST['start_date'] ?? '',
-                'end_date' => $_POST['end_date'] ?? '',
-                'min_amount' => $_POST['min_amount'] ?? 0,
+                'code'             => $_POST['code'] ?? '',
+                'name'             => $_POST['name'] ?? '',
+                'discount_type'    => $_POST['discount_type'] ?? 'percent',
+                'discount_value'   => $_POST['discount_value'] ?? 0,
+                'discount_percent' => $_POST['discount_percent'] ?? 0,
+                'start_date'       => $_POST['start_date'] ?? '',
+                'end_date'         => $_POST['end_date'] ?? '',
+                'min_amount'       => $_POST['min_amount'] ?? 0,
             ];
 
             $this->promotionService->updatePromotion((int)$id, $data);
 
-            header("Location: index.php?page=promotions&success=" . urlencode("Cập nhật khuyến mãi thành công."));
-            exit;
-        } catch (Throwable $e) {
-            header("Location: index.php?page=promotions&error=" . urlencode($e->getMessage()) . "&open_modal=edit&id=" . (int)$id);
-            exit;
+            header('Location: ../../views/admin/index.php?page=promotions&update=1');
+        } catch (Exception $e) {
+            header('Location: ../../views/admin/index.php?page=promotions&error=' . urlencode($e->getMessage()));
         }
     }
 
-    public function delete($id)
+    public function deletePromotion($id)
     {
         try {
             $this->promotionService->deletePromotion((int)$id);
 
-            header("Location: index.php?page=promotions&success=" . urlencode("Xóa khuyến mãi thành công."));
-            exit;
-        } catch (Throwable $e) {
-            header("Location: index.php?page=promotions&error=" . urlencode($e->getMessage()));
-            exit;
+            header('Location: ../../views/admin/index.php?page=promotions&delete=1');
+        } catch (Exception $e) {
+            header('Location: ../../views/admin/index.php?page=promotions&error=' . urlencode($e->getMessage()));
         }
     }
 }
