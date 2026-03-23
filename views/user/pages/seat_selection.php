@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Chọn ghế</title>
-    <link rel="stylesheet" href="../../../public/assets/css/style.css">
-    <link rel="stylesheet" href="../../../public/assets/css/seat-selection.css">
+    <link rel="stylesheet" href="/Cinemax/public/assets/css/style.css">
+    <link rel="stylesheet" href="/Cinemax/public/assets/css/seat-selection.css">
 
     <style>
         .seat.type-1 {
@@ -91,16 +91,16 @@
         <div class="container">
             <div class="nav-content">
                 <div class="logo"><span>Cinema</span></div>
-                <a href="<?php echo $is_admin ? '../admin/showtimes.php' : 'index.php'; ?>" class="btn-back">Thoát</a>
+                <a href="index.php" class="btn-back">Thoát</a>
             </div>
         </div>
     </nav>
 
     <main class="booking-container">
         <div class="container">
-            <form id="bookingForm" action="../../user/pages/food_selection.php" method="POST">
+            <form id="bookingForm" action="index.php?page=food_selection" method="POST">
                 <input type="hidden" name="action" value="reserve_seats">
-                <input type="hidden" name="showtime_id" value="<?php echo $showtime_id; ?>">
+                <input type="hidden" name="showtime_id" value="">
                 <div id="hiddenInputs"></div>
 
                 <div class="booking-layout">
@@ -152,7 +152,7 @@
                             </div>
 
 
-                            <button class="btn-continue" type="submit">
+                            <button class="btn-continue" id="btnContinue" type="submit" disabled style="opacity:0.5;cursor:not-allowed;">
                                 Tiếp tục chọn đồ ăn
                             </button>
 
@@ -166,8 +166,8 @@
         </div>
     </main>
 
-    <script src="../../../public/assets/js/api.js"></script>
-    <script src="../../../public/assets/js/user-seat-selection.js"></script>
+    <script src="/Cinemax/public/assets/js/api.js"></script>
+    <script src="/Cinemax/public/assets/js/user-seat-selection.js"></script>
 
     <script>
         function startCountdown(duration) {

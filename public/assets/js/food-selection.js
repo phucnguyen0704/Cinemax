@@ -1,40 +1,30 @@
-// BTL_MO/assets/js/food-selection.js
-
-let selectedFoods = {}; // Object lưu: { id: {qty, price, name} }
+let selectedFoods = {};
+const baseSeatTotal = Number(window.foodSelectionData?.seatTotal || 0);
 
 function updateFood(btn, change) {
-    // 1. Lấy thông tin món ăn từ HTML
     const controlDiv = btn.closest('.qty-control');
-    const id = controlDiv.getAttribute('data-id');
-    const price = parseFloat(controlDiv.getAttribute('data-price'));
-    const name = controlDiv.getAttribute('data-name');
+    if (!controlDiv) return;
+
+    const id = String(controlDiv.getAttribute('data-id') || '');
+    const price = Number(controlDiv.getAttribute('data-price') || 0);
+    const name = String(controlDiv.getAttribute('data-name') || 'Combo');
     const display = controlDiv.querySelector('.qty-val');
 
-    // 2. Tính số lượng mới
-    let currentQty = selectedFoods[id] ? selectedFoods[id].qty : 0;
-    let newQty = currentQty + change;
+    if (!id || !display) return;
 
+    const currentQty = selectedFoods[id] ? Number(selectedFoods[id].qty) : 0;
+    let newQty = currentQty + change;
     if (newQty < 0) newQty = 0;
 
-    // 3. Cập nhật Object dữ liệu
     if (newQty === 0) {
         delete selectedFoods[id];
-        // Reset màu hiển thị
         display.style.color = '#fff';
     } else {
-        selectedFoods[id] = {
-            qty: newQty,
-            price: price,
-            name: name
-        };
-        // Highlight số lượng
-        display.style.color = '#e50914'; 
+        selectedFoods[id] = { qty: newQty, price, name };
+        display.style.color = '#e50914';
     }
 
-    // 4. Cập nhật số trên giao diện
-    display.textContent = newQty;
-
-    // 5. Tính lại tổng tiền và vẽ lại Sidebar
+    display.textContent = String(newQty);
     renderSummary();
 }
 
@@ -44,29 +34,35 @@ function renderSummary() {
     const foodTotalDisplay = document.getElementById('foodTotalDisplay');
     const grandTotalDisplay = document.getElementById('grandTotalDisplay');
     const foodInputsDiv = document.getElementById('foodInputs');
+    const foodTotalInput = document.getElementById('foodTotalInput');
+    const grandTotalInput = document.getElementById('grandTotalInput');
+    const foodsJsonInput = document.getElementById('foodsJsonInput');
 
     let foodTotal = 0;
     let htmlList = '';
     let htmlInputs = '';
+    const foodsPayload = [];
 
-    // Duyệt qua danh sách món đã chọn
-    for (const [id, item] of Object.entries(selectedFoods)) {
-        const itemTotal = item.qty * item.price;
+    Object.entries(selectedFoods).forEach(([id, item]) => {
+        const itemTotal = Number(item.qty) * Number(item.price);
         foodTotal += itemTotal;
 
-        // HTML hiển thị bên Sidebar
         htmlList += `
             <div class="info-row" style="font-size: 13px; margin-bottom: 5px; border-bottom: 1px dashed #333; padding-bottom: 5px;">
                 <span style="color: #fff;">${item.name} <strong style="color: #e50914;">x${item.qty}</strong></span>
                 <span>${itemTotal.toLocaleString('vi-VN')} ₫</span>
             </div>
         `;
-
-        // Input ẩn để gửi Form (foods[1]=2)
         htmlInputs += `<input type="hidden" name="foods[${id}]" value="${item.qty}">`;
-    }
+        foodsPayload.push({
+            id: Number(id),
+            name: item.name,
+            qty: Number(item.qty),
+            price: Number(item.price),
+            total: itemTotal
+        });
+    });
 
-    // Ẩn hiện khối Food Summary
     if (foodTotal > 0) {
         foodContainerBlock.style.display = 'block';
         foodListContainer.innerHTML = htmlList;
@@ -75,13 +71,22 @@ function renderSummary() {
         foodListContainer.innerHTML = '';
     }
 
-    // Cập nhật tiền
-    foodTotalDisplay.textContent = foodTotal.toLocaleString('vi-VN') + ' ₫';
-    
-    // seatTotal là biến toàn cục được PHP in ra ở cuối file HTML
-    const grandTotal = seatTotal + foodTotal;
-    grandTotalDisplay.textContent = grandTotal.toLocaleString('vi-VN') + ' ₫';
-
-    // Cập nhật Input ẩn
+    const grandTotal = baseSeatTotal + foodTotal;
+    foodTotalDisplay.textContent = `${foodTotal.toLocaleString('vi-VN')} ₫`;
+    grandTotalDisplay.textContent = `${grandTotal.toLocaleString('vi-VN')} ₫`;
     foodInputsDiv.innerHTML = htmlInputs;
+
+    if (foodTotalInput) foodTotalInput.value = String(foodTotal);
+    if (grandTotalInput) grandTotalInput.value = String(grandTotal);
+    if (foodsJsonInput) foodsJsonInput.value = JSON.stringify(foodsPayload);
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.qty-control .btn-qty.minus').forEach((btn) => {
+        btn.addEventListener('click', () => updateFood(btn, -1));
+    });
+    document.querySelectorAll('.qty-control .btn-qty.plus').forEach((btn) => {
+        btn.addEventListener('click', () => updateFood(btn, 1));
+    });
+    renderSummary();
+});

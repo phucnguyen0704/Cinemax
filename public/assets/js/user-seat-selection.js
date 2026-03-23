@@ -8,6 +8,7 @@ let hallData = null;
 let currentHallId = null;
 let currentShowId = null;
 let selectedSeats = [];
+let showData = null;
 
 // Load dữ liệu khi trang được tải
 document.addEventListener('DOMContentLoaded', async function() {
@@ -16,8 +17,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     currentHallId = urlParams.get('hall_id');
     currentShowId = urlParams.get('show_id');
     
-    if (!currentHallId) {
-        showError('Không tìm thấy ID phòng chiếu');
+    if (!currentHallId && !currentShowId) {
+        showError('Không tìm thấy thông tin suất chiếu/phòng chiếu');
         return;
     }
     
@@ -37,6 +38,18 @@ document.addEventListener('DOMContentLoaded', async function() {
  */
 async function loadAllData() {
     try {
+        if (currentShowId) {
+            showData = await getShowById(currentShowId);
+            const hallIdFromShow = showData?.hall_id ?? showData?.HallID ?? null;
+            if (!currentHallId && hallIdFromShow) {
+                currentHallId = String(hallIdFromShow);
+            }
+        }
+
+        if (!currentHallId) {
+            throw new Error('Không tìm thấy ID phòng chiếu');
+        }
+
         [seatsData, seatTypesData, hallData] = await Promise.all([
             getSeatsByHall(currentHallId),
             getAllSeatTypes(),
@@ -45,6 +58,7 @@ async function loadAllData() {
         
         // Cập nhật header với thông tin phòng
         updateHeader();
+        syncHiddenInputs();
     } catch (error) {
         throw new Error('Không thể tải dữ liệu: ' + error.message);
     }
@@ -54,16 +68,22 @@ async function loadAllData() {
  * Cập nhật header với thông tin phòng
  */
 function updateHeader() {
-    if (hallData) {
-        const hallNameEl = document.querySelector('.hall-name, .seat-selection-header h2');
-        if (hallNameEl) {
-            hallNameEl.textContent = hallData.Name || 'Phòng chiếu';
-        }
-        
-        const cinemaNameEl = document.querySelector('.cinema-name');
-        if (cinemaNameEl && hallData.CinemaName) {
-            cinemaNameEl.textContent = hallData.CinemaName;
-        }
+    const infoItems = document.querySelectorAll('.showtime-info .info-item .value');
+    if (infoItems.length >= 3) {
+        infoItems[0].textContent = showData?.movie_title || showData?.MovieTitle || 'Đang cập nhật';
+        const dateText = showData?.show_date || showData?.ShowDate || '';
+        const startText = (showData?.start_time || showData?.StartTime)
+            ? String(showData?.start_time || showData?.StartTime).substring(0, 5)
+            : '';
+        infoItems[1].textContent = (dateText || startText) ? `${dateText} ${startText}`.trim() : 'Đang cập nhật';
+        infoItems[2].textContent = showData?.cinema_name || showData?.CinemaName || hallData?.CinemaName || 'Đang cập nhật';
+    }
+}
+
+function syncHiddenInputs() {
+    const showtimeInput = document.querySelector('input[name="showtime_id"]');
+    if (showtimeInput && currentShowId) {
+        showtimeInput.value = currentShowId;
     }
 }
 
@@ -111,13 +131,19 @@ function renderSeatLayout() {
         
         // Render ghế trong hàng
         rowSeats.forEach(seat => {
+            const seatId = seat.SeatID ?? seat.seat_id;
+            const seatNumber = seat.SeatNumber ?? seat.seat_number;
+            const seatTypeId = seat.SeatTypeID ?? seat.seat_type_id;
+            const priceMultiplier = seat.PriceMultiplier ?? seat.price_multiplier ?? 1;
+            const seatTypeName = seat.TypeName ?? seat.type_name ?? 'Ghế';
+
             const seatItem = document.createElement('div');
-            seatItem.className = `seat type-${seat.SeatTypeID}`;
-            seatItem.setAttribute('data-seat-id', seat.SeatID);
-            seatItem.setAttribute('data-seat-name', `${rowName}${seat.SeatNumber}`);
-            seatItem.setAttribute('data-price', calculatePrice(seat.PriceMultiplier));
-            seatItem.textContent = seat.SeatNumber;
-            seatItem.title = `${rowName}${seat.SeatNumber} - ${seat.TypeName}`;
+            seatItem.className = `seat type-${seatTypeId}`;
+            seatItem.setAttribute('data-seat-id', seatId);
+            seatItem.setAttribute('data-seat-name', `${rowName}${seatNumber}`);
+            seatItem.setAttribute('data-price', calculatePrice(priceMultiplier));
+            seatItem.textContent = seatNumber;
+            seatItem.title = `${rowName}${seatNumber} - ${seatTypeName}`;
             
             // Kiểm tra trạng thái ghế
             if (seat.isBooking == 1) {
@@ -228,6 +254,12 @@ function updateSummary() {
             input.name = 'seat_ids[]';
             input.value = seat.id;
             hiddenInputs.appendChild(input);
+
+            const seatNameInput = document.createElement('input');
+            seatNameInput.type = 'hidden';
+            seatNameInput.name = 'seat_names[]';
+            seatNameInput.value = seat.name;
+            hiddenInputs.appendChild(seatNameInput);
         }
         
         total += seat.price;
@@ -236,6 +268,14 @@ function updateSummary() {
     // Cập nhật tổng tiền
     if (totalPriceEl) {
         totalPriceEl.textContent = total.toLocaleString('vi-VN') + ' ₫';
+    }
+
+    if (hiddenInputs) {
+        const totalInput = document.createElement('input');
+        totalInput.type = 'hidden';
+        totalInput.name = 'seat_total';
+        totalInput.value = String(total);
+        hiddenInputs.appendChild(totalInput);
     }
     
     // Mở khóa nút tiếp tục

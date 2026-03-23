@@ -62,6 +62,8 @@ $allowedPages = [
     'promotions',
     'showtimes',
     'seat_selection',
+    'food_selection',
+    'payment',
     'booking_success',
     '404'
 ];

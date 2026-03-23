@@ -1,12 +1,51 @@
+<?php
+require_once __DIR__ . '/../../../config/dbConfig.php';
+require_once __DIR__ . '/../../../models/FoodCombo.php';
+require_once __DIR__ . '/../../../services/FoodComboService.php';
+
+$conn = getDbConnection();
+$comboModel = new FoodCombo($conn);
+$comboService = new FoodComboService($comboModel);
+
+$showtimeId = isset($_POST['showtime_id']) ? (int)$_POST['showtime_id'] : 0;
+$seatIds = isset($_POST['seat_ids']) && is_array($_POST['seat_ids']) ? array_values(array_filter(array_map('intval', $_POST['seat_ids']))) : [];
+$seatNames = isset($_POST['seat_names']) && is_array($_POST['seat_names']) ? array_values(array_filter(array_map('trim', $_POST['seat_names']))) : [];
+$seatTotal = isset($_POST['seat_total']) ? (float)$_POST['seat_total'] : 0;
+
+$showData = null;
+if ($showtimeId > 0) {
+    $sql = "SELECT s.show_id, s.show_date, s.start_time, s.end_time, s.base_price,
+                   m.title AS movie_title, h.name AS hall_name, c.name AS cinema_name
+            FROM shows s
+            INNER JOIN movies m ON s.movie_id = m.movie_id
+            INNER JOIN halls h ON s.hall_id = h.hall_id
+            INNER JOIN cinemas c ON h.cinema_id = c.cinema_id
+            WHERE s.show_id = ?
+            LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param('i', $showtimeId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $showData = $result ? $result->fetch_assoc() : null;
+    }
+}
+
+$combos = [];
+try {
+    $combos = $comboService->getAllCombos();
+} catch (Exception $e) {
+    $combos = [];
+}
+?>
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <title>Chọn đồ ăn</title>
-    <link rel="stylesheet" href="../../../public/assets/css/style.css">
-    <link rel="stylesheet" href="../../../public/assets/css/seat-selection.css">
-    <link rel="stylesheet" href="../../../public/assets/css/food-selection.css">
+    <link rel="stylesheet" href="/Cinemax/public/assets/css/style.css">
+    <link rel="stylesheet" href="/Cinemax/public/assets/css/seat-selection.css">
+    <link rel="stylesheet" href="/Cinemax/public/assets/css/food-selection.css">
 </head>
 
 <body>
@@ -54,28 +93,45 @@
 
                     <div class="food-grid">
 
-                        <!-- FOOD CARD -->
-                        <div class="food-card">
-                            <div class="food-img">
-                                <img src="#"
-                                    alt="Food image">
+                        <?php if (empty($combos)): ?>
+                            <div style="padding: 16px; color: #aaa; border: 1px dashed #444; border-radius: 10px;">
+                                Hiện chưa có combo/bắp nước.
                             </div>
-                            <div class="food-info">
-                                <h3>Tên món</h3>
-                                <p class="desc">Mô tả món ăn</p>
-                                <div class="price">0 ₫</div>
+                        <?php else: ?>
+                            <?php foreach ($combos as $combo): ?>
+                                <?php
+                                $comboId = (int)($combo['combo_id'] ?? 0);
+                                $comboName = (string)($combo['name'] ?? 'Combo');
+                                $comboDesc = (string)($combo['description'] ?? '');
+                                $comboPrice = (float)($combo['price'] ?? 0);
+                                $comboImage = trim((string)($combo['image_url'] ?? ''));
+                                if ($comboImage === '') {
+                                    $comboImage = '/Cinemax/public/assets/uploads/combos/no-image.png';
+                                } elseif (!preg_match('/^https?:\/\//i', $comboImage)) {
+                                    $comboImage = '/Cinemax/' . ltrim($comboImage, '/');
+                                }
+                                ?>
+                                <div class="food-card">
+                                    <div class="food-img">
+                                        <img src="<?= htmlspecialchars($comboImage) ?>" alt="<?= htmlspecialchars($comboName) ?>">
+                                    </div>
+                                    <div class="food-info">
+                                        <h3><?= htmlspecialchars($comboName) ?></h3>
+                                        <p class="desc"><?= htmlspecialchars($comboDesc !== '' ? $comboDesc : 'Combo bắp nước hấp dẫn') ?></p>
+                                        <div class="price"><?= number_format($comboPrice, 0, ',', '.') ?> ₫</div>
 
-                                <div class="qty-control"
-                                    data-id=""
-                                    data-price=""
-                                    data-name="">
-                                    <button type="button" class="btn-qty minus">-</button>
-                                    <span class="qty-val">0</span>
-                                    <button type="button" class="btn-qty plus">+</button>
+                                        <div class="qty-control"
+                                            data-id="<?= $comboId ?>"
+                                            data-price="<?= $comboPrice ?>"
+                                            data-name="<?= htmlspecialchars($comboName) ?>">
+                                            <button type="button" class="btn-qty minus">-</button>
+                                            <span class="qty-val">0</span>
+                                            <button type="button" class="btn-qty plus">+</button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <!-- /FOOD CARD -->
+                            <?php endforeach; ?>
+                        <?php endif; ?>
 
                     </div>
                 </div>
@@ -86,13 +142,13 @@
                         <h3>Thông tin đặt vé</h3>
 
                         <div class="summary-block">
-                            <h4 class="movie-title">Tên phim</h4>
-                            <div class="info-row"><span>Rạp:</span> <strong>Tên rạp</strong></div>
-                            <div class="info-row"><span>Suất:</span> <strong>00:00 01/01</strong></div>
-                            <div class="info-row"><span>Phòng:</span> <strong>Phòng chiếu</strong></div>
+                            <h4 class="movie-title"><?= htmlspecialchars((string)($showData['movie_title'] ?? 'Đang cập nhật')) ?></h4>
+                            <div class="info-row"><span>Rạp:</span> <strong><?= htmlspecialchars((string)($showData['cinema_name'] ?? 'Đang cập nhật')) ?></strong></div>
+                            <div class="info-row"><span>Suất:</span> <strong><?= htmlspecialchars((string)(($showData['show_date'] ?? '') . ' ' . substr((string)($showData['start_time'] ?? ''), 0, 5))) ?></strong></div>
+                            <div class="info-row"><span>Phòng:</span> <strong><?= htmlspecialchars((string)($showData['hall_name'] ?? 'Đang cập nhật')) ?></strong></div>
                             <div class="info-row">
                                 <span>Ghế:</span>
-                                <strong style="color: var(--primary-color);">A1, A2</strong>
+                                <strong style="color: var(--primary-color);"><?= htmlspecialchars(!empty($seatNames) ? implode(', ', $seatNames) : 'Chưa chọn') ?></strong>
                             </div>
                         </div>
 
@@ -107,7 +163,7 @@
                             style="border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 20px;">
                             <div class="price-row">
                                 <span>Tiền vé:</span>
-                                <span>0 ₫</span>
+                                <span id="seatTotalDisplay"><?= number_format($seatTotal, 0, ',', '.') ?> ₫</span>
                             </div>
                             <div class="price-row">
                                 <span>Tiền đồ ăn:</span>
@@ -119,8 +175,15 @@
                             </div>
                         </div>
 
-                        <form id="finalForm">
+                        <form id="finalForm" action="index.php?page=payment" method="POST">
                             <div id="foodInputs"></div>
+                            <input type="hidden" name="showtime_id" value="<?= $showtimeId ?>">
+                            <input type="hidden" name="seat_total" id="seatTotalInput" value="<?= $seatTotal ?>">
+                            <input type="hidden" name="seat_names" value="<?= htmlspecialchars(json_encode($seatNames, JSON_UNESCAPED_UNICODE)) ?>">
+                            <input type="hidden" name="seat_ids" value="<?= htmlspecialchars(json_encode($seatIds, JSON_UNESCAPED_UNICODE)) ?>">
+                            <input type="hidden" name="food_total" id="foodTotalInput" value="0">
+                            <input type="hidden" name="grand_total" id="grandTotalInput" value="<?= $seatTotal ?>">
+                            <input type="hidden" name="foods_json" id="foodsJsonInput" value="[]">
 
                             <button type="submit" class="btn-continue">
                                 Xác nhận & Thanh toán
@@ -137,18 +200,13 @@
             </div>
         </div>
     </div>
-
-
     <script>
-        const seatTotal = 3;
-        btn_continue = document.querySelector('.btn-continue');
-
-        btn_continue.addEventListener('click', function(event) {
-            event.preventDefault();
-            window.location.href = "../../user/pages/payment.php";
-        });
+        window.foodSelectionData = {
+            seatTotal: <?= json_encode((float)$seatTotal) ?>,
+            showtimeId: <?= json_encode($showtimeId) ?>
+        };
     </script>
-    <script src="../../../public/assets/js/food-selection.js"></script>
+    <script src="/Cinemax/public/assets/js/food-selection.js"></script>
 </body>
 
 </html>

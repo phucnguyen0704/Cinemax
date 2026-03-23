@@ -190,7 +190,7 @@ function formatMoney($amount)
 
                                 <div class="time-list">
                                     <?php foreach ($showsList as $show): ?>
-                                        <a href="../user/pages/seat_selection.php?show_id=<?= (int)$show['show_id'] ?>"
+                                        <a href="index.php?page=seat_selection&show_id=<?= (int)$show['show_id'] ?>&hall_id=<?= (int)$show['hall_id'] ?>"
                                             class="time-btn">
 
                                             <div>

@@ -201,6 +201,18 @@ async function deleteCinema(id) {
 }
 
 // ============================
+// SHOWS API
+// ============================
+
+async function getShowById(id) {
+  return await fetchAPI("shows", "getById", { id });
+}
+
+async function getUserShows(params = {}) {
+  return await fetchAPI("shows", "getAllForUser", params);
+}
+
+// ============================
 // SEATS API
 // ============================
 
@@ -296,6 +308,8 @@ if (typeof module !== "undefined" && module.exports) {
     createCinema,
     updateCinema,
     deleteCinema,
+    getShowById,
+    getUserShows,
     getSeatsByHall,
     getSeatById,
     createSeat,

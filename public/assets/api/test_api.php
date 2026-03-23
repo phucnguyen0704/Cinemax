@@ -34,6 +34,7 @@ try {
     require_once __DIR__ . '/../../../models/SeatType.php';
     require_once __DIR__ . '/../../../models/Cinema.php';
     require_once __DIR__ . '/../../../models/Seat.php';
+    require_once __DIR__ . '/../../../models/Show.php';
     require_once __DIR__ . '/../../../services/HallService.php';
     require_once __DIR__ . '/../../../services/SeatTypeService.php';
     require_once __DIR__ . '/../../../services/CinemaService.php';
@@ -77,6 +78,7 @@ try {
     $seatTypeModel = new SeatType($conn);
     $cinemaModel = new Cinema($conn);
     $seatModel = new Seat($conn);
+    $showModel = new Show($conn);
 
     $hallService = new HallService($hallModel);
     $seatTypeService = new SeatTypeService($seatTypeModel);
@@ -128,6 +130,9 @@ try {
 
         case 'seats':
             handleSeatRequests($seatController, $action, $method, $response, $seatService);
+            break;
+        case 'shows':
+            handleShowRequests($showModel, $action, $method, $response);
             break;
 
         default:
@@ -795,6 +800,120 @@ function handleSeatRequests($controller, $action, $method, &$response, $seatServ
 
             default:
                 throw new Exception('Action không hợp lệ. Các action hợp lệ: getByHall, getById, create, update, delete, deleteAll, createBulk');
+        }
+    } catch (Exception $e) {
+        $response['success'] = false;
+        $response['error'] = $e->getMessage();
+        $response['message'] = 'Có lỗi xảy ra: ' . $e->getMessage();
+    }
+
+    echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+}
+
+function handleShowRequests($showModel, $action, $method, &$response)
+{
+    try {
+        switch ($action) {
+            case 'getAllForUser':
+                if ($method !== 'GET') {
+                    throw new Exception('Method không hợp lệ. Sử dụng GET');
+                }
+                $cinemaId = $_GET['cinema_id'] ?? null;
+                $movieId = $_GET['movie_id'] ?? null;
+                $showDate = $_GET['show_date'] ?? null;
+
+                $conn = $showModel->getConnection();
+                $sql = "SELECT s.show_id, s.movie_id, s.hall_id, s.show_date, s.start_time, s.end_time, s.base_price, s.status,
+                               m.title AS movie_title, m.poster_url AS movie_poster_url, m.duration_min AS movie_duration_min, '' AS movie_director,
+                               h.name AS hall_name, h.status AS hall_status,
+                               c.name AS cinema_name, c.cinema_id, c.status AS cinema_status
+                        FROM shows s
+                        INNER JOIN movies m ON s.movie_id = m.movie_id
+                        INNER JOIN halls h ON s.hall_id = h.hall_id
+                        INNER JOIN cinemas c ON h.cinema_id = c.cinema_id
+                        WHERE s.status <> -1
+                          AND h.status = 1
+                          AND c.status = 1";
+                $types = '';
+                $params = [];
+                if ($cinemaId !== null && $cinemaId !== '') {
+                    $sql .= " AND c.cinema_id = ?";
+                    $types .= 'i';
+                    $params[] = (int)$cinemaId;
+                }
+                if ($movieId !== null && $movieId !== '') {
+                    $sql .= " AND s.movie_id = ?";
+                    $types .= 'i';
+                    $params[] = (int)$movieId;
+                }
+                if ($showDate !== null && $showDate !== '') {
+                    $sql .= " AND s.show_date = ?";
+                    $types .= 's';
+                    $params[] = $showDate;
+                } else {
+                    $sql .= " AND s.show_date >= CURDATE()";
+                }
+                $sql .= " ORDER BY s.show_date ASC, c.name ASC, h.name ASC, s.start_time ASC";
+
+                $stmt = $conn->prepare($sql);
+                if (!$stmt) {
+                    throw new Exception('SQL Error: ' . $conn->error);
+                }
+                if (!empty($params)) {
+                    $stmt->bind_param($types, ...$params);
+                }
+                if (!$stmt->execute()) {
+                    throw new Exception('SQL Execute Error: ' . $stmt->error);
+                }
+                $result = $stmt->get_result();
+                $shows = [];
+                if ($result) {
+                    while ($row = $result->fetch_assoc()) {
+                        $shows[] = $row;
+                    }
+                }
+                $response['success'] = true;
+                $response['data'] = $shows;
+                $response['message'] = 'Lấy danh sách suất chiếu user thành công';
+                break;
+
+            case 'getById':
+                if ($method !== 'GET') {
+                    throw new Exception('Method không hợp lệ. Sử dụng GET');
+                }
+                $id = $_GET['id'] ?? null;
+                if (!$id) {
+                    throw new Exception('Thiếu tham số id');
+                }
+
+                $conn = $showModel->getConnection();
+                $sql = "SELECT s.show_id, s.movie_id, s.hall_id, s.show_date, s.start_time, s.end_time, s.base_price, s.status,
+                               m.title AS movie_title, h.name AS hall_name, c.name AS cinema_name
+                        FROM shows s
+                        INNER JOIN movies m ON s.movie_id = m.movie_id
+                        INNER JOIN halls h ON s.hall_id = h.hall_id
+                        INNER JOIN cinemas c ON h.cinema_id = c.cinema_id
+                        WHERE s.show_id = ?
+                        LIMIT 1";
+                $stmt = $conn->prepare($sql);
+                if (!$stmt) {
+                    throw new Exception('SQL Error: ' . $conn->error);
+                }
+                $idInt = (int)$id;
+                $stmt->bind_param("i", $idInt);
+                if (!$stmt->execute()) {
+                    throw new Exception('SQL Execute Error: ' . $stmt->error);
+                }
+                $result = $stmt->get_result();
+                $show = $result ? $result->fetch_assoc() : null;
+
+                $response['success'] = true;
+                $response['data'] = $show;
+                $response['message'] = $show ? 'Lấy thông tin suất chiếu thành công' : 'Không tìm thấy suất chiếu';
+                break;
+
+            default:
+                throw new Exception('Action không hợp lệ. Các action hợp lệ: getAllForUser, getById');
         }
     } catch (Exception $e) {
         $response['success'] = false;
