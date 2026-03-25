@@ -40,6 +40,7 @@ try {
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Chọn đồ ăn</title>
@@ -49,6 +50,11 @@ try {
 </head>
 
 <body>
+    <?php
+    echo "<pre>";
+    print_r($_SESSION);
+    echo "</pre>";
+    ?>
     <nav class="navbar">
         <div class="container">
             <div class="nav-content">

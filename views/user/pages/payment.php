@@ -5,7 +5,12 @@ $bookingId = isset($_POST['booking_id']) ? (int)$_POST['booking_id'] : 0;
 $seatTotal = isset($_POST['seat_total']) ? (float)$_POST['seat_total'] : 0;
 $foodTotal = isset($_POST['food_total']) ? (float)$_POST['food_total'] : 0;
 $grandTotal = isset($_POST['grand_total']) ? (float)$_POST['grand_total'] : ($seatTotal + $foodTotal);
+$showtimeId = isset($_POST['showtime_id']) ? (int)$_POST['showtime_id'] : 0;
+$hallId = isset($_POST['hall_id']) ? (int)$_POST['hall_id'] : 0;
+
+$showData = $showController->getShowById($showtimeId);
 $seatNames = [];
+
 if (!empty($_POST['seat_names'])) {
     $decodedSeatNames = json_decode((string)$_POST['seat_names'], true);
     if (is_array($decodedSeatNames)) {
@@ -49,7 +54,7 @@ if (!empty($_POST['seat_names'])) {
                 <div class="payment-section">
                     <h2>Chọn phương thức thanh toán</h2>
 
-                    <form id="paymentForm" action="../index.php?page=booking_success" method="POST">
+                    <form id="paymentForm" action="index.php?page=payment&action=confirm_payment" method="POST">
                         <input type="hidden" name="action" value="confirm_payment">
                         <input type="hidden" name="booking_id" value="<?php echo $bookingId; ?>">
 
@@ -97,9 +102,10 @@ if (!empty($_POST['seat_names'])) {
 
                         <div class="summary-block">
                             <h4 style="color: #fff; margin-bottom: 10px; font-size: 18px;"></h4>
-                            <div class="info-row"><span>Rạp:</span> <strong></strong></div>
-                            <div class="info-row"><span>Suất:</span> <strong></strong></div>
+                            <div class="info-row"><span>Rạp:</span> <strong><?php echo htmlspecialchars((string)($showData['cinema_name'] ?? 'Đang cập nhật')); ?></strong></div>
+                            <div class="info-row"><span>Suất:</span> <strong><?php echo htmlspecialchars($showData['show_date'] . ' ' . substr($showData['start_time'], 0, 5)); ?></strong></div>
                             <div class="info-row"><span>Phòng:</span> <strong>
+                                    <?php echo htmlspecialchars((string)($showData['hall_name'] ?? 'Đang cập nhật')); ?>
                                 </strong>
                             </div>
                             <div class="info-row"><span>Ghế:</span> <strong style="color: var(--primary-color);"><?php echo htmlspecialchars(!empty($seatNames) ? implode(', ', $seatNames) : 'Chưa chọn'); ?></strong></div>

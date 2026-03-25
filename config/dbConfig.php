@@ -1,13 +1,14 @@
 <?php
 function getDBConnection()
 {
-    $servername = "localhost";
-    $username   = "root";
-    $password   = "";
-    $dbname     = "cinemax";
+    $host     = "localhost";   // hoặc localhost
+    $port     = 3306;          // port MySQL của bạn
+    $username = "root";
+    $password = "12345";
+    $dbname   = "cinemax";
 
     try {
-        $conn = new mysqli($servername, $username, $password, $dbname);
+        $conn = new mysqli($host, $username, $password, $dbname, $port);
 
         if ($conn->connect_error) {
             throw new Exception("Connection failed: " . $conn->connect_error);

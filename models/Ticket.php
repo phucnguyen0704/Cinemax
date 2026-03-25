@@ -36,7 +36,7 @@ class Ticket
 
     public function getTicketByShowId($show_id)
     {
-        $sql = "SELECT t.*, h.name AS hall_name, c.name AS cinema_name, s.row_name AS row_name, s.seat_number AS seat_number, st.type_name AS type_name
+        $sql = "SELECT t.*, h.name AS hall_name, c.name AS cinema_name, s.row_name AS row_name, s.seat_number AS seat_number, st.*
                 FROM tickets t
                 JOIN shows sh ON sh.show_id = t.show_id
                 JOIN halls h ON h.hall_id = sh.hall_id
@@ -114,5 +114,90 @@ class Ticket
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("ii", $bill_id, $ticket_id);
         return $stmt->execute();
+    }
+
+    function getTicketBySeatId($seat_id)
+    {
+        $sql = "SELECT * FROM tickets WHERE seat_id = ? AND status = 'available'";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $seat_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        return $result->fetch_assoc();
+    }
+
+    public function updateHold($ticketId, $sessionId, $expiredAt)
+    {
+        $sql = "UPDATE tickets 
+        SET status='booked',
+            session_id=?,
+            hold_expired_at=?
+        WHERE ticket_id=? AND status='available'";
+
+        $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            die("Prepare failed: " . $this->conn->error);
+        }
+
+        $stmt->bind_param("ssi", $sessionId, $expiredAt, $ticketId);
+
+        if (!$stmt->execute()) {
+            die("Execute failed: " . $stmt->error);
+        }
+
+        return $stmt->affected_rows; // 👈 debug cực quan trọng
+    }
+
+    public function releaseBySession($sessionId)
+    {
+        $sql = "UPDATE tickets 
+                SET status='available',
+                session_id=NULL,
+                hold_expired_at=NULL
+                WHERE status='booked'
+                AND hold_expired_at < NOW()";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $sessionId);
+        $stmt->execute();
+    }
+
+    public function confirmBySession($sessionId)
+    {
+        $sql = "UPDATE tickets 
+            SET status='paid'
+            WHERE session_id=?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $sessionId);
+        $stmt->execute();
+    }
+
+    public function clearExpiredSeats()
+    {
+        $sql = "UPDATE tickets 
+            SET status='available',
+                session_id=NULL,
+                hold_expired_at=NULL
+            WHERE status='booking'
+            AND hold_expired_at < NOW()";
+
+        $this->conn->query($sql);
+    }
+
+    public function getTicketBySeatAndShow($seat_id, $show_id)
+    {
+        $sql = "SELECT * FROM tickets 
+            WHERE seat_id = ? AND show_id = ? AND status = 'available'
+            LIMIT 1";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $seat_id, $show_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        return $result->fetch_assoc();
     }
 }
