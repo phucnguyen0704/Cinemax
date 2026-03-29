@@ -8,7 +8,7 @@ $comboModel = new FoodCombo($conn);
 $comboService = new FoodComboService($comboModel);
 
 $showtimeId = isset($_POST['showtime_id']) ? (int)$_POST['showtime_id'] : 0;
-$seatIds = isset($_POST['seat_ids']) && is_array($_POST['seat_ids']) ? array_values(array_filter(array_map('intval', $_POST['seat_ids']))) : [];
+$ticketIds = isset($_POST['ticket_ids']) && is_array($_POST['ticket_ids']) ? array_values(array_filter(array_map('intval', $_POST['ticket_ids']))) : [];
 $seatNames = isset($_POST['seat_names']) && is_array($_POST['seat_names']) ? array_values(array_filter(array_map('trim', $_POST['seat_names']))) : [];
 $seatTotal = isset($_POST['seat_total']) ? (float)$_POST['seat_total'] : 0;
 
@@ -51,9 +51,6 @@ try {
 
 <body>
     <?php
-    echo "<pre>";
-    print_r($_SESSION);
-    echo "</pre>";
     ?>
     <nav class="navbar">
         <div class="container">
@@ -186,7 +183,9 @@ try {
                             <input type="hidden" name="showtime_id" value="<?= $showtimeId ?>">
                             <input type="hidden" name="seat_total" id="seatTotalInput" value="<?= $seatTotal ?>">
                             <input type="hidden" name="seat_names" value="<?= htmlspecialchars(json_encode($seatNames, JSON_UNESCAPED_UNICODE)) ?>">
-                            <input type="hidden" name="seat_ids" value="<?= htmlspecialchars(json_encode($seatIds, JSON_UNESCAPED_UNICODE)) ?>">
+                            <?php foreach ($ticketIds as $tid): ?>
+                                <input type="hidden" name="ticket_ids[]" value="<?= $tid ?>">
+                            <?php endforeach; ?>
                             <input type="hidden" name="food_total" id="foodTotalInput" value="0">
                             <input type="hidden" name="grand_total" id="grandTotalInput" value="<?= $seatTotal ?>">
                             <input type="hidden" name="foods_json" id="foodsJsonInput" value="[]">

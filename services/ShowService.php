@@ -110,4 +110,12 @@ class ShowService
     {
         return $this->showModel->getAllHalls_CinemasByShow();
     }
+
+    public function getTicketByShowId($show_id)
+    {
+        if (empty($show_id)) {
+            throw new InvalidArgumentException("Show ID không hợp lệ.");
+        }
+        return $this->ticketService->getTicketByShowId($show_id);
+    }
 }

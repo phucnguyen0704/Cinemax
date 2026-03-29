@@ -11,6 +11,10 @@ $hallId = isset($_POST['hall_id']) ? (int)$_POST['hall_id'] : 0;
 $showData = $showController->getShowById($showtimeId);
 $seatNames = [];
 
+$ticketIds = isset($_POST['ticket_ids']) && is_array($_POST['ticket_ids'])
+    ? array_values(array_filter(array_map('intval', $_POST['ticket_ids'])))
+    : [];
+
 if (!empty($_POST['seat_names'])) {
     $decodedSeatNames = json_decode((string)$_POST['seat_names'], true);
     if (is_array($decodedSeatNames)) {
@@ -57,6 +61,12 @@ if (!empty($_POST['seat_names'])) {
                     <form id="paymentForm" action="index.php?page=payment&action=confirm_payment" method="POST">
                         <input type="hidden" name="action" value="confirm_payment">
                         <input type="hidden" name="booking_id" value="<?php echo $bookingId; ?>">
+                        <?php foreach ($ticketIds as $tid): ?>
+                            <input type="hidden" name="ticket_ids[]" value="<?= $tid ?>">
+                        <?php endforeach; ?>
+                        <input type="hidden" name="showtime_id" value="<?= $showtimeId ?>">
+                        <input type="hidden" name="grand_total" value="<?= $grandTotal ?>">
+                        <input type="hidden" name="seat_names" value="<?= htmlspecialchars(json_encode($seatNames, JSON_UNESCAPED_UNICODE)) ?>">
 
                         <div class="method-list">
                             <label class="method-item active">

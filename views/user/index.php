@@ -69,9 +69,58 @@ $allowedPages = [
 ];
 
 $page = $_GET['page'] ?? 'home';
+$action = $_GET['action'] ?? null;
 
 if (!in_array($page, $allowedPages, true)) {
     $page = '404';
+}
+
+if ($page === 'payment' && $action) {
+    switch ($action) {
+        case 'confirm_payment':
+            $ticketIds = isset($_POST['ticket_ids']) && is_array($_POST['ticket_ids'])
+                ? array_values(array_filter(array_map('intval', $_POST['ticket_ids'])))
+                : [];
+
+            $grandTotal  = isset($_POST['grand_total']) ? (float)$_POST['grand_total'] : 0;
+            $showtimeId  = isset($_POST['showtime_id']) ? (int)$_POST['showtime_id'] : 0;
+            $userId      = $authUser['user_id'] ?? 0;
+
+            if (empty($ticketIds) || $userId <= 0) {
+                header('Location: index.php?page=payment&error=invalid');
+                exit;
+            }
+
+            try {
+                $conn->begin_transaction();
+
+                // 1. Tạo bill
+                $sqlBill = "INSERT INTO bills (user_id, total_tickets, total_amount, final_amount, status)
+                            VALUES (?, ?, ?, ?, 'pending')";
+                $stmtBill = $conn->prepare($sqlBill);
+                $totalTickets = count($ticketIds);
+                $stmtBill->bind_param('iidd', $userId, $totalTickets, $grandTotal, $grandTotal);
+                $stmtBill->execute();
+                $billId = $conn->insert_id;
+
+                // 2. Gắn bill_id + set status = 'booked' cho từng ticket
+                $sqlUpdate = "UPDATE tickets SET bill_id = ?, status = 'booked' WHERE ticket_id = ? AND status = 'available'";
+                $stmtUpdate = $conn->prepare($sqlUpdate);
+                foreach ($ticketIds as $tid) {
+                    $stmtUpdate->bind_param('ii', $billId, $tid);
+                    $stmtUpdate->execute();
+                }
+
+                $conn->commit();
+
+                header('Location: index.php?page=booking_success&bill_id=' . $billId);
+                exit;
+            } catch (Exception $e) {
+                $conn->rollback();
+                header('Location: index.php?page=payment&error=' . urlencode($e->getMessage()));
+                exit;
+            }
+    }
 }
 
 $contentPath = __DIR__ . "/pages/$page.php";

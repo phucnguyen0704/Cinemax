@@ -85,4 +85,14 @@ class ShowController
             exit;
         }
     }
+
+    public function getTicketByShowId($show_id)
+    {
+        try {
+            return $this->showService->getTicketByShowId($show_id);
+        } catch (Exception $e) {
+            header('Location: index.php?page=seat_selection&error=' . urlencode($e->getMessage()));
+            exit;
+        }
+    }
 }

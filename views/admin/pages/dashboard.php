@@ -75,6 +75,7 @@ if (isset($conn) && $conn) {
         $sql = "SELECT 
                     m.movie_id   AS MovieID,
                     m.title      AS Title,
+                    m.poster_url AS poster_url,
                     COALESCE(SUM(t.price), 0) AS Revenue,
                     COUNT(t.ticket_id)        AS TicketsSold
                 FROM tickets t
@@ -225,7 +226,7 @@ for ($i = 1; $i <= 12; $i++) {
                     <?php else: ?>
                         <?php foreach ($topMovies as $movie): ?>
                             <div class="top-movie-item">
-                                <img src="../../assets/images/no-poster.jpg" class="tm-poster" alt="Poster">
+                                <img src="../../public/<?php echo $movie['poster_url']; ?>" class="tm-poster" alt="Poster">
                                 <div class="tm-info">
                                     <h4><?php echo htmlspecialchars($movie['Title'] ?? ''); ?></h4>
                                     <div class="tm-stats">
@@ -302,7 +303,7 @@ for ($i = 1; $i <= 12; $i++) {
 <!-- Biểu đồ cột doanh thu theo tháng -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    (function () {
+    (function() {
         const ctx = document.getElementById('revenueByMonthChart');
         if (!ctx) return;
 
@@ -329,7 +330,7 @@ for ($i = 1; $i <= 12; $i++) {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: function (value) {
+                            callback: function(value) {
                                 return value.toLocaleString('vi-VN') + ' ₫';
                             },
                             color: '#9ca3af'

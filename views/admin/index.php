@@ -86,7 +86,7 @@ $hallService = new HallService($hallModel);
 $promotionService = new PromotionService($promotionModel);
 $ticketService = new TicketService($ticketModel);
 $showService = new ShowService($showModel, $ticketService);
-$billService = new BillService($billModel);
+$billService = new BillService($billModel, $ticketService);
 
 //Khoi tao controllers
 $adminController = new AdminController($userService, $roleService, $permissionService, $billService);

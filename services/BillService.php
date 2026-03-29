@@ -1,14 +1,18 @@
 <?php
 
 require_once __DIR__ . '/../models/Bill.php';
+require_once __DIR__ . '/../services/TicketService.php';
 
 class BillService
 {
     private $billModel;
+    private $ticketService;
 
-    public function __construct($billModel)
+
+    public function __construct($billModel, $ticketService)
     {
         $this->billModel = $billModel;
+        $this->ticketService = $ticketService;
     }
 
     /**
@@ -68,7 +72,11 @@ class BillService
             throw new InvalidArgumentException("Chỉ có thể xác nhận đơn hàng đang chờ thanh toán.");
         }
 
-        return $this->billModel->updateStatus($billId, 'paid');
+        $this->billModel->updateStatus($billId, 'paid');
+
+        $this->ticketService->updateStatusByBillId($billId, 'paid');
+
+        return true;
     }
 
     /**

@@ -56,8 +56,13 @@ class TicketService
         return $this->ticketModel->updateStatusTicket($ticket_id, $status);
     }
 
-    public function updateBillIdTicket($ticket_id, $bill_id)
+    public function updateStatusByBillId($bill_id, $status)
     {
-        return $this->ticketModel->updateBillIdTicket($ticket_id, $bill_id);
+        return $this->ticketModel->updateStatusByBillId($bill_id, $status);
+    }
+
+    public function getTicketsByBillId($billId)
+    {
+        return $this->ticketModel->getTicketsByBillId($billId);
     }
 }

@@ -29,7 +29,12 @@ class Show
 
     public function getShowById($id)
     {
-        $sql = "SELECT * FROM shows WHERE show_id = ?";
+        $sql = "SELECT s.*, m.title AS movie_title, h.name AS hall_name, c.name AS cinema_name
+            FROM shows s
+            JOIN movies m ON s.movie_id = m.movie_id
+            JOIN halls h ON s.hall_id = h.hall_id
+            JOIN cinemas c ON h.cinema_id = c.cinema_id
+            WHERE s.show_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();

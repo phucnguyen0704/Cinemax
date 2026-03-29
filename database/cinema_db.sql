@@ -197,8 +197,6 @@
             NOT NULL DEFAULT 'available',
 
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        session_id VARCHAR(255) NULL,
-        hold_expired_at DATETIME NULL DEFAULT NULL,
 
         FOREIGN KEY (show_id) REFERENCES shows(show_id) ON DELETE RESTRICT,
         FOREIGN KEY (seat_id) REFERENCES seats(seat_id) ON DELETE RESTRICT,
