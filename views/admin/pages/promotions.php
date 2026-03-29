@@ -22,6 +22,68 @@ $error      = $_GET['error'] ?? null;
         opacity: 0.55;
         cursor: not-allowed;
     }
+
+    .btn-action.warning {
+        background: #7a4f10;
+        color: #ffe0a0;
+        border: 1px solid #c4841e;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .btn-action.warning:hover {
+        background: #9a6215;
+        color: #fff3cc;
+    }
+
+    .action-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* căn giữa theo chiều ngang */
+        justify-content: center;
+        /* căn giữa theo chiều dọc nếu cần */
+        gap: 6px;
+        width: 100%;
+        /* QUAN TRỌNG: chiếm full td */
+    }
+
+    .action-group .btn-action {
+        width: 110px;
+        /* cho đều nhau */
+        text-align: center;
+    }
+
+    /* Style riêng cho từng loại nút */
+    .btn-action {
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .btn-action:hover {
+        opacity: 0.9;
+    }
+
+    /* Disabled */
+    .btn-action.disabled {
+        background: #333;
+        color: #aaa;
+    }
+
+    /* Warning giữ nguyên nhưng tweak nhẹ */
+    .btn-action.warning {
+        background: #7a4f10;
+        color: #ffe0a0;
+        border: 1px solid #c4841e;
+    }
 </style>
 
 <section class="promotions">
@@ -43,7 +105,7 @@ $error      = $_GET['error'] ?? null;
     </header>
 
     <div class="dashboard-content">
-        <?php if ($error || isset($_GET['add']) || isset($_GET['update']) || isset($_GET['delete'])): ?>
+        <?php if ($error || isset($_GET['add']) || isset($_GET['update']) || isset($_GET['delete']) || isset($_GET['end'])): ?>
             <div class="alert <?= $error ? 'alert-error' : 'alert-success' ?>" id="autoAlert">
                 <?php
                 if ($error) {
@@ -53,6 +115,8 @@ $error      = $_GET['error'] ?? null;
                     echo 'Thêm khuyến mãi thành công!';
                 } elseif (isset($_GET['update']) && $_GET['update'] == 1) {
                     echo 'Cập nhật khuyến mãi thành công!';
+                } elseif (isset($_GET['end']) && $_GET['end'] == 1) {
+                    echo 'Đã kết thúc sớm khuyến mãi thành công!';
                 } elseif (isset($_GET['delete']) && $_GET['delete'] == 1) {
                     echo 'Xóa khuyến mãi thành công!';
                 }
@@ -92,7 +156,10 @@ $error      = $_GET['error'] ?? null;
                     <tbody>
                         <?php if (!empty($promotions)): ?>
                             <?php foreach ($promotions as $p): ?>
-                                <?php $status = $p['computed_status'] ?? 'expired'; ?>
+                                <?php
+                                $statusCode = (int)($p['status'] ?? 0);
+                                $status = $statusCode === 1 ? 'active' : ($statusCode === 2 ? 'scheduled' : 'expired');
+                                ?>
                                 <tr>
                                     <td><strong>#<?= (int)$p['promotion_id'] ?></strong></td>
                                     <td><?= htmlspecialchars($p['code']) ?></td>
@@ -116,33 +183,48 @@ $error      = $_GET['error'] ?? null;
                                         }
                                         ?>
                                     </td>
-                                    <td style="text-align:center;">
-                                        <?php if (hasPermission('promotions_update')): ?>
-                                            <?php if ($status === 'expired'): ?>
-                                                <span class="btn-action disabled" title="Khuyến mãi đã hết hạn, không được chỉnh sửa">Sửa</span>
-                                            <?php else: ?>
-                                                <button class="btn-action"
-                                                    onclick="openUpdatePromoModal(this)"
-                                                    data-promotion-id="<?= (int)$p['promotion_id'] ?>"
-                                                    data-code="<?= htmlspecialchars($p['code']) ?>"
-                                                    data-name="<?= htmlspecialchars($p['name'] ?? '') ?>"
-                                                    data-discount-type="<?= htmlspecialchars($p['discount_type'] ?? 'percent') ?>"
-                                                    data-discount-value="<?= htmlspecialchars($p['discount_value'] ?? '') ?>"
-                                                    data-min-amount="<?= htmlspecialchars($p['min_amount'] ?? '0') ?>"
-                                                    data-start-date="<?= htmlspecialchars($p['start_date'] ?? '') ?>"
-                                                    data-end-date="<?= htmlspecialchars($p['end_date'] ?? '') ?>">
-                                                    Sửa
+                                    <td style="text-align:center; vertical-align: middle;">
+                                        <div class="action-group">
+
+                                            <?php if (hasPermission('promotions_update')): ?>
+
+                                                <?php if ($status === 'expired'): ?>
+                                                    <span class="btn-action disabled">Sửa</span>
+                                                <?php else: ?>
+                                                    <button class="btn-action edit"
+                                                        onclick="openUpdatePromoModal(this)"
+                                                        data-promotion-id="<?= (int)$p['promotion_id'] ?>"
+                                                        data-code="<?= htmlspecialchars($p['code']) ?>"
+                                                        data-name="<?= htmlspecialchars($p['name'] ?? '') ?>"
+                                                        data-discount-type="<?= htmlspecialchars($p['discount_type'] ?? 'percent') ?>"
+                                                        data-discount-value="<?= htmlspecialchars($p['discount_value'] ?? '') ?>"
+                                                        data-min-amount="<?= htmlspecialchars($p['min_amount'] ?? '0') ?>"
+                                                        data-start-date="<?= htmlspecialchars($p['start_date'] ?? '') ?>"
+                                                        data-end-date="<?= htmlspecialchars($p['end_date'] ?? '') ?>">
+                                                        Sửa
+                                                    </button>
+                                                <?php endif; ?>
+
+                                                <?php if ($status === 'active'): ?>
+                                                    <button class="btn-action warning"
+                                                        onclick="confirmEndPromo(this)"
+                                                        data-promotion-id="<?= (int)$p['promotion_id'] ?>"
+                                                        data-code="<?= htmlspecialchars($p['code']) ?>">
+                                                        Kết thúc sớm
+                                                    </button>
+                                                <?php endif; ?>
+
+                                            <?php endif; ?>
+
+                                            <?php if (hasPermission('promotions_delete')): ?>
+                                                <button class="btn-action danger"
+                                                    onclick="confirmDeletePromo(this)"
+                                                    data-promotion-id="<?= (int)$p['promotion_id'] ?>">
+                                                    Xóa
                                                 </button>
                                             <?php endif; ?>
-                                        <?php endif; ?>
 
-                                        <?php if (hasPermission('promotions_delete')): ?>
-                                            <button class="btn-action danger"
-                                                onclick="confirmDeletePromo(this)"
-                                                data-promotion-id="<?= (int)$p['promotion_id'] ?>">
-                                                Xóa
-                                            </button>
-                                        <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -280,3 +362,12 @@ $error      = $_GET['error'] ?? null;
     <?php endif; ?>
 
 </section>
+
+<script>
+    function confirmEndPromo(btn) {
+        const id = btn.dataset.promotionId;
+        const code = btn.dataset.code;
+        if (!confirm('Bạn có chắc muốn kết thúc sớm mã "' + code + '"?\nMã sẽ chuyển sang trạng thái Đã hết hạn và không thể dùng được nữa.')) return;
+        window.location.href = window.location.pathname + '?page=promotions&action=end&id=' + id;
+    }
+</script>

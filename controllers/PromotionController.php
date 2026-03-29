@@ -75,4 +75,15 @@ class PromotionController
             header('Location: ../../views/admin/index.php?page=promotions&error=' . urlencode($e->getMessage()));
         }
     }
+
+    public function endPromotion($id)
+    {
+        try {
+            $this->promotionService->endPromotion((int)$id);
+
+            header('Location: ../../views/admin/index.php?page=promotions&end=1');
+        } catch (Exception $e) {
+            header('Location: ../../views/admin/index.php?page=promotions&error=' . urlencode($e->getMessage()));
+        }
+    }
 }

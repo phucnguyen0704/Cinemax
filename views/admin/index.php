@@ -276,6 +276,9 @@ if ($page === 'promotions' && $action) {
         case 'delete':
             $promotionController->deletePromotion($_GET['id'] ?? 0);
             exit;
+        case 'end':
+            $promotionController->endPromotion($_GET['id'] ?? 0);
+            exit;
     }
 }
 // BOOKINGS

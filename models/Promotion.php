@@ -168,4 +168,48 @@ class Promotion
         $stmt->bind_param("i", $promotionId);
         return $stmt->execute();
     }
+
+    /**
+     * Kết thúc sớm: set end_date = hôm nay - 1 ngày để status thành expired
+     */
+    public function forceExpire(int $promotionId): bool
+    {
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $sql = "UPDATE promotions SET end_date = ?, status = 0 WHERE promotion_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param("si", $yesterday, $promotionId);
+        return $stmt->execute();
+    }
+
+    public function syncStatuses(): void
+    {
+        // Active: đã đến start_date và chưa quá end_date
+        $this->conn->query("
+            UPDATE promotions
+            SET status = 1
+            WHERE status != -1
+              AND start_date <= CURDATE()
+              AND end_date >= CURDATE()
+        ");
+
+        // Expired: đã quá end_date
+        $this->conn->query("
+            UPDATE promotions
+            SET status = 0
+            WHERE status != -1
+              AND end_date < CURDATE()
+        ");
+
+        // Scheduled: chưa đến start_date
+        $this->conn->query("
+            UPDATE promotions
+            SET status = 2
+            WHERE status != -1
+              AND start_date > CURDATE()
+        ");
+    }
 }

@@ -115,6 +115,35 @@ class PromotionService
         return true;
     }
 
+    public function endPromotion($promotionId)
+    {
+        if (!is_numeric($promotionId) || (int)$promotionId <= 0) {
+            throw new InvalidArgumentException("ID khuyến mãi không hợp lệ.");
+        }
+
+        $promotionId = (int)$promotionId;
+        $promotion = $this->promotionModel->getPromotionById($promotionId);
+
+        if (!$promotion) {
+            throw new RuntimeException("Không tìm thấy khuyến mãi.");
+        }
+
+        // Đọc thẳng status từ DB (đã được syncStatuses() cập nhật đúng)
+        // tránh dùng computeStatus() vì PHP có thể bị lệch timezone
+        $dbStatus = (int)($promotion['status'] ?? 0);
+
+        if ($dbStatus !== 1) {
+            throw new RuntimeException("Chỉ có thể kết thúc sớm mã đang áp dụng.");
+        }
+
+        $ok = $this->promotionModel->forceExpire($promotionId);
+        if (!$ok) {
+            throw new RuntimeException("Không thể kết thúc sớm khuyến mãi.");
+        }
+
+        return true;
+    }
+
     public function computeStatus(string $startDate, string $endDate): string
     {
         $today = date('Y-m-d');
