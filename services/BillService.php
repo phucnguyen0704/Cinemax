@@ -132,4 +132,19 @@ class BillService
 
         return $bill;
     }
+
+    public function saveBillCombos($billId, $combos)
+    {
+        if (empty($combos)) return;
+
+        $this->billModel->insertBillCombos($billId, $combos);
+    }
+
+    public function getBillsByUserId($userId)
+    {
+        if (empty($userId)) {
+            throw new InvalidArgumentException("User không tồn tại.");
+        }
+        return $this->billModel->getBillsByUserId($userId);
+    }
 }

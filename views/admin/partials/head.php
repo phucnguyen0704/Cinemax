@@ -18,3 +18,4 @@
 <script src="../../public/assets/js/users_admin.js" defer></script>
 <script src="../../public/assets/js/permissions.js" defer></script>
 <script src="../../public/assets/js/promotions_admin.js" defer></script>
+<script src="../../public/assets/js/booking_admin.js" defer></script>

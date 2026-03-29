@@ -44,6 +44,7 @@ $isLoggedIn = ($authUser !== null);
                             <?php if ($authUser['role_id'] == 1): ?>
                                 <a href="../admin/index.php">Quản trị</a>
                             <?php endif; ?>
+                            <a href="../user/index.php?page=my_bookings">Đơn đặt vé</a>
                             <a href="../../public/index.php?action=logout">Đăng xuất</a>
                         </div>
                     </div>

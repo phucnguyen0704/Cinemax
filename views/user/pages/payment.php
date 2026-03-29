@@ -21,6 +21,15 @@ if (!empty($_POST['seat_names'])) {
         $seatNames = $decodedSeatNames;
     }
 }
+$selectedCombos = [];
+
+if (!empty($_POST['combos'])) {
+    $decodedCombos = json_decode($_POST['combos'], true);
+
+    if (is_array($decodedCombos)) {
+        $selectedCombos = $decodedCombos;
+    }
+}
 ?>
 
 <head>
@@ -67,6 +76,13 @@ if (!empty($_POST['seat_names'])) {
                         <input type="hidden" name="showtime_id" value="<?= $showtimeId ?>">
                         <input type="hidden" name="grand_total" value="<?= $grandTotal ?>">
                         <input type="hidden" name="seat_names" value="<?= htmlspecialchars(json_encode($seatNames, JSON_UNESCAPED_UNICODE)) ?>">
+                        <?php if (!empty($selectedCombos)): ?>
+                            <?php foreach ($selectedCombos as $index => $combo): ?>
+                                <input type="hidden" name="combos[<?= $index ?>][combo_id]" value="<?= (int)$combo['combo_id'] ?>">
+                                <input type="hidden" name="combos[<?= $index ?>][quantity]" value="<?= (int)$combo['quantity'] ?>">
+                                <input type="hidden" name="combos[<?= $index ?>][price]" value="<?= (float)$combo['price'] ?>">
+                            <?php endforeach; ?>
+                        <?php endif; ?>
 
                         <div class="method-list">
                             <label class="method-item active">

@@ -1,4 +1,5 @@
 <?php
+
 /** @var AdminController $adminController */
 
 // Lấy các tham số filter
@@ -16,12 +17,14 @@ $totalPages = $billsData['totalPages'];
 $total = $billsData['total'];
 
 // Helper function để format tiền
-function formatMoney($amount) {
+function formatMoney($amount)
+{
     return number_format($amount, 0, ',', '.') . ' ₫';
 }
 
 // Helper function để lấy class CSS cho status
-function getStatusClass($status) {
+function getStatusClass($status)
+{
     $classes = [
         'pending' => 'status-Pending',
         'paid' => 'status-Paid',
@@ -32,7 +35,8 @@ function getStatusClass($status) {
 }
 
 // Helper function để lấy tên hiển thị cho status
-function getStatusLabel($status) {
+function getStatusLabel($status)
+{
     $labels = [
         'pending' => 'Chờ thanh toán',
         'paid' => 'Đã thanh toán',
@@ -135,10 +139,10 @@ function getStatusLabel($status) {
             <div class="card-header" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                 <form class="search-form" method="GET" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                     <input type="hidden" name="page" value="bookings">
-                    
-                    <input type="text" name="search" placeholder="Nhập mã đơn, tên, email..." 
-                           value="<?= htmlspecialchars($search ?? '') ?>" style="width: 250px;">
-                    
+
+                    <input type="text" name="search" placeholder="Nhập mã đơn, tên, email..."
+                        value="<?= htmlspecialchars($search ?? '') ?>" style="width: 250px;">
+
                     <select name="status" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #333; background: #1a1a2e; color: #fff;">
                         <option value="">Tất cả trạng thái</option>
                         <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Chờ thanh toán</option>
@@ -146,7 +150,7 @@ function getStatusLabel($status) {
                         <option value="cancelled" <?= $statusFilter === 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
                         <option value="refunded" <?= $statusFilter === 'refunded' ? 'selected' : '' ?>>Đã hoàn tiền</option>
                     </select>
-                    
+
                     <button type="submit" class="btn-primary" style="padding: 8px 16px;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"></circle>
@@ -154,7 +158,7 @@ function getStatusLabel($status) {
                         </svg>
                         Tìm kiếm
                     </button>
-                    
+
                     <?php if ($search || $statusFilter): ?>
                         <a href="index.php?page=bookings" class="btn-secondary" style="padding: 8px 16px; text-decoration: none;">
                             Xóa bộ lọc
@@ -185,73 +189,141 @@ function getStatusLabel($status) {
                             </tr>
                         <?php else: ?>
                             <?php foreach ($bills as $bill): ?>
+
+                                <?php
+                                // ✅ LẤY TICKETS THEO BILL
+                                $tickets = $ticketService->getTicketsByBillId($bill['bill_id']);
+
+                                // ✅ LẤY COMBOS THEO BILL
+                                $stmtC = $conn->prepare("
+        SELECT bc.quantity, bc.price, c.name
+        FROM bill_combos bc
+        JOIN combos c ON c.combo_id = bc.combo_id
+        WHERE bc.bill_id = ?
+    ");
+                                $stmtC->bind_param('i', $bill['bill_id']);
+                                $stmtC->execute();
+                                $res = $stmtC->get_result();
+
+                                $combos = [];
+                                while ($row = $res->fetch_assoc()) {
+                                    $combos[] = $row;
+                                }
+                                ?>
+
                                 <tr>
                                     <td><strong>#BK<?= str_pad($bill['bill_id'], 3, '0', STR_PAD_LEFT) ?></strong></td>
+
                                     <td>
-                                        <div style="font-weight:bold;"><?= htmlspecialchars($bill['full_name']) ?></div>
-                                        <small style="color:#888;"><?= htmlspecialchars($bill['email']) ?></small>
+                                        <div style="font-weight:bold;">
+                                            <?= htmlspecialchars($bill['full_name']) ?>
+                                        </div>
+                                        <small style="color:#888;">
+                                            <?= htmlspecialchars($bill['email']) ?>
+                                        </small>
                                     </td>
+
                                     <td style="color: var(--primary-color); font-weight: bold;">
                                         <?= formatMoney($bill['final_amount']) ?>
                                     </td>
+
                                     <td><?= $bill['total_tickets'] ?> vé</td>
+
                                     <td>
                                         <span class="status-badge <?= getStatusClass($bill['status']) ?>">
                                             <?= getStatusLabel($bill['status']) ?>
                                         </span>
                                     </td>
+
                                     <td><?= date('H:i d/m/Y', strtotime($bill['created_at'])) ?></td>
+
                                     <td>
+                                        <!-- VIEW DETAIL -->
+                                        <button class="btn-action btn-view"
+                                            onclick="openBillModal(this)"
+
+                                            data-bill-id="<?= $bill['bill_id'] ?>"
+                                            data-user="<?= htmlspecialchars($bill['full_name']) ?>"
+                                            data-email="<?= htmlspecialchars($bill['email']) ?>"
+                                            data-total="<?= $bill['final_amount'] ?>"
+
+                                            data-tickets='<?= htmlspecialchars(json_encode($tickets), ENT_QUOTES) ?>'
+                                            data-combos='<?= htmlspecialchars(json_encode($combos), ENT_QUOTES) ?>'>
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+
                                         <?php if ($bill['status'] === 'pending'): ?>
                                             <?php if (hasPermission('bookings_update')): ?>
-                                                <a href="index.php?page=bookings&action=confirm&id=<?= $bill['bill_id'] ?>" 
-                                                   class="action-btn btn-approve" title="Xác nhận thanh toán"
-                                                   onclick="return confirm('Xác nhận thanh toán đơn hàng #BK<?= str_pad($bill['bill_id'], 3, '0', STR_PAD_LEFT) ?>?')">✔</a>
+                                                <a href="index.php?page=bookings&action=confirm&id=<?= $bill['bill_id'] ?>"
+                                                    class="action-btn btn-approve"
+                                                    onclick="return confirm('Xác nhận đơn #BK<?= str_pad($bill['bill_id'], 3, '0', STR_PAD_LEFT) ?>?')">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
                                             <?php endif; ?>
+
                                             <?php if (hasPermission('bookings_delete')): ?>
-                                                <a href="index.php?page=bookings&action=cancel&id=<?= $bill['bill_id'] ?>" 
-                                                   class="action-btn btn-cancel" title="Hủy đơn"
-                                                   onclick="return confirm('Bạn có chắc muốn hủy đơn hàng #BK<?= str_pad($bill['bill_id'], 3, '0', STR_PAD_LEFT) ?>?')">✖</a>
+                                                <a href="index.php?page=bookings&action=cancel&id=<?= $bill['bill_id'] ?>"
+                                                    class="action-btn btn-cancel"
+                                                    onclick="return confirm('Hủy đơn #BK<?= str_pad($bill['bill_id'], 3, '0', STR_PAD_LEFT) ?>?')">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
                                             <?php endif; ?>
                                         <?php else: ?>
-                                            <span style="color:#555;font-size:12px;">-</span>
+                                            <span style="color:#555;">-</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
+
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
 
+            <div id="billModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Chi tiết đơn hàng</h2>
+                        <button class="btn-close" onclick="closeModal('billModal')">&times;</button>
+                    </div>
+
+                    <div class="modal-body" id="billDetailContent">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn-action" onclick="closeModal('billModal')">Đóng</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Pagination -->
             <?php if ($totalPages > 1): ?>
                 <div class="pagination" style="display: flex; justify-content: center; gap: 8px; padding: 20px;">
-                    <?php 
+                    <?php
                     $queryParams = [];
                     if ($statusFilter) $queryParams['status'] = $statusFilter;
                     if ($search) $queryParams['search'] = $search;
                     $queryParams['page'] = 'bookings';
                     ?>
-                    
+
                     <?php if ($currentPage > 1): ?>
-                        <a href="?<?= http_build_query(array_merge($queryParams, ['p' => $currentPage - 1])) ?>" 
-                           class="page-btn" style="padding: 8px 12px; background: #333; border-radius: 6px; color: #fff; text-decoration: none;">
+                        <a href="?<?= http_build_query(array_merge($queryParams, ['p' => $currentPage - 1])) ?>"
+                            class="page-btn" style="padding: 8px 12px; background: #333; border-radius: 6px; color: #fff; text-decoration: none;">
                             &laquo; Trước
                         </a>
                     <?php endif; ?>
-                    
+
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="?<?= http_build_query(array_merge($queryParams, ['p' => $i])) ?>" 
-                           class="page-btn <?= $i === $currentPage ? 'active' : '' ?>" 
-                           style="padding: 8px 12px; background: <?= $i === $currentPage ? 'var(--primary-color)' : '#333' ?>; border-radius: 6px; color: #fff; text-decoration: none;">
+                        <a href="?<?= http_build_query(array_merge($queryParams, ['p' => $i])) ?>"
+                            class="page-btn <?= $i === $currentPage ? 'active' : '' ?>"
+                            style="padding: 8px 12px; background: <?= $i === $currentPage ? 'var(--primary-color)' : '#333' ?>; border-radius: 6px; color: #fff; text-decoration: none;">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
-                    
+
                     <?php if ($currentPage < $totalPages): ?>
-                        <a href="?<?= http_build_query(array_merge($queryParams, ['p' => $currentPage + 1])) ?>" 
-                           class="page-btn" style="padding: 8px 12px; background: #333; border-radius: 6px; color: #fff; text-decoration: none;">
+                        <a href="?<?= http_build_query(array_merge($queryParams, ['p' => $currentPage + 1])) ?>"
+                            class="page-btn" style="padding: 8px 12px; background: #333; border-radius: 6px; color: #fff; text-decoration: none;">
                             Sau &raquo;
                         </a>
                     <?php endif; ?>

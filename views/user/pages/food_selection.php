@@ -188,7 +188,7 @@ try {
                             <?php endforeach; ?>
                             <input type="hidden" name="food_total" id="foodTotalInput" value="0">
                             <input type="hidden" name="grand_total" id="grandTotalInput" value="<?= $seatTotal ?>">
-                            <input type="hidden" name="foods_json" id="foodsJsonInput" value="[]">
+                            <input type="hidden" name="combos" id="foodsJsonInput" value="[]">
 
                             <button type="submit" class="btn-continue">
                                 Xác nhận & Thanh toán

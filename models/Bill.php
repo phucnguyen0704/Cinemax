@@ -51,7 +51,7 @@ class Bill
     public function getPaginated($page = 1, $limit = 10, $status = null, $search = null)
     {
         $offset = ($page - 1) * $limit;
-        
+
         $sql = "SELECT b.*, u.full_name, u.email, u.phone
                 FROM bills b
                 JOIN users u ON b.user_id = u.user_id
@@ -167,17 +167,17 @@ class Bill
         }
 
         $sql = "UPDATE bills SET status = ?";
-        
+
         // Nếu chuyển sang paid thì cập nhật paid_at
         if ($status === 'paid') {
             $sql .= ", paid_at = CURRENT_TIMESTAMP";
         }
-        
+
         $sql .= " WHERE bill_id = ?";
-        
+
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("si", $status, $billId);
-        
+
         return $stmt->execute();
     }
 
@@ -227,5 +227,38 @@ class Bill
         }
 
         return $combos;
+    }
+
+    public function insertBillCombos($billId, $combos)
+    {
+        $sql = "INSERT INTO bill_combos (bill_id, combo_id, quantity, price) 
+            VALUES (?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+
+        foreach ($combos as $combo) {
+            $comboId = $combo['combo_id'];
+            $quantity = $combo['quantity'];
+            $price = $combo['price'];
+
+            $stmt->bind_param("iiid", $billId, $comboId, $quantity, $price);
+            $stmt->execute();
+        }
+    }
+
+    public function getBillsByUserId($userId)
+    {
+        $sql = "SELECT b.*,
+                       COUNT(t.ticket_id) as total_tickets
+                FROM bills b
+                LEFT JOIN tickets t ON t.bill_id = b.bill_id
+                WHERE b.user_id = ?
+                GROUP BY b.bill_id
+                ORDER BY b.created_at DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 }

@@ -26,3 +26,35 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+let currentTicket = 0;
+
+function updateCarousel() {
+  const track = document.getElementById("carousel-track");
+  const dots = document.querySelectorAll(".carousel-dot");
+
+  if (track) {
+    track.style.transform = `translateX(-${currentTicket * 100}%)`;
+  }
+
+  dots.forEach((dot, index) => {
+    dot.classList.toggle("active", index === currentTicket);
+  });
+}
+
+function nextTicket() {
+  const total = document.querySelectorAll(".carousel-slide").length;
+  currentTicket = (currentTicket + 1) % total;
+  updateCarousel();
+}
+
+function prevTicket() {
+  const total = document.querySelectorAll(".carousel-slide").length;
+  currentTicket = (currentTicket - 1 + total) % total;
+  updateCarousel();
+}
+
+function goToTicket(index) {
+  currentTicket = index;
+  updateCarousel();
+}

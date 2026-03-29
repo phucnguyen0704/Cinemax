@@ -30,6 +30,8 @@ if ($billId > 0) {
     }
 }
 
+
+
 $isPaid      = $billData && $billData['status'] === 'paid';
 $isPending   = $billData && $billData['status'] === 'pending';
 $isCancelled = $billData && $billData['status'] === 'cancelled';
@@ -76,56 +78,176 @@ $isCancelled = $billData && $billData['status'] === 'cancelled';
 
             <?php elseif ($isPaid): ?>
 
-                <div class="success-layout">
+                <div class="success-section">
 
                     <!-- HEADER -->
                     <div class="success-header">
-                        <h1>🎉 Đặt vé thành công</h1>
-                        <p>
-                            Mã đơn: <strong>#<?php echo $billId; ?></strong> —
-                            <span class="price"><?php echo number_format($billData['final_amount'], 0, ',', '.'); ?> ₫</span>
-                        </p>
+                        <div class="success-icon">
+                            ✔
+                        </div>
+                        <h1 class="success-title">Đặt vé thành công!</h1>
+
+                        <div class="success-meta">
+                            <span>Mã đơn: <strong>#<?php echo $billId; ?></strong></span>
+                            <span class="meta-dot"></span>
+                            <span>
+                                Tổng thanh toán:
+                                <strong class="price">
+                                    <?php echo number_format($billData['final_amount'], 0, ',', '.'); ?> ₫
+                                </strong>
+                            </span>
+                        </div>
                     </div>
 
-                    <!-- TICKETS -->
-                    <div class="ticket-wrapper">
-                        <?php foreach ($tickets as $ticket):
-                            $seatLabel = $ticket['row_name'] . $ticket['seat_number'];
-                            $qrData = "CINEMAX-BILL{$billId}-TICKET{$ticket['ticket_id']}-SEAT{$seatLabel}";
-                            $qrUrl  = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" . urlencode($qrData);
-                        ?>
+                    <!-- CAROUSEL -->
+                    <div class="tickets-carousel">
 
-                            <div class="ticket-card">
-                                <div class="ticket-header">
-                                    🎬 Vé xem phim #<?php echo $ticket['ticket_id']; ?>
-                                </div>
+                        <?php if (count($tickets) > 1): ?>
+                            <button class="carousel-btn prev" onclick="prevTicket()">‹</button>
+                            <button class="carousel-btn next" onclick="nextTicket()">›</button>
+                        <?php endif; ?>
 
-                                <div class="ticket-body">
-                                    <h2 class="movie-title"><?php echo $ticket['movie_title']; ?></h2>
+                        <div class="carousel-container">
+                            <div class="carousel-track" id="carousel-track">
 
-                                    <p><b>Rạp:</b> <?php echo $ticket['cinema_name']; ?></p>
-                                    <p><b>Phòng:</b> <?php echo $ticket['hall_name']; ?></p>
-                                    <p><b>Suất:</b>
-                                        <?php echo date('d/m/Y', strtotime($ticket['show_date'])) . ' ' . substr($ticket['start_time'], 0, 5); ?>
-                                    </p>
-                                    <p><b>Ghế:</b> <span class="seat"><?php echo $seatLabel; ?></span></p>
+                                <?php foreach ($tickets as $index => $ticket):
+                                    $seatLabel = $ticket['row_name'] . $ticket['seat_number'];
+                                    $qrData = "CINEMAX-BILL{$billId}-TICKET{$ticket['ticket_id']}-SEAT{$seatLabel}";
+                                    $qrUrl  = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urlencode($qrData);
+                                ?>
 
-                                    <div class="price">
-                                        <?php echo number_format($ticket['price'], 0, ',', '.'); ?> ₫
+                                    <div class="carousel-slide">
+                                        <div class="ticket-card">
+
+                                            <!-- HEADER -->
+                                            <div class="ticket-header">
+                                                <div class="ticket-header-content">
+                                                    <div class="ticket-label">
+                                                        🎬 <span>Vé xem phim</span>
+                                                    </div>
+                                                    <span class="ticket-id">#<?php echo $ticket['ticket_id']; ?></span>
+                                                </div>
+                                            </div>
+
+                                            <!-- TITLE -->
+                                            <div class="ticket-title-section">
+                                                <h3 class="ticket-movie-title">
+                                                    <?php echo $ticket['movie_title']; ?>
+                                                </h3>
+                                            </div>
+
+                                            <!-- DETAILS -->
+                                            <div class="ticket-details">
+                                                <div class="ticket-grid">
+
+                                                    <div class="ticket-info">
+                                                        <div class="ticket-info-label">Rạp</div>
+                                                        <p class="ticket-info-value"><?php echo $ticket['cinema_name']; ?></p>
+                                                    </div>
+
+                                                    <div class="ticket-info">
+                                                        <div class="ticket-info-label">Phòng</div>
+                                                        <p class="ticket-info-value"><?php echo $ticket['hall_name']; ?></p>
+                                                    </div>
+
+                                                    <div class="ticket-info">
+                                                        <div class="ticket-info-label">Suất chiếu</div>
+                                                        <p class="ticket-info-value">
+                                                            <?php echo date('d/m/Y', strtotime($ticket['show_date'])) . ' ' . substr($ticket['start_time'], 0, 5); ?>
+                                                        </p>
+                                                    </div>
+
+                                                    <div class="ticket-info">
+                                                        <div class="ticket-info-label">Ghế</div>
+                                                        <p class="ticket-info-value">
+                                                            <?php echo $seatLabel; ?>
+                                                        </p>
+                                                    </div>
+
+                                                </div>
+
+                                                <!-- PRICE -->
+                                                <div class="ticket-price-row">
+                                                    <span class="ticket-price-label">Giá vé</span>
+                                                    <span class="ticket-price-value">
+                                                        <?php echo number_format($ticket['price'], 0, ',', '.'); ?> ₫
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- TEAR -->
+                                            <div class="ticket-tear">
+                                                <div class="ticket-tear-line"></div>
+                                            </div>
+
+                                            <!-- QR -->
+                                            <div class="ticket-qr-section">
+                                                <div class="qr-wrapper">
+                                                    <img src="<?php echo $qrUrl; ?>">
+                                                </div>
+                                                <p class="qr-hint">Đưa mã này cho nhân viên để vào rạp</p>
+                                            </div>
+
+                                        </div>
                                     </div>
 
-                                    <div class="qr">
-                                        <img src="<?php echo $qrUrl; ?>">
-                                    </div>
-                                </div>
+                                <?php endforeach; ?>
+
                             </div>
+                        </div>
 
-                        <?php endforeach; ?>
+                        <!-- DOTS -->
+                        <?php if (count($tickets) > 1): ?>
+                            <div class="carousel-dots">
+                                <?php foreach ($tickets as $i => $t): ?>
+                                    <button class="carousel-dot <?php echo $i === 0 ? 'active' : ''; ?>"
+                                        onclick="goToTicket(<?php echo $i; ?>)">
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+
                     </div>
+
+                    <?php if (!empty($combos)): ?>
+    <div class="combo-section">
+        <h3 class="combo-title">🍿 Combo bắp nước</h3>
+
+        <div class="combo-list">
+            <?php 
+            $comboTotal = 0;
+            foreach ($combos as $c): 
+                $itemTotal = $c['price'] * $c['quantity'];
+                $comboTotal += $itemTotal;
+            ?>
+                <div class="combo-item">
+                    <div class="combo-left">
+                        <span class="combo-name">
+                            <?= htmlspecialchars($c['name']) ?>
+                        </span>
+                        <span class="combo-qty">
+                            x<?= $c['quantity'] ?>
+                        </span>
+                    </div>
+                    <div class="combo-price">
+                        <?= number_format($itemTotal, 0, ',', '.') ?> ₫
+                    </div>
+                </div>
+            <?php endforeach; ?>
+
+            <div class="combo-total">
+                <span>Tổng đồ ăn</span>
+                <strong><?= number_format($comboTotal, 0, ',', '.') ?> ₫</strong>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
                     <!-- BUTTON -->
-                    <div class="btn-bottom">
-                        <a href="index.php" class="btn-action overlay-btn btn-detail">Về trang chủ</a>
+                    <div class="action-buttons">
+                        <a href="index.php" class="btn btn-outline">
+                            🏠 Về trang chủ
+                        </a>
                     </div>
 
                 </div>

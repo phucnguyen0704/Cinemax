@@ -171,8 +171,14 @@ if ($stmtTypes) {
                                                     $typeName   = $ticket['type_name'] ?? 'Ghế';
                                                     $price      = (float)$ticket['price'];
                                                     $status     = $ticket['status'] ?? 'available';
-                                                    $statusClass = $status === 'booked' ? 'sold' : ($status === 'held' ? 'held' : '');
-                                                    $clickable   = $status === 'available';
+                                                    $statusClass = '';
+                                                    if ($status === 'paid') {
+                                                        $statusClass = 'sold';
+                                                    } elseif ($status === 'held') {
+                                                        $statusClass = 'held';
+                                                    }
+
+                                                    $clickable = $status === 'available';
                                                 ?>
                                                     <div class="seat type-<?php echo $seatTypeId; ?> <?php echo $statusClass; ?>"
                                                         data-ticket-id="<?php echo $ticketId; ?>"
